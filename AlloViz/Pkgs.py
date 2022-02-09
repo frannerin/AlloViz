@@ -4,6 +4,12 @@ from .utils import *
 
 
 
+def _cannot_import(pkgname):
+        return f"{pkgname} can't be imported"
+
+
+
+
 class Pkg: #abc.ABC
     def __init__(self, state):#, ¿pkg?): #metrics="all", filterby="whole", normalize=True, cores=None, ow=False
         args = locals()
@@ -29,8 +35,7 @@ class Pkg: #abc.ABC
 #     def _datafn(self, filterby, normalize, pkg, metric):
 #         return f"{self._datapn(filterby, normalize, pkg)}/{metric}.pq"
     
-    def _cannot_import(self):
-        return f"{self.__class__.__name__} can't be imported"
+    
         
         
         
