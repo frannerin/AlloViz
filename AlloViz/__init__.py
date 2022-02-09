@@ -12,7 +12,7 @@ Use Classes: Pair, State, Data, Edges
 
 
 # from . import Classes, utils
-__all__ = ["AlloViz"]#, "utils"]
+__all__ = ["AlloViz", "utils"]
 from .AlloViz import *
 # import Pkgs
 # from .utils import *

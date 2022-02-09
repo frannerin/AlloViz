@@ -29,14 +29,13 @@ class Pkg: #abc.ABC
 #     def _datafn(self, filterby, normalize, pkg, metric):
 #         return f"{self._datapn(filterby, normalize, pkg)}/{metric}.pq"
     
-    def _cannot_import():
+    def _cannot_import(self):
         return f"{self.__class__.__name__} can't be imported"
         
         
         
     
     def _initialize(self):
-        print(locals())
         pqs = [self._rawpq(xtc) for xtc in self.state._trajs]
         no_exist = [not os.path.isfile(pq) for pq in pqs]
         
@@ -107,7 +106,7 @@ class Multicorepkg(Pkg):
 
 
 
-class Correlationpkg(Pkg):
+class Matrixoutput(Pkg):
     def __init__(self, state):
         self.selection = "protein"
         super().__init__(state)
@@ -150,17 +149,19 @@ class COMpkg(Pkg):
 
 
 
-
+# sys.path.append('getcontacts')
+# from getcontacts import get_dynamic_contacts, get_contact_frequencies
 
 
 class Getcontacts(Multicorepkg):
-    def __init__(self, state):
-        try:
-            sys.path.append('getcontacts')
-            from getcontacts import get_dynamic_contacts, get_contact_frequencies
-        except:
-            print(super()._cannot_import())
+    try:
+        sys.path.append('getcontacts')
+        from getcontacts import get_dynamic_contacts, get_contact_frequencies
+    except:
+        print(_cannot_import(__qualname__))
         
+        
+    def __init__(self, state):        
         super().__init__(state)
         
         
@@ -183,8 +184,8 @@ class Getcontacts(Multicorepkg):
         
     def _computation(self, pdb, traj, xtc, pq, ctcs, freqs, taskcpus):
         if not os.path.isfile(freqs):# or ow:
-            get_dynamic_contacts.main(f"--topology {pdb} --trajectory {traj} --output {ctcs} --itypes all --cores {taskcpus}".split())
-            get_contact_frequencies.main(f"--input_files {ctcs} --output_file {freqs}".split())
+            self.get_dynamic_contacts.main(f"--topology {pdb} --trajectory {traj} --output {ctcs} --itypes all --cores {taskcpus}".split())
+            self.get_contact_frequencies.main(f"--input_files {ctcs} --output_file {freqs}".split())
         return freqs, xtc, pq
         
         
@@ -205,12 +206,13 @@ class Getcontacts(Multicorepkg):
 
 
 
-class Dynetan(Correlationpkg, Multicorepkg):
+class Dynetan(Matrixoutput, Multicorepkg):
+    try: 
+        from dynetan.proctraj import DNAproc as dynetan
+    except:
+        print(_cannot_import(__qualname__))
+            
     def __init__(self, state):
-        try: 
-            from dynetan.proctraj import DNAproc as dynetan
-        except:
-            print(super()._cannot_import())
         super().__init__(state)
     
     
@@ -227,7 +229,7 @@ class Dynetan(Correlationpkg, Multicorepkg):
     
     
     def _computation(self, pdb, traj, xtc, pq, taskcpus):
-        obj = dynetan()
+        obj = self.dynetan()
         obj.loadSystem(pdb, traj) # pdb.replace("pdb", "psf")
         prot = obj.getU().select_atoms("protein")
 
@@ -271,12 +273,13 @@ class DynetanCOM(Dynetan, COMpkg):
 
 
 
-class Corrplus(Correlationpkg):
+class Corrplus(Matrixoutput):
+    try:
+        import correlationplus.calculate as corrplus
+    except:
+        print(_cannot_import(__qualname__))
+        
     def __init__(self, state):
-        try:
-            import correlationplus.calculate as corrplus
-        except:
-            print(super()._cannot_import())
         super().__init__(state)
         
         
@@ -289,7 +292,7 @@ class Corrplus(Correlationpkg):
     
     
     def _computation(self, pdb, traj, xtc, pq):
-        corr = corrplus.calcMDnDCC(pdb, traj, saveMatrix = False)
+        corr = self.corrplus.calcMDnDCC(pdb, traj, saveMatrix = False)
         return corr, xtc, pq
 
         
@@ -300,7 +303,7 @@ class CorrplusLMI(Corrplus):
         super().__init__(state)
     
     def _computation(self, pdb, traj, xtc, pq):
-        corr = corrplus.calcMD_LMI(pdb, traj, saveMatrix = False)
+        corr = self.corrplus.calcMD_LMI(pdb, traj, saveMatrix = False)
         return corr, xtc, pq
         
         
@@ -338,12 +341,12 @@ class CorrplusCOMLMI(CorrplusLMI, COMpkg):
 
 
 
-class MDTASK(Correlationpkg):
+class MDTASK(Matrixoutput):
+    try:
+        import MDTASK.calc_correlation as mdtask
+    except:
+        print(_cannot_import(__qualname__))
     def __init__(self, state):
-        try:
-            import MDTASK.calc_correlation as mdtask
-        except:
-            print(super()._cannot_import())
         super().__init__(state)
     
     
@@ -355,7 +358,7 @@ class MDTASK(Correlationpkg):
                          callback=self._save_pq)
     
     def _computation(self, pdb, traj, xtc, pq):
-        corr = mdtask.correlate(mdtask.parse_traj(traj = traj, topology = pdb))
+        corr = self.mdtask.correlate(mdtask.parse_traj(traj = traj, topology = pdb))
         return corr, xtc, pq
 
 
@@ -366,12 +369,13 @@ class MDTASK(Correlationpkg):
 
 
 
-class PytrajCA(Correlationpkg):
+class PytrajCA(Matrixoutput):
+    try:
+        import pytraj
+    except:
+        print(_cannot_import(__qualname__))
+            
     def __init__(self, state):
-        try:
-            import pytraj
-        except:
-            print(super()._cannot_import())
         super().__init__(state)
     
     
@@ -386,9 +390,9 @@ class PytrajCA(Correlationpkg):
     
     
     def _computation(self, pdb, traj, xtc, pq):
-        top = pytraj.load_topology(pdb)
-        traj = pytraj.load(traj, top, mask = f'@{mask}')
-        corr = pytraj.matrix.correl(traj, f'@{mask}')
+        top = self.pytraj.load_topology(pdb)
+        traj = self.pytraj.load(traj, top, mask = f'@{mask}')
+        corr = self.pytraj.matrix.correl(traj, f'@{mask}')
         return corr, xtc, pq
 
     
@@ -407,3 +411,53 @@ class PytrajCB(PytrajCA):
                          args=(pdb, traj, mask, xtc, pq),
                          callback=self._save_pq)
 
+
+        
+        
+        
+        
+        
+        
+class Pyinteraph(Matrixoutput):
+    try:
+        print(dir(), __module__, __qualname__)
+        from pyinteraph.main import main as pyinteraph
+    except:
+        print(_cannot_import(__qualname__))
+        
+        
+    def __init__(self, state):        
+        super().__init__(state)
+        
+        
+        
+    def _calculate(self, xtc):
+        pool, pdb, traj, pq = super()._calculate(xtc)
+        
+        CLIargs = "-m --cmpsn-graph dummy"
+        
+        pool.apply_async(self._computation,
+                         args=(pdb, traj, xtc, pq, CLIargs),
+                         callback=self._save_pq)
+        
+        
+    def _computation(self, pdb, traj, xtc, pq, CLIargs):
+        self.pyinteraph(f"-s {pdb} -t {traj} {CLIargs}".split())
+        return freqs, xtc, pq
+
+    
+    
+class PyinteraphEne(Pyinteraph):
+    def __init__(self, state):        
+        super().__init__(state)
+        
+        
+        
+    def _calculate(self, xtc):
+        pool, pdb, traj, pq = super()._calculate(xtc)
+        
+        CLIargs = "-p --kbp-graph dummy"
+        
+        pool.apply_async(self._computation,
+                         args=(pdb, traj, xtc, pq, CLIargs),
+                         callback=self._save_pq)

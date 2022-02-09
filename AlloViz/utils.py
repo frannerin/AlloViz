@@ -27,10 +27,12 @@ class dummypool:
         return callback(function(*args))
 
 
+
+
+
+
 pool = dummypool()
-
-
-
 def get_pool():
     global pool
+    print(pool)
     return pool

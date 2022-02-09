@@ -2,11 +2,12 @@ from . import Pkgs
 import sys, os, io, re, pandas, time
 import MDAnalysis as mda
 import numpy as np
-from .Pkgs import *
+# import .Pkgs
 from .utils import *
 
-pkgsl = ["getcontacts", "dynetan", "dynetanCOM", "pytrajCA", "pytrajCB", "corrplus", "corrplusLMI", "corrplusCOM", "corrplusCOMLMI"]
+pkgsl = ["getcontacts", "pyinteraph", "pyinteraphEne", "dynetan", "dynetanCOM", "pytrajCA", "pytrajCB", "corrplus", "corrplusLMI", "corrplusCOM", "corrplusCOMLMI"]
 metricsl = ["cfb", "cfb_subset", "btw", "btw_subset"]
+
 
 
 
@@ -321,7 +322,7 @@ class State:
         # pool = get_pool()
         
         for pkg in pkgs:
-            pkgclass = eval(pkg[0].upper() + pkg[1:]) if isinstance(pkg, str) else pkg
+            pkgclass = eval(f"Pkgs.{pkg[0].upper() + pkg[1:]}") if isinstance(pkg, str) else pkg
             setattr(self.data, pkgclass.__name__, pkgclass(self))
             print(pkg)
     
