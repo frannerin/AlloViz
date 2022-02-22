@@ -4,6 +4,10 @@ import numpy as np
 import matplotlib, nglview#, ipywidgets, matplotlib.cm
 from matplotlib import pyplot as pl
 
+from networkx import from_pandas_edgelist as networkx_from_pandas
+from networkx.algorithms.centrality import edge_betweenness_centrality, edge_betweenness_centrality_subset # edge_betweenness
+from networkx.algorithms.centrality import edge_current_flow_betweenness_centrality, edge_current_flow_betweenness_centrality_subset
+
 # import .Pkgs
 import Pkgs
 # from Analysis import Analysis
@@ -429,10 +433,6 @@ class Edges:
     
     
 class Analysis:
-    from networkx import from_pandas_edgelist as networkx_from_pandas
-    from networkx.algorithms.centrality import edge_betweenness_centrality, edge_betweenness_centrality_subset # edge_betweenness
-    from networkx.algorithms.centrality import edge_current_flow_betweenness_centrality, edge_current_flow_betweenness_centrality_subset
-    
     def __init__(self, pkg, metrics, normalize = True):
         self.pkg = pkg
         self.metrics = metrics

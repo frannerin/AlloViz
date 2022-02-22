@@ -160,7 +160,8 @@ class Matrixoutput(Pkg):
         df = pandas.DataFrame(corr, columns=resl, index=resl)
         df = df.where( np.triu(np.ones(df.shape), k=1).astype(bool) )
         df = pandas.DataFrame({f"{xtc}": df.stack()})
-        df.to_parquet(pq)
+        if not len(df[f"{xtc}"].unique()) == 1:
+            df.to_parquet(pq)
 
 
 
