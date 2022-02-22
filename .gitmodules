@@ -1,0 +1,3 @@
+[submodule "Forks/getcontacts"]
+	path = Forks/getcontacts
+	url = https://github.com/frannerin/getcontacts.git

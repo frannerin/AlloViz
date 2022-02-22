@@ -1,6 +1,7 @@
 import sys, os, pandas, time
 import numpy as np
-from .utils import *
+from utils import *
+from contextlib import redirect_stdout, redirect_stderr
 
 
 
@@ -16,61 +17,48 @@ class Pkg: #abc.ABC
         del args["self"]
         if "args" in args: del args["args"]
         self.__dict__.update(args)
-        # self.pool = get_pool()
         
         self._name = self.__class__.__name__
-        self._path = lambda filterby: f"{self.state.name}/data/{self._name}/{filterby}"
-        self._rawpq = lambda xtc: f"{self._path('raw')}/{xtc if isinstance(xtc, int) else xtc.rsplit('.', 1)[0]}.pq"
+        # self._path = lambda filterby: f"{self.state.name}/data/{self._name}/{filterby}" # lambda FILTERBY MIGHT BE NOT NEEDED 
+        self._path = f"{self.state.name}/data/{self._name}/raw"
+        os.makedirs(self._path, exist_ok=True)
+        self._rawpq = lambda xtc: f"{self._path}/{xtc if isinstance(xtc, int) else xtc.rsplit('.', 1)[0]}.pq"
         
-        self.raw = self._initialize()
-        
-        
-#     def _get_norm_str(self, normalize):
-#         return "norm" if normalize else "no_norm"
-    
-#     def _datapn(self, filterby, normalize, pkg):
-#         norm = self._get_norm_str(normalize)
-#         return f"{self.name}/data/{filterby}/{norm}/{pkg}"
-    
-#     def _datafn(self, filterby, normalize, pkg, metric):
-#         return f"{self._datapn(filterby, normalize, pkg)}/{metric}.pq"
-    
-    
-        
+        if self.state.__class__.__name__ == "State":
+            with open(f"{self._path}/{self._name}.log", "a+") as f:
+                with redirect_stdout(f), redirect_stderr(f):
+                    self._initialize()
         
         
     
     def _initialize(self):
         pqs = [self._rawpq(xtc) for xtc in self.state._trajs]
-        no_exist = [not os.path.isfile(pq) for pq in pqs]
+        no_exist = lambda pqs: [not os.path.isfile(pq) for pq in pqs]
         
-        if any(no_exist):
-            os.makedirs(self._path("raw"), exist_ok=True)
-            for xtc in (xtc for xtc in self.state._trajs if no_exist[xtc-1]):
+        if any(no_exist(pqs)):
+            for xtc in (xtc for xtc in self.state._trajs if no_exist(pqs)[xtc-1]):
                 self._calculate(xtc)
-        
-        
+                
         
         def wait_calculate(pqs):
-            while any([not os.path.isfile(pq) for pq in pqs]):
+            while any(no_exist(pqs)):
                 time.sleep(5)
+            return pqs
                 
-        def get_raw(*args):
-            print(f"adding raw data of {self._name} for {self.state.name}")
+        def get_raw(pqs): # *args
+            print(f"adding raw data of {self._name} for {self.state.name}: ", pqs)
             flist = map(lambda pq: pandas.read_parquet(pq), pqs)
             df = pandas.concat(flist, axis=1)
             cols = [f"{num}" for num in self.state._trajs]
             df["weight_avg"] = df[cols].fillna(0).mean(axis=1)
             df["weight_std"] = df[cols].fillna(0).std(axis=1)
             return df
-            
-        add_raw = lambda _: setattr(self, "raw", get_raw())
+        
+        add_raw = lambda pqs: setattr(self, "raw", get_raw(pqs))
         get_pool().apply_async(wait_calculate,
                                args=(pqs,),
                                callback=add_raw)
         return
-        
-
         
     
     def _calculate(self, xtc):
@@ -81,16 +69,62 @@ class Pkg: #abc.ABC
         print(f"making {pq}")
         return pool, pdb, traj, pq
     
-    
-    
     # abstractmethod
     def _computation(self, xtc):
-        return freqs, xtc, pq
+        return info, xtc, pq
     
     # abstractmethod
     def _save_pq(self, args):
-        corr, xtc, pq = args
+        info, xtc, pq = args
         # df.to_parquet(pq)
+    
+    
+    
+    
+    
+#     def _analyze(self, ):
+#         norm = self._state._get_norm_str(normalize)
+        
+        
+#         os.makedirs(self._state._datapn(filterby, normalize, pkg), exist_ok=True)
+#         raw = getattr(self.raw, pkg)
+#         if filterby == "incontact" or filterby == "intercontact":
+#             raw = raw.filter(self.raw.getcontacts.index, axis=0)
+#             if filterby == "intercontact":
+#                 get_resnum = lambda res: int(res.rsplit(":")[-1])
+#                 raw = raw.filter(get_intercontacts(raw.index), axis=0)
+#         if filterby == "whole":
+#             metrics = [metric for metric in metrics if "subset" not in metric]
+            
+        
+#         data = rgetattr(self, filterby, norm, pkg).df
+        
+#         if any([f"{metric}_avg" not in data.columns for metric in metrics]) or ow:
+#             #print(f"analyzing {metrics} from {self._state.name} {pkg} data for {filterby} residues")
+#             raw_data = raw[[col for col in raw.columns if col != "weight_std"]]
+#             self._send_anal(raw_data, pkg, metrics, normalize, ow, filterby)
+#             # setattr(self.incontact, pkg, Edges(self._state, data.join(analyzed)))
+            
+#         return
+        
+        
+#     def _send_anal(self, rawdata, pkg, metrics, normalize, ow, filterby):
+#         data = None
+        
+#         if filterby == "whole":
+#             metrics = [metric for metric in metrics if "subset" not in metric]
+        
+#         for metric in metrics:
+#             pqf = self._state._datafn(filterby, normalize, pkg, metric)
+            
+#             if not os.path.isfile(pqf) or ow:
+#                 print(f"\tmaking {pqf}")
+#                 newcolnames = {name: f"{metric}_{name}" for name in rawdata.columns}
+#                 df = rawdata.apply(self._networkx_analysis, args=(metric, normalize)).rename(columns=newcolnames)
+#                 df.to_parquet(pqf)
+            
+#         return   
+        
 
 
 
@@ -102,6 +136,7 @@ class Multicorepkg(Pkg):
         super().__init__(state)
     
     def _calculate_empty(self, pqf):
+        print("sleeping", pqf, os.getpid())
         while not os.path.isfile(pqf):
             time.sleep(5)
         return
@@ -113,14 +148,14 @@ class Multicorepkg(Pkg):
 
 class Matrixoutput(Pkg):
     def __init__(self, state):
-        self.selection = "protein"
+        self._selection = "protein"
         super().__init__(state)
     
     
     def _save_pq(self, args):
         corr, xtc, pq = args
         
-        resl = [f"A:{aa.resname}:{aa.resid}" for aa in self.state.mdau.select_atoms(self.selection).residues]
+        resl = [f"A:{aa.resname}:{aa.resid}" for aa in self.state.mdau.select_atoms(self._selection).residues]
 
         df = pandas.DataFrame(corr, columns=resl, index=resl)
         df = df.where( np.triu(np.ones(df.shape), k=1).astype(bool) )
@@ -176,13 +211,14 @@ class Getcontacts(Multicorepkg):
     def _calculate(self, xtc):
         pool, pdb, traj, pq = super()._calculate(xtc)
         
-        path = self._path("raw")
+        path = self._path
         ctcs = f"{path}/{xtc}.tsv"
         freqs = f"{path}/{xtc}_freqs.tsv"
         
         pool.apply_async(self._computation,
                          args=(pdb, traj, xtc, pq, ctcs, freqs, self.taskcpus),
                          callback=self._save_pq)
+        # update_pdict((self.name, self._name, xtc), p)
         
         for _ in range(self.taskcpus-1): pool.apply_async(self._calculate_empty, args=(pq,))
         
@@ -201,6 +237,10 @@ class Getcontacts(Multicorepkg):
                              index_col = (0, 1), names = [f"{xtc}"])
         df.index = df.index.map(lambda idx: tuple(sorted(idx, key = lambda res: int(res.split(":")[-1]))))
         df.to_parquet(pq)
+        
+    
+    
+    
 
 
 
@@ -263,11 +303,11 @@ class DynetanCOM(Dynetan, COMpkg):
         
     def _calculate(self, xtc):
         pool, pdb, traj, pq = COMpkg._calculate(self, xtc)
-        
+        self.taskcpus = 4
         pool.apply_async(self._computation,
                          args=(pdb, traj, xtc, pq, self.taskcpus),
                          callback=self._save_pq)
-        for _ in range(self.taskcpus-1): pool.apply_async(self._calculate_empty, args=(pq,))
+        #for _ in range(self.taskcpus-1): pool.apply_async(self._calculate_empty, args=(pq,))
 
 
 
@@ -363,7 +403,7 @@ class MDTASK(Matrixoutput):
                          callback=self._save_pq)
     
     def _computation(self, pdb, traj, xtc, pq):
-        corr = self.mdtask.correlate(mdtask.parse_traj(traj = traj, topology = pdb))
+        corr = self.mdtask.correlate(self.mdtask.parse_traj(traj = traj, topology = pdb))
         return corr, xtc, pq
 
 
@@ -394,7 +434,7 @@ class PytrajCA(Matrixoutput):
     
     
     
-    def _computation(self, pdb, traj, xtc, pq):
+    def _computation(self, pdb, traj, mask, xtc, pq):
         top = self.pytraj.load_topology(pdb)
         traj = self.pytraj.load(traj, top, mask = f'@{mask}')
         corr = self.pytraj.matrix.correl(traj, f'@{mask}')
@@ -408,9 +448,9 @@ class PytrajCB(PytrajCA):
     
     
     def _calculate(self, xtc):
-        pool, pdb, traj, pq = super()._calculate(xtc)
+        pool, pdb, traj, pq = Matrixoutput._calculate(self, xtc)
         mask = self.__class__.__name__[-2:]
-        self.selection = "protein and not resname GLY"
+        self._selection = "protein and not resname GLY"
         
         pool.apply_async(self._computation,
                          args=(pdb, traj, mask, xtc, pq),
@@ -425,8 +465,9 @@ class PytrajCB(PytrajCA):
         
 class Pyinteraph(Matrixoutput):
     try:
-        print(dir(), __module__, __qualname__)
-        from pyinteraph.main import main as pyinteraph
+        #print(dir(), __module__, __qualname__)
+        # from pyinteraph.main import main as pyinteraph
+        import pyinteraph.main as pyinteraph
     except:
         print(_cannot_import(__qualname__))
         
@@ -447,8 +488,8 @@ class Pyinteraph(Matrixoutput):
         
         
     def _computation(self, pdb, traj, xtc, pq, CLIargs):
-        self.pyinteraph(f"-s {pdb} -t {traj} {CLIargs}".split())
-        return freqs, xtc, pq
+        corr = self.pyinteraph.main(f"-s {pdb} -t {traj} {CLIargs}".split()) / 100
+        return corr, xtc, pq
 
     
     
@@ -459,10 +500,19 @@ class PyinteraphEne(Pyinteraph):
         
         
     def _calculate(self, xtc):
-        pool, pdb, traj, pq = super()._calculate(xtc)
+        pool, pdb, traj, pq = Matrixoutput._calculate(self, xtc)
         
         CLIargs = "-p --kbp-graph dummy"
         
         pool.apply_async(self._computation,
                          args=(pdb, traj, xtc, pq, CLIargs),
                          callback=self._save_pq)
+
+        
+        
+        
+        
+# class Carma(): # needs the dcd
+# class Bio3D(): # R package; needs the dcd
+# class wordom(): # doesn't have python bindings for croscorr and lmi but if it had it would've been great because it looks fast?
+

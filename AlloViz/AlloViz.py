@@ -1,12 +1,17 @@
-from . import Pkgs
 import sys, os, io, re, pandas, time
 import MDAnalysis as mda
 import numpy as np
-# import .Pkgs
-from .utils import *
+import matplotlib, nglview#, ipywidgets, matplotlib.cm
+from matplotlib import pyplot as pl
 
-pkgsl = ["getcontacts", "pyinteraph", "pyinteraphEne", "dynetan", "dynetanCOM", "pytrajCA", "pytrajCB", "corrplus", "corrplusLMI", "corrplusCOM", "corrplusCOMLMI"]
+# import .Pkgs
+import Pkgs
+# from Analysis import Analysis
+from utils import *
+
+pkgsl = ["MDTASK", "getcontacts", "pyinteraph", "pyinteraphEne", "dynetan", "pytrajCA", "pytrajCB", "corrplus", "corrplusLMI", "corrplusCOM", "corrplusCOMLMI"] #"dynetanCOM", 
 metricsl = ["cfb", "cfb_subset", "btw", "btw_subset"]
+filterbyl = ["whole", "incontact", "intercontact"]
 
 
 
@@ -43,7 +48,10 @@ class Pair:
     
     
         def get_sources(states):
-            resnum_to_wb = lambda nums, state: (bfac(atom)                                                 for residue in nums                                                 for atom in state.mdau.select_atoms(f"resnum {residue}")                                                 if is_wb(atom))
+            resnum_to_wb = lambda nums, state: (bfac(atom)
+                                                for residue in nums
+                                                for atom in state.mdau.select_atoms(f"resnum {residue}")
+                                                if is_wb(atom))
             
             has_lig = [state if ("LIG" in (seg.segid for seg in state.mdau.segments)) else False for state in self.states]
             if any(has_lig):
@@ -60,10 +68,13 @@ class Pair:
         
         
         format_res = lambda aa: f"A:{aa.resname}:{aa.resnum}"
-        wb_to_aa = lambda wblist, state: list(map(format_res, (atom.residue                                                       for residue in state.mdau.select_atoms("protein").residues                                                       for atom in residue.atoms                                                       if is_wb(atom) and bfac(atom) in wblist)))
-        for state in self.states:
-            state.sources_subset, state.targets_subset = wb_to_aa(nodes_subset["sources"], state), wb_to_aa(nodes_subset["targets"], state)       
+        wb_to_aa = lambda wblist, state: list(map(format_res, (atom.residue
+                                                               for residue in state.mdau.select_atoms("protein").residues
+                                                               for atom in residue.atoms
+                                                               if is_wb(atom) and bfac(atom) in wblist)))
         
+        for state in self.states:
+            state.sources_subset, state.targets_subset = wb_to_aa(nodes_subset["sources"], state), wb_to_aa(nodes_subset["targets"], state) 
         
         return nodes_subset    
     
@@ -90,7 +101,7 @@ class Pair:
         with Pool(cores) as pool:
             for pkg in pkgs:
                 for state in self.states:
-                    if not rhasattr(state.data, "raw", pkg) or ow: #hasattr(state.data, "raw") or not hasattr(state.data.raw, pkg) or ow:
+                    if not rhasattr(state.data, "raw", pkg) or ow:
                         #print(f"sending {state.name} {pkg}")
                         state._send_calc(pkg, ow, filterby, pool)
             pool.close()
@@ -105,7 +116,7 @@ class Pair:
     def get_incontact(self, cores=None, ow=False):
         with Pool(cores) as pool:
             for state in self.states:
-                if not rhasattr(state.data, "raw", "getcontacts") or ow: #hasattr(state.data, "raw") or not hasattr(state.data.raw, "getcontacts") or ow:
+                if not rhasattr(state.data, "raw", "getcontacts") or ow:
                     #print(f"sending {state.name} {pkg}")
                     state._send_calc("getcontacts", ow, "incontact", pool)
             pool.close()
@@ -145,7 +156,7 @@ class Pair:
     def view(self, pkg, metric, normalize=True, filterby="incontact", num=20):
         norm = self.state1._get_norm_str(normalize)
         if not hasattr(self, "delta"): self.get_delta()
-        if not rhasattr(self.delta, filterby, norm, pkg): self.analyze(pkg) #hasattr(self.delta, filterby) or not hasattr(getattr(self.delta, filterby), norm) or not hasattr(rgetattr(self.delta, filterby, norm), pkg): self.analyze(pkg)
+        if not rhasattr(self.delta, filterby, norm, pkg): self.analyze(pkg)
         return rgetattr(self.delta, filterby, norm, pkg).view(metric, num, filterby)
 
 
@@ -153,16 +164,11 @@ class Pair:
 
 
 
-
-
-
-
-
-class State:    
+class State:#(Entity):    
     def __init__(self, name, idx):
         self.name = name
         self.idx = idx
-        self.data = Data(self)
+        # self.data = Data(self)
         
         if not os.path.isdir(self.name): self._download_files()
         
@@ -174,28 +180,19 @@ class State:
         
     
     
-    def __sub__(self, other):        
-        return self.data - other.data
-    
-    
-    def _rawpn(self, pkg):
-        return f"{self.name}/data/raw/{pkg}"
-    
-    def _rawfn(self, pkg, xtc):
-        filen = xtc if isinstance(xtc, int) else xtc.rsplit('.', 1)[0]
-        return f"{self._rawpn(pkg)}/{filen}.pq"
-    
-    
-    
-    def _get_norm_str(self, normalize):
-        return "norm" if normalize else "no_norm"
-    
-    def _datapn(self, filterby, normalize, pkg):
-        norm = self._get_norm_str(normalize)
-        return f"{self.name}/data/{filterby}/{norm}/{pkg}"
-    
-    def _datafn(self, filterby, normalize, pkg, metric):
-        return f"{self._datapn(filterby, normalize, pkg)}/{metric}.pq"
+    def __sub__(self, other):
+        
+        delta = Store()
+        
+        for pkg in (key for key in self.__dict__ if key.lower() in [x.lower() for x in pkgsl] and key in other.__dict__):
+            setattr(delta, pkg, Store())
+            for filterby in (key for key in getattr(self, pkg).__dict__ if key.lower() in filterbyl and key in getattr(other, pkg).__dict__): #if not re.search("(^_|raw)", key)
+                setattr(getattr(delta, pkg), filterby, Store())
+                for norm in (key for key in rgetattr(self, pkg, filterby).__dict__ if key in ["norm", "no_norm"] and key in rgetattr(self, pkg, filterby).__dict__):
+                    dif = rgetattr(self, pkg, filterby, norm) - rgetattr(other, pkg, filterby, norm)
+                    setattr(rgetattr(delta, pkg, filterby), norm, Edges(self._pair, dif))
+                    
+        return delta
         
     
     
@@ -250,7 +247,7 @@ class State:
     
     
     def _add_comtrajs(self):
-        compath = self._rawpn("COMtrajs")
+        compath = f"{self.name}/data/COMtrajs"
         if not os.path.isdir(compath): os.makedirs(compath, exist_ok=True)
 
         compdb = f"{compath}/ca.pdb"
@@ -266,322 +263,57 @@ class State:
             if not os.path.isfile(comtraj):
                 prot = self.mdau.select_atoms("protein")
                 traj = next(traj for traj in self.mdau.trajectory.readers if traj.filename == f"{self.name}/{self._trajs[xtc]}")
-                # newu = mda.Universe(self._pdbf, f"{self.name}/{self._trajs[xtc]}")
-                # prot = newu.select_atoms("protein")
-                arr = np.empty((prot.n_residues, traj.n_frames, 3)) # newu.trajectory.n_frames
-                for ts in traj: # newu.trajectory
+                arr = np.empty((prot.n_residues, traj.n_frames, 3))
+                for ts in traj:
                     arr[:, ts.frame] = prot.center_of_mass(compound='residues')
 
                 cau = mda.Universe(compdb, arr, format=mda.coordinates.memory.MemoryReader, order='afc')
-                # cau.load_new(arr, format=mda.coordinates.memory.MemoryReader, order='afc')
                 with mda.Writer(comtraj, cau.atoms.n_atoms) as W:
                     for ts in cau.trajectory:
                         W.write(cau.atoms)
-        
-        # To add cau
-        # cau = mda.Universe(compdb, *comtrajs)
-        # setattr(self, "_cau", cau)
-
-        return #compdb, comtraj
+        return
     
     
     
     
-    
-#     def calculate(self, pkg="all", cores=None, ow=False, filterby="incontact"):
-#         pkgs = pkgsl if pkg=="all" else pkg if isinstance(pkg, list) else [pkg]
-        
-#         if filterby == "incontact":
-#             if hasattr(self, "_pair"):
-#                 self._pair.get_incontact(cores)
-#             elif not rhasattr(self.data, "raw", "getcontacts"): #hasattr(self.data, "raw") or not hasattr(self.data.raw, "getcontacts") or o
-#                 with Pool(cores) as pool:
-#                     self._send_calc("getcontacts", filterby, pool)
-#                     pool.close()
-#                     pool.join()
-#                 self._add_pkg("getcontacts")
-#             if "getcontacts" in pkgs: pkgs.remove("getcontacts")
-            
-        
-#         with Pool(cores) as pool:
-#             for pkg in pkgs:
-#                 if not rhasattr(self.data, "raw", pkg) or ow:#hasattr(self.data, "raw") or not hasattr(self.data.raw, pkg) or ow:
-#                     #print(f"sending {self.name} {pkg}")
-#                     self._send_calc(pkg, ow, filterby, pool)
-#             pool.close()
-#             pool.join()
-        
-#         [self._add_pkg(pkg) for pkg in pkgs]
-    def calculate(self, pkg="all"):
+    def calculate(self, pkg="all"): # ow
         pkgs = pkgsl if pkg=="all" else pkg if isinstance(pkg, list) else [pkg]
         
         if any(["COM" in pkg for pkg in pkgs]):
             self._add_comtrajs()
         
-        
-        # pool = get_pool()
-        
         for pkg in pkgs:
             pkgclass = eval(f"Pkgs.{pkg[0].upper() + pkg[1:]}") if isinstance(pkg, str) else pkg
-            setattr(self.data, pkgclass.__name__, pkgclass(self))
-            print(pkg)
-    
-        
-        
-        
-    
-    
-    
-#     def _send_calc(self, pkg, ow, filterby, pool):
-#         def send_empty(self, pqf):
-#             while not os.path.isfile(pqf):
-#                 time.sleep(5)
-#             return
-        
-#         os.makedirs(self._rawpn(pkg), exist_ok=True)        
-#         pkgf = self._getcontactsf if "getcontacts" in pkg else self._corrsf
-#         # pkgf = getcontactsf if "getcontacts" in pkg else corrsf
-#         if "COM" in pkg and not hasattr(self, "_comtrajs"):#or not hasattr(self, "_cau")
-#             self._add_comtrajs()
-        
-#         for xtc in self._trajs:
-#             pqf = self._rawfn(pkg, xtc)
-            
-#             if not os.path.isfile(pqf) or ow:
-#                 print(f"sending calculation of {pkg} for {self.name} {xtc}")
-#                 pool.apply_async(pkgf, (xtc, pkg, ow, filterby))
-#                 # if "getcontacts" in pkg or "dynetan" in pkg:
-#                 #     [pool.apply_async(send_empty, (pqf,))]*2
-            
-#         return
-    
-#     def _getcontactsf(self, xtc, pkg, ow, filterby):
-#         getcontactsf(self, xtc, pkg, ow)
-#         return
-    
-#     def _corrsf(self, xtc, pkg, ow, filterby):
-#         corrsf(self, xtc, pkg, ow, filterby)
-#         return
-    
-    
-#     def _add_pkg(self, pkg):
-#         if not hasattr(self.data, "raw"): setattr(self.data, "raw", Store())
-#         print(f"adding raw data of {pkg} for {self.name}")
-        
-#         pqs = [self._rawfn(pkg, xtc) for xtc in self._trajs]
-#         flist = map(lambda pq: pandas.read_parquet(pq), pqs)
-#         df = pandas.concat(flist, axis=1)
-#         cols = [f"{num}" for num in self._trajs]
-#         df["weight_avg"] = df[cols].fillna(0).mean(axis=1)
-#         df["weight_std"] = df[cols].fillna(0).std(axis=1)
-        
-#         setattr(self.data.raw, pkg, df)
-        
-#         return
+            if not hasattr(self, pkgclass.__name__):
+                setattr(self, pkgclass.__name__, pkgclass(self))
     
     
     
     
-    
-    
-    def analyze(self, pkg="all", metrics="all", normalize=True, ow=False, filterby="incontact"):
+    def analyze(self, pkg="all", metrics="all", filterby="incontact", normalize=True): # ow
         pkgs = pkgsl if pkg=="all" else pkg if isinstance(pkg, list) else [pkg]
         metrics = metricsl if metrics=="all" else metrics if isinstance(metrics, list) else [metrics]
+        filterbys = filterbyl if filterby=="all" else filterby if isinstance(filterby, list) else [filterby]
         
-        self.data._check_raw(pkgs, normalize, filterby)
-        self._send_anal(pkgs, metrics, normalize, ow, filterby)
-        
-        [self.data._add_anal(pkg, metrics, normalize, ow, filterby) for pkg in pkgs]
-    
-    
-    def _send_anal(self, pkgs, metrics, normalize, ow, filterby):
-        if not os.path.isdir(self._datapn(filterby, normalize, "")) or         any([not os.path.isfile(self._datafn(filterby, normalize, pkg, metric)) 
-             for pkg in pkgs for metric in metrics]) or ow:
-            ps = []
-            print(f"sending analysis of {self.name} {filterby} data of {pkgs} packages for {self._get_norm_str(normalize)} {metrics} metrics")
+        for filterby in filterbys:
             for pkg in pkgs:
-                p = Process(target=self.data._analyze, args=(pkg, metrics, normalize, ow, filterby))
-                ps.append(p)
-                p.start()
-            [p.join() for p in ps]
+                pkgclass = eval(f"Pkgs.{pkg[0].upper() + pkg[1:]}") if isinstance(pkg, str) else pkg
+                pkgobj = getattr(self, pkgclass.__name__)
+
+                # anaclass = eval(f"Analysis.{filterby[0].upper() + filterby[1:]}") if isinstance(filterby, str) else filterby
+                anaclass = eval(f"{filterby[0].upper() + filterby[1:]}") if isinstance(filterby, str) else filterby
+                if not hasattr(pkgobj, anaclass.__name__):
+                    setattr(pkgobj, anaclass.__name__, anaclass(pkgobj, metrics, normalize))
+    
+    
+    
         
-        
-        return  
-    
-    
-    
-    
     def view(self, pkg, metric, normalize=True, filterby="incontact", num=20):
         norm = self._get_norm_str(normalize)
-        if not rhasattr(self.data, filterby, norm, pkg):#hasattr(self.data, filterby) or not hasattr(getattr(self.data, filterby), norm) or not hasattr(rgetattr(self.data, filterby, norm), pkg): 
-            self.analyze(pkg, normalize=normalize, filterby=filterby)
+        # if not rhasattr(self.data, filterby, norm, pkg):
+        #     self.analyze(pkg, normalize=normalize, filterby=filterby)
             
-        return rgetattr(self.data, filterby, norm, pkg).view(metric, num, filterby)
-
-
-
-
-
-
-
-
-
-class Data:
-    def __init__(self, state):
-        self._state = state
-        
-        from networkx import from_pandas_edgelist as networkx_from_pandas
-        from networkx.algorithms.centrality import edge_betweenness, edge_betweenness_centrality, edge_betweenness_centrality_subset, edge_current_flow_betweenness_centrality, edge_current_flow_betweenness_centrality_subset
-    
-    
-    
-    def __sub__(self, other):
-        delta = Store()
-        
-        for filterby in (key for key in self.__dict__ if (not re.search("(^_|raw)", key) and key in other.__dict__)):
-            setattr(delta, filterby, Store())
-            for norm in (key for key in getattr(self, filterby).__dict__ if key in getattr(other, filterby).__dict__): #if not re.search("(^_|raw)", key)
-                setattr(getattr(delta, filterby), norm, Store())
-                get_data = lambda obj: rgetattr(obj, filterby, norm)
-                
-                subdelta = get_data(delta)
-
-                selfdata = get_data(self)
-                otherdata = get_data(other)
-
-                pkgs = [key for key in selfdata.__dict__ if key in otherdata.__dict__ and not re.search("^_", key)]            
-                for pkg in pkgs:
-                    print(f"calculating delta for {filterby} {norm} {pkg} data")
-                    dif = getattr(selfdata, pkg) - getattr(otherdata, pkg)
-                    setattr(subdelta, pkg, Edges(self._state._pair, dif))
-        
-        return delta
-        
-        
-    
-    def _check_raw(self, pkgs, normalize, filterby):
-        norm = self._state._get_norm_str(normalize)
-        
-        if not hasattr(self, filterby): 
-            setattr(self, filterby, Store())
-        if not rhasattr(self, filterby, norm):#hasattr(getattr(self, filterby), norm): 
-            setattr(getattr(self, filterby), norm, Store())
-            
-        if any([not hasattr(self.raw, pkg) for pkg in pkgs]):
-            self._state.calculate(pkgs)
-            
-            
-        if filterby == "incontact" or filterby == "intercontact":
-            if not rhasattr(self, "raw", "getcontacts"):#hasattr(self, "raw") or not hasattr(self.raw, "getcontacts"): 
-                self._state.calculate("getcontacts")
-            
-        for pkg in (pkg for pkg in pkgs if not rhasattr(self, filterby, norm, pkg)):#hasattr(getattr(self.incontact, norm), pkg)):
-            raw = getattr(self.raw, pkg)
-            if filterby == "incontact" or filterby == "intercontact":
-                raw = raw.filter(self.raw.getcontacts.index, axis=0)
-                if filterby == "intercontact":
-                    raw = raw.filter(get_intercontacts(raw.index), axis=0)
-            setattr(rgetattr(self, filterby, norm), pkg, Edges(self._state, raw[["weight_avg", "weight_std"]]))
-        
-        # elif filterby == "whole":
-        #     for pkg in (pkg for pkg in pkgs if not rhasattr(self, filterby, norm, pkg)):
-        #         setattr(rgetattr(self, filterby, norm), pkg, Edges(self._state, getattr(self.raw, pkg)[["weight_avg", "weight_std"]]))
-            
-            
-            
-
-    def _analyze(self, pkg, metrics, normalize, ow, filterby):
-        norm = self._state._get_norm_str(normalize)
-        
-        
-        os.makedirs(self._state._datapn(filterby, normalize, pkg), exist_ok=True)
-        raw = getattr(self.raw, pkg)
-        if filterby == "incontact" or filterby == "intercontact":
-            raw = raw.filter(self.raw.getcontacts.index, axis=0)
-            if filterby == "intercontact":
-                get_resnum = lambda res: int(res.rsplit(":")[-1])
-                raw = raw.filter(get_intercontacts(raw.index), axis=0)
-        if filterby == "whole":
-            metrics = [metric for metric in metrics if "subset" not in metric]
-            
-        
-        data = rgetattr(self, filterby, norm, pkg).df
-        
-        if any([f"{metric}_avg" not in data.columns for metric in metrics]) or ow:
-            #print(f"analyzing {metrics} from {self._state.name} {pkg} data for {filterby} residues")
-            raw_data = raw[[col for col in raw.columns if col != "weight_std"]]
-            self._send_anal(raw_data, pkg, metrics, normalize, ow, filterby)
-            # setattr(self.incontact, pkg, Edges(self._state, data.join(analyzed)))
-            
-        return
-        
-        
-    def _send_anal(self, rawdata, pkg, metrics, normalize, ow, filterby):
-        data = None
-        
-        if filterby == "whole":
-            metrics = [metric for metric in metrics if "subset" not in metric]
-        
-        for metric in metrics:
-            pqf = self._state._datafn(filterby, normalize, pkg, metric)
-            
-            if not os.path.isfile(pqf) or ow:
-                print(f"\tmaking {pqf}")
-                newcolnames = {name: f"{metric}_{name}" for name in rawdata.columns}
-                df = rawdata.apply(self._networkx_analysis, args=(metric, normalize)).rename(columns=newcolnames)
-                df.to_parquet(pqf)
-            
-        return   
-    
-    
-    
-    def _networkx_analysis(self, column, metric, normalize):
-        weights = column.reset_index().rename(columns={f"{column.name}": "weight"}).dropna()
-        network = networkx_from_pandas(weights, "level_0", "level_1", "weight")
-        
-        if callable(metric):
-            metricf = metric
-        else:        
-            if "cfb" in metric:
-                metricf = edge_current_flow_betweenness_centrality
-            elif "btw" in metric:
-                metricf = edge_betweenness_centrality
-
-            if "subset" in metric:
-                metricf = eval(f"{metricf.__name__}_subset")
-        
-        if "_subset" in metricf.__name__:
-            nodes = {"sources": self._state.sources_subset, "targets": self._state.targets_subset}
-        else:
-            nodes = {}
-        
-        analyzed = metricf(network, normalized=normalize, weight="weight", **nodes)
-        edges = {tuple(sorted(k, key = lambda x: int(x.split(":")[-1]))): analyzed[k] for k in analyzed}
-        return pandas.Series(edges)
-    
-    
-    
-
-    def _add_anal(self, pkg, metrics, normalize, ow, filterby):
-        norm = self._state._get_norm_str(normalize)
-        print(f"adding analyzed {norm} data of {pkg} for {self._state.name}")
-        
-        data = None
-        for metric in metrics:
-            pqf = self._state._datafn(filterby, normalize, pkg, metric)
-            df = pandas.read_parquet(pqf)
-
-            cols = [f"{metric}_{num}" for num in self._state._trajs]
-            df[f"{metric}_avg"] = df[cols].fillna(0).mean(axis=1)
-            df[f"{metric}_std"] = df[cols].fillna(0).std(axis=1)
-            out = df.drop(cols, axis=1)
-            data = data.join(out) if data is not None else out
-        
-        exec(f"prev = self.{filterby}.{norm}.{pkg}.df")
-        exec(f"self.{filterby}.{norm}.{pkg} = Edges(self._state, prev.join(data))")
-        # setattr(self.incontact, pkg, Edges(self._state, prev.join(data)))
-        
-        return
+        return rgetattr(self, filterby, norm, pkg).view(metric, num, filterby)
 
 
 
@@ -662,7 +394,7 @@ class Edges:
     
     
     
-    def view(self, metric, num=20, filterby="incontact"):
+    def view(self, metric, num=20):
         metric = f"{metric}_avg" if not re.search("_avg$", metric) else metric
         # if metric not in df.columns etc
         get_data = lambda num: self.df.sort_values(metric, key = abs, ascending = False)[0:num]
@@ -691,3 +423,170 @@ class Edges:
             self._add_edge(nv, mdau, data.index[edges[0][i]], colors[i], radii[i])
 
         return nv
+
+    
+    
+    
+    
+class Analysis:
+    from networkx import from_pandas_edgelist as networkx_from_pandas
+    from networkx.algorithms.centrality import edge_betweenness_centrality, edge_betweenness_centrality_subset # edge_betweenness
+    from networkx.algorithms.centrality import edge_current_flow_betweenness_centrality, edge_current_flow_betweenness_centrality_subset
+    
+    def __init__(self, pkg, metrics, normalize = True):
+        self.pkg = pkg
+        self.metrics = metrics
+        self.normalize = normalize
+        self._name = self.__class__.__name__
+        
+        self._norm = lambda normalize: "norm" if normalize else "no_norm"
+        self._path = lambda norm: f"{self.pkg.state.name}/data/{self.pkg._name}/{self._name}/{norm}" # lambda norm might not be needed
+        self._datapq = lambda norm, metric: f"{self._path(norm)}/{metric}.pq"
+        
+        self._filtdata = self._get_filt_data()
+        
+        self.add_metrics(metrics, normalize)
+    
+    
+    
+    def _get_filt_data(self):
+        return self.pkg.raw#[["weight_avg", "weight_std"]]
+    
+    
+        
+    
+    def add_metrics(self, metrics, normalize=True):
+        norm = self._norm(normalize)
+        os.makedirs(self._path(norm), exist_ok=True)
+        
+        if not hasattr(self, norm):
+            data = self._filtdata[["weight_avg", "weight_std"]]
+        else:
+            data = getattr(self, norm).df
+        
+        metrics = metricsl if metrics=="all" else metrics if isinstance(metrics, list) else [metrics]
+        pqs = [self._datapq(norm, metric) for metric in metrics]
+        no_exist = lambda pqs: [not os.path.isfile(pq) for pq in pqs]
+        
+        if any([f"{metric}_avg" not in data.columns for metric in metrics]): # or ow
+            if any(no_exist(pqs)):
+                for metric in (metric for metric in self.metrics if no_exist(pqs)[pqs.index(self._datapq(norm, metric))]):
+                    self._analyze(metric, normalize, self._datapq(norm, metric))
+                
+        
+        def wait_analyze(pqs, data):
+            while any(no_exist(pqs)):
+                time.sleep(5)
+            return pqs, data
+
+        def get_data(args):
+            pqs, data = args
+            print(f"adding analyzed {norm} data of {self._name} for {self.pkg.state.name}")
+            
+            for pq in pqs:
+                metric = pq.rsplit("/", 1)[-1].split(".")[0]
+                df = pandas.read_parquet(pq)
+
+                cols = [f"{metric}_{num}" for num in self.pkg.state._trajs]
+                df[f"{metric}_avg"] = df[cols].fillna(0).mean(axis=1)
+                df[f"{metric}_std"] = df[cols].fillna(0).std(axis=1)
+                out = df.drop(cols, axis=1)
+                data = data.join(out) if data is not None else out
+            return data
+        
+        add_data = lambda args: setattr(self, norm, Edges(self.pkg.state, get_data(args)))
+        get_pool().apply_async(wait_analyze,
+                               args=(pqs, data),
+                               callback=add_data)
+        return
+    
+
+    
+    
+    def _analyze(self, metric, normalize, pq):
+        pool = get_pool()
+        rawdata = self._filtdata.drop("weight_std", axis=1)
+        
+        
+        def save_pq(df):
+            newcolnames = {name: f"{metric}_{name}" for name in df.columns}
+            df.rename(columns=newcolnames, inplace=True)
+            df.to_parquet(pq)
+            return
+        
+        pool.apply_async(lambda args: rawdata.apply(self._networkx_analysis, args=args),
+                         args=((metric, normalize, pq),),
+                         callback=save_pq)
+        
+        
+        def _calculate_empty(self, pqf):
+            print("sleeping", pqf, os.getpid())
+            while not os.path.isfile(pqf):
+                time.sleep(5)
+            return
+        
+        for _ in range(len(rawdata.columns)-1): pool.apply_async(_calculate_empty, args=(pq,))
+    
+    
+    
+    
+    def _networkx_analysis(self, column, metric, normalize, pq):
+        weights = column.reset_index().rename(columns={f"{column.name}": "weight"}).dropna()
+        network = networkx_from_pandas(weights, "level_0", "level_1", "weight")
+        nodes = {}
+        
+        if callable(metric):
+            metricf = metric
+        else:        
+            if "cfb" in metric:
+                metricf = edge_current_flow_betweenness_centrality
+            elif "btw" in metric:
+                metricf = edge_betweenness_centrality
+
+            if "subset" in metric:
+                metricf = eval(f"{metricf.__name__}_subset")
+                nodes = {"sources": self._state.sources_subset, "targets": self._state.targets_subset}            
+        
+        analyzed = metricf(network, normalized=normalize, weight="weight", **nodes)
+        edges = {tuple(sorted(k, key = lambda x: int(x.split(":")[-1]))): analyzed[k] for k in analyzed}
+        
+        return pandas.Series(edges)#, pq
+    
+    
+    
+    
+class Incontact(Analysis):
+    def __init__(self, pkg, metrics, normalize = True):
+        super().__init__(pkg, metrics, normalize)
+    
+    
+    def _get_filt_data(self):
+        df = super()._get_filt_data()
+        
+        try:
+            indexes = self.pkg.state.Getcontacts.raw.index
+        except:
+            print("Getcontacts calculation is needed first")
+            raise
+            
+        return df.filter(indexes, axis=0) # maybe pass indexes in class creation
+        
+        
+class Intercontact(Incontact):
+    def __init__(self, pkg, metrics, normalize = True):
+        super().__init__(pkg, metrics, normalize)
+
+        
+    def _get_filt_data(self):
+
+        def get_intercontacts(indexl):
+            get_resnum = lambda res: int(res.rsplit(":")[-1])
+            return [idx for idx in indexl if abs(get_resnum(idx[0]) - get_resnum(idx[1]) ) >= 4]
+        
+        df = super()._get_filt_data()
+
+        return df.filter(get_intercontacts(df.index), axis=0)
+
+        
+class Whole(Analysis):
+    pass
