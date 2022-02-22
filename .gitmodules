@@ -1,3 +1,15 @@
 [submodule "Forks/getcontacts"]
 	path = Forks/getcontacts
 	url = https://github.com/frannerin/getcontacts.git
+[submodule "Forks/dynetan"]
+	path = Forks/dynetan
+	url = https://github.com/frannerin/dynetan
+[submodule "Forks/correlationplus"]
+	path = Forks/correlationplus
+	url = https://github.com/frannerin/correlationplus
+[submodule "Forks/MD-TASK"]
+	path = Forks/MD-TASK
+	url = https://github.com/frannerin/MD-TASK
+[submodule "Forks/pyinteraph2"]
+	path = Forks/pyinteraph2
+	url = https://github.com/frannerin/pyinteraph2
