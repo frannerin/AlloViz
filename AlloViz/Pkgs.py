@@ -1,6 +1,6 @@
 import sys, os, pandas, time
 import numpy as np
-from utils import *
+from .utils import *
 from contextlib import redirect_stdout, redirect_stderr
 
 
