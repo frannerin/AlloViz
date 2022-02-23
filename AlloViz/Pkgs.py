@@ -1,12 +1,14 @@
-import sys, os, pandas, time
+import sys, os, pandas, time, lazy_import
 import numpy as np
 from .utils import *
 from contextlib import redirect_stdout, redirect_stderr
 
+# sys.path.append(f"{__file__.rsplit('/', 1)[0]}/Forks")
 
 
-def _cannot_import(pkgname):
-        return f"{pkgname} can't be imported"
+
+# def _cannot_import(pkgname):
+#         return f"{pkgname} can't be imported"
 
 
 
@@ -24,10 +26,11 @@ class Pkg: #abc.ABC
         os.makedirs(self._path, exist_ok=True)
         self._rawpq = lambda xtc: f"{self._path}/{xtc if isinstance(xtc, int) else xtc.rsplit('.', 1)[0]}.pq"
         
-        if self.state.__class__.__name__ == "State":
-            with open(f"{self._path}/{self._name}.log", "a+") as f:
-                with redirect_stdout(f), redirect_stderr(f):
-                    self._initialize()
+        try:     
+            # if self.state.__class__.__name__ == "State":
+            self._initialize()
+        except ImportError:
+            print(f"{__qualname__} can't be imported")
         
         
     
@@ -35,9 +38,11 @@ class Pkg: #abc.ABC
         pqs = [self._rawpq(xtc) for xtc in self.state._trajs]
         no_exist = lambda pqs: [not os.path.isfile(pq) for pq in pqs]
         
-        if any(no_exist(pqs)):
-            for xtc in (xtc for xtc in self.state._trajs if no_exist(pqs)[xtc-1]):
-                self._calculate(xtc)
+        with open(f"{self._path}/{self._name}.log", "a+") as f:
+            with redirect_stdout(f), redirect_stderr(f):
+                if any(no_exist(pqs)):
+                    for xtc in (xtc for xtc in self.state._trajs if no_exist(pqs)[xtc-1]):
+                        self._calculate(xtc)
                 
         
         def wait_calculate(pqs):
@@ -188,24 +193,13 @@ class COMpkg(Pkg):
 
 
 
-
-
-# sys.path.append('getcontacts')
-# from getcontacts import get_dynamic_contacts, get_contact_frequencies
-
-
 class Getcontacts(Multicorepkg):
-    try:
-        sys.path.append('getcontacts')
-        from getcontacts import get_dynamic_contacts, get_contact_frequencies
-    except:
-        print(_cannot_import(__qualname__))
-        
-        
+    sys.path.append(f"{__file__.rsplit('/', 1)[0]}/Forks/getcontacts")
+    get_dynamic_contacts = lazy_import.lazy_module("getcontacts.get_dynamic_contacts")
+    get_contact_frequencies = lazy_import.lazy_module("getcontacts.get_contact_frequencies")
+    
     def __init__(self, state):        
         super().__init__(state)
-        
-        
         
         
         
@@ -253,10 +247,12 @@ class Getcontacts(Multicorepkg):
 
 
 class Dynetan(Matrixoutput, Multicorepkg):
-    try: 
-        from dynetan.proctraj import DNAproc as dynetan
-    except:
-        print(_cannot_import(__qualname__))
+    # try: 
+    #     from dynetan.proctraj import DNAproc as dynetan
+    # except:
+    #     print(_cannot_import(__qualname__))
+    sys.path.append(f"{__file__.rsplit('/', 1)[0]}/Forks/dynetan")
+    dynetan = lazy_import.lazy_callable("dynetan.proctraj.DNAproc")
             
     def __init__(self, state):
         super().__init__(state)
@@ -320,10 +316,12 @@ class DynetanCOM(Dynetan, COMpkg):
 
 
 class Corrplus(Matrixoutput):
-    try:
-        import correlationplus.calculate as corrplus
-    except:
-        print(_cannot_import(__qualname__))
+    # try:
+    #     import correlationplus.calculate as corrplus
+    # except:
+    #     print(_cannot_import(__qualname__))
+    sys.path.append(f"{__file__.rsplit('/', 1)[0]}/Forks/correlationplus")
+    corrplus = lazy_import.lazy_module("correlationplus.calculate")
         
     def __init__(self, state):
         super().__init__(state)
@@ -388,10 +386,13 @@ class CorrplusCOMLMI(CorrplusLMI, COMpkg):
 
 
 class MDTASK(Matrixoutput):
-    try:
-        import MDTASK.calc_correlation as mdtask
-    except:
-        print(_cannot_import(__qualname__))
+    # try:
+    #     import MDTASK.calc_correlation as mdtask
+    # except:
+    #     print(_cannot_import(__qualname__))
+    sys.path.append(f"{__file__.rsplit('/', 1)[0]}/Forks/MD-TASK")
+    mdtask = lazy_import.lazy_module("calc_correlation")    
+    
     def __init__(self, state):
         super().__init__(state)
     
@@ -416,10 +417,11 @@ class MDTASK(Matrixoutput):
 
 
 class PytrajCA(Matrixoutput):
-    try:
-        import pytraj
-    except:
-        print(_cannot_import(__qualname__))
+    # try:
+    #     import pytraj
+    # except:
+    #     print(_cannot_import(__qualname__))
+    corrplus = lazy_import.lazy_module("pytraj")
             
     def __init__(self, state):
         super().__init__(state)
@@ -465,14 +467,13 @@ class PytrajCB(PytrajCA):
         
         
 class Pyinteraph(Matrixoutput):
-    try:
-        #print(dir(), __module__, __qualname__)
-        # from pyinteraph.main import main as pyinteraph
-        import pyinteraph.main as pyinteraph
-    except:
-        print(_cannot_import(__qualname__))
-        
-        
+    # try:
+    #     #print(dir(), __module__, __qualname__)
+    #     # from pyinteraph.main import main as pyinteraph
+    #     import pyinteraph.main as pyinteraph
+    # except:
+    #     print(_cannot_import(__qualname__))
+                
     def __init__(self, state):        
         super().__init__(state)
         

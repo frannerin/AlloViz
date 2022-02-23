@@ -228,6 +228,8 @@ class State:#(Entity):
     
 
     def _get_mdau(self):
+        import requests
+        
         trajs = [f"{self.name}/{self._trajs[xtc]}" for xtc in self._trajs]
         mdau = mda.Universe(self._pdbf, *trajs)
         prot = mdau.select_atoms("protein")

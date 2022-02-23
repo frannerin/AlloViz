@@ -4,6 +4,7 @@ import io
 import os
 import sys
 from shutil import rmtree
+from glob import glob
 
 from setuptools import find_packages, setup, Command
 
@@ -104,7 +105,11 @@ setup(
     author_email=EMAIL,
     python_requires=REQUIRES_PYTHON,
     url=URL,
-    packages=find_packages(exclude=["tests", "*.tests", "*.tests.*", "tests.*", "Forks"]),
+    #package_dir={"Forks": "AlloViz/Forks"},
+    packages=find_packages(exclude=["tests", "*.tests", "*.tests.*", "tests.*"]),#["AlloViz", "AlloViz.Forks"],#
+    #data_files={"AlloViz/Forks": glob("AlloViz/Forks/*", recursive=True)},
+    #data_files=[ ("Forks", glob("AlloViz/Forks/*", recursive=True)) ],
+    #data_files=[ ("Forks", list(os.walk("AlloViz/Forks"))) ],
     # If your package is a single module, use this instead of 'packages':
     # py_modules=['mypackage'],
 
