@@ -7,7 +7,7 @@ multiprocess
 lazy_import>=0.2.2
 mdanalysis>=2.0
 
-numpy>=1.21.5 # pyinteraph might need 1.22
+numpy>=1.21.0 # pyinteraph might need 1.22; 1.21.0 exact maximum version needed for numba
 pandas>=1.3.5 # pyinteraph might need 1.4
 pyarrow>=6.0
 
@@ -31,14 +31,24 @@ jupyterlab
 
 
 # Pkgs and deps
+vmd-python>=3.0 # for getcontacts
+#git+https://github.com/Eigenstate/vmd-python@master # needed for pip because it's not on PyPi, although it didn't work
+matplotlib # for MDTASK probably; also for viz
+mdtraj>=1.9 # for MDTASK
+numba>=0.55 # for dynetan
+h5py # for dynetan
+python-louvain # for dynetan; imported as community
+prody # for correlationplus
 #ambertools>=21.0 # for pytraj
+
+
+
 #correlationplus=0.2.1=pyh5e36f6f_0 #bioconda
 #dynetan=1.1.4=pypi_0
-mdtraj>=1.9 #for MDTASK
-vmd-python>=3.0
-#git+https://github.com/Eigenstate/vmd-python@master # needed for pip because it's not on PyPi, although it didn't work
-matplotlib
+
+
 #wordom=0.23=pypi_0
+
 
 
 

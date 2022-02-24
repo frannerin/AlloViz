@@ -21,7 +21,7 @@ VERSION = '1.0.0'
 REQUIRED = [
 	"multiprocess", # multiprocess and not multiprocessing to pickle object methods
 	"mdanalysis>=2.0.0",
-	"numpy>=1.21.5",
+	"numpy>=1.21.0",
 	"pandas>=1.3.5", "pyarrow>=6.0.0",
 	"beautifulsoup4>=4.0.0", "certifi", "requests>=2.0.0", # for downloading GPCRmd files
 	"mdtraj>=1.9", "vmd-python>=3", "matplotlib" # pkgs dependencies
