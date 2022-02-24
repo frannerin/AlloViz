@@ -1,4 +1,4 @@
-import sys, os, pandas, time, lazy_import
+import sys, os, pandas, time#, lazy_import
 import numpy as np
 from .utils import *
 from contextlib import redirect_stdout, redirect_stderr
@@ -30,7 +30,7 @@ class Pkg: #abc.ABC
             # if self.state.__class__.__name__ == "State":
             self._initialize()
         except ImportError:
-            print(f"{__qualname__} can't be imported")
+            print(f"{self._name} can't be imported")
         
         
     
@@ -195,8 +195,9 @@ class COMpkg(Pkg):
 
 class Getcontacts(Multicorepkg):
     sys.path.append(f"{__file__.rsplit('/', 1)[0]}/Forks/getcontacts")
-    get_dynamic_contacts = lazy_import.lazy_module("getcontacts.get_dynamic_contacts")
-    get_contact_frequencies = lazy_import.lazy_module("getcontacts.get_contact_frequencies")
+    # get_dynamic_contacts = lazy_import.lazy_module("getcontacts.get_dynamic_contacts")
+    # get_contact_frequencies = lazy_import.lazy_module("getcontacts.get_contact_frequencies")
+    from getcontacts import get_dynamic_contacts, get_contact_frequencies
     
     def __init__(self, state):        
         super().__init__(state)
@@ -251,8 +252,9 @@ class Dynetan(Matrixoutput, Multicorepkg):
     #     from dynetan.proctraj import DNAproc as dynetan
     # except:
     #     print(_cannot_import(__qualname__))
-    sys.path.append(f"{__file__.rsplit('/', 1)[0]}/Forks/dynetan")
-    dynetan = lazy_import.lazy_callable("dynetan.proctraj.DNAproc")
+    sys.path.append(f"{__file__.rsplit('/', 1)[0]}/Forks/dynetan/dynetan")
+    # dynetan = lazy_import.lazy_callable("dynetan.proctraj.DNAproc")
+    from dynetan.proctraj import DNAproc as dynetan
             
     def __init__(self, state):
         super().__init__(state)
@@ -320,8 +322,9 @@ class Corrplus(Matrixoutput):
     #     import correlationplus.calculate as corrplus
     # except:
     #     print(_cannot_import(__qualname__))
-    sys.path.append(f"{__file__.rsplit('/', 1)[0]}/Forks/correlationplus")
-    corrplus = lazy_import.lazy_module("correlationplus.calculate")
+    sys.path.append(f"{__file__.rsplit('/', 1)[0]}/Forks/correlationplus/correlationplus")
+    # corrplus = lazy_import.lazy_module("correlationplus.calculate")
+    import correlationplus.calculate as corrplus
         
     def __init__(self, state):
         super().__init__(state)
@@ -391,7 +394,8 @@ class MDTASK(Matrixoutput):
     # except:
     #     print(_cannot_import(__qualname__))
     sys.path.append(f"{__file__.rsplit('/', 1)[0]}/Forks/MD-TASK")
-    mdtask = lazy_import.lazy_module("calc_correlation")    
+    # mdtask = lazy_import.lazy_module("MD-TASK.calc_correlation")
+    import MD-TASK.calc_correlation as mdtask
     
     def __init__(self, state):
         super().__init__(state)
@@ -473,6 +477,9 @@ class Pyinteraph(Matrixoutput):
     #     import pyinteraph.main as pyinteraph
     # except:
     #     print(_cannot_import(__qualname__))
+    sys.path.append(f"{__file__.rsplit('/', 1)[0]}/Forks/pyinteraph2/pyinteraph")
+    # pyinteraph = lazy_import.lazy_module("pyinteraph.main")
+    import pyinteraph.main as pyinteraph
                 
     def __init__(self, state):        
         super().__init__(state)
