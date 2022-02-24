@@ -26,11 +26,11 @@ class Pkg: #abc.ABC
         os.makedirs(self._path, exist_ok=True)
         self._rawpq = lambda xtc: f"{self._path}/{xtc if isinstance(xtc, int) else xtc.rsplit('.', 1)[0]}.pq"
         
-        try:     
+        #try:     
             # if self.state.__class__.__name__ == "State":
-            self._initialize()
-        except ImportError:
-            print(f"{self._name} can't be imported")
+        self._initialize()
+        #except ImportError:
+        #    print(f"{self._name} can't be imported")
         
         
     
@@ -486,8 +486,8 @@ class Pyinteraph(Matrixoutput):
     #     print(_cannot_import(__qualname__))
     # sys.path.append(f"{__file__.rsplit('/', 1)[0]}/Forks/pyinteraph2/pyinteraph")
     # pyinteraph = lazy_import.lazy_module("main")
-    #import pyinteraph.main as pyinteraph
-    from .Forks.pyinteraph2.pyinteraph import main as pyinteraph
+    import pyinteraph.main as pyinteraph
+    #from .Forks.pyinteraph2.pyinteraph import main as pyinteraph
                 
     def __init__(self, state):        
         super().__init__(state)

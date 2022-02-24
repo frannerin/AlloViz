@@ -6,7 +6,7 @@ import sys
 from shutil import rmtree
 from glob import glob
 
-from setuptools import find_packages, setup, Command
+from setuptools import find_packages, setup, Command, Extension
 
 # Package meta-data.
 NAME = 'AlloViz'
@@ -94,6 +94,19 @@ class UploadCommand(Command):
         sys.exit()
 
 
+import numpy
+#libinteract/innerloops
+libinteract = \
+      Extension("libinteract.innerloops",
+                ["AlloViz/Forks/pyinteraph2/libinteract/innerloops.pyx",
+                 "AlloViz/Forks/pyinteraph2/libinteract/clibinteract.c"], \
+                include_dirs = [numpy.get_include()])
+
+
+
+
+
+
 # Where the magic happens:
 setup(
     name=NAME,
@@ -105,8 +118,8 @@ setup(
     author_email=EMAIL,
     python_requires=REQUIRES_PYTHON,
     url=URL,
-    #package_dir={"Forks": "AlloViz/Forks"},
-    packages=find_packages(exclude=["tests", "*.tests", "*.tests.*", "tests.*"]),#["AlloViz", "AlloViz.Forks"],#
+    package_dir={"AlloViz": "AlloViz", "pyinteraph": "AlloViz/Forks/pyinteraph2/pyinteraph", "libinteract": "AlloViz/Forks/pyinteraph2/libinteract"},
+    packages=find_packages(exclude=["tests", "*.tests", "*.tests.*", "tests.*"]) + ["pyinteraph", "libinteract"],#["AlloViz", "AlloViz.Forks"],#
     #data_files={"AlloViz/Forks": glob("AlloViz/Forks/*", recursive=True)},
     #data_files=[ ("Forks", glob("AlloViz/Forks/*", recursive=True)) ],
     #data_files=[ ("Forks", list(os.walk("AlloViz/Forks"))) ],
@@ -116,6 +129,7 @@ setup(
     # entry_points={
     #     'console_scripts': ['mycli=mymodule:cli'],
     # },
+    ext_modules = [libinteract],
     install_requires=REQUIRED,
     extras_require=EXTRAS,
     include_package_data=True,
