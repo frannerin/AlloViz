@@ -37,13 +37,13 @@ There are two main classes to be used: `State` and also `Pair`, for delta-networ
 
 A State is defined with a name and the GPCRmd dynamics ID number. For example:
 
-```bash
+```python
 activeB2AR = AlloViz.State("activeB2AR", 169)
 ```
 
 And then network computations, analyses and visualizations are performed with associated methods. For example:
 
-```bash
+```python
 activeB2AR.calculate(pkg = "Getcontacts")
 activeB2AR.analyze(metrics = "btw")
 activeB2AR.view()
