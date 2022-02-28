@@ -10,7 +10,7 @@ from setuptools import find_packages, setup, Command, Extension
 
 # Package meta-data.
 NAME = 'AlloViz'
-DESCRIPTION = 'Computation, analysis and visualization of protein allosteric communication (residue interaction) networks and delta-networks.'
+DESCRIPTION = 'A Python package to interactively computate, analyze and visualize protein allosteric communication (residue interaction) networks and delta-networks.'
 URL = 'https://github.com/frannerin/AlloViz'
 EMAIL = 'francho.nerin01@estudiant.upf.edu'
 AUTHOR = 'Francho Nerín-Fonz'

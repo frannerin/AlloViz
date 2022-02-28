@@ -51,6 +51,8 @@ activeB2AR.view()
 
 ## Available information sources for network generation
 
+<!-- https://www.tablesgenerator.com/html_tables -->
+
 <table style="undefined;table-layout: fixed; width: 539px">
 <colgroup>
 <col style="width: 195px">

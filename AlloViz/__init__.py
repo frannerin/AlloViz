@@ -1,4 +1,4 @@
 from .Classes import Pair, State
-from .utils import pool
+# from .utils import pool
 
-__all__ = ["Pair, State, utils.pool".split(" ")]
+__all__ = ["Pair State".split(" ")] # utils.pool

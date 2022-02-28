@@ -1,4 +1,4 @@
-import sys, os, pandas, time, lazy_import
+import sys, os, pandas, time, lazy_import, pexpect
 import numpy as np
 from .utils import *
 from contextlib import redirect_stdout, redirect_stderr
@@ -28,7 +28,9 @@ class Pkg: #abc.ABC
         
         #try:     
             # if self.state.__class__.__name__ == "State":
-        self._initialize()
+        with open(f"{self._path}/{self._name}.log", "a+") as f:
+            with redirect_stdout(f), redirect_stderr(f):
+                self._initialize()
         #except ImportError:
         #    print(f"{self._name} can't be imported")
         
@@ -38,11 +40,11 @@ class Pkg: #abc.ABC
         pqs = [self._rawpq(xtc) for xtc in self.state._trajs]
         no_exist = lambda pqs: [not os.path.isfile(pq) for pq in pqs]
         
-        with open(f"{self._path}/{self._name}.log", "a+") as f:
-            with redirect_stdout(f), redirect_stderr(f):
-                if any(no_exist(pqs)):
-                    for xtc in (xtc for xtc in self.state._trajs if no_exist(pqs)[xtc-1]):
-                        self._calculate(xtc)
+        # with open(f"{self._path}/{self._name}.log", "a+") as f:
+        #     with redirect_stdout(f), redirect_stderr(f):
+        if any(no_exist(pqs)):
+            for xtc in (xtc for xtc in self.state._trajs if no_exist(pqs)[xtc-1]):
+                self._calculate(xtc)
                 
         
         def wait_calculate(pqs):
@@ -165,8 +167,8 @@ class Matrixoutput(Pkg):
         df = pandas.DataFrame(corr, columns=resl, index=resl)
         df = df.where( np.triu(np.ones(df.shape), k=1).astype(bool) )
         df = pandas.DataFrame({f"{xtc}": df.stack()})
-        if not len(df[f"{xtc}"].unique()) == 1:
-            df.to_parquet(pq)
+        # if not len(df[f"{xtc}"].unique()) == 1:
+        df.to_parquet(pq)
 
 
 
@@ -386,10 +388,37 @@ class CorrplusCOMLMI(CorrplusLMI, COMpkg):
                          args=(pdb, traj, xtc, pq),
                          callback=self._save_pq)
 
+        
+        
+        
+class CorrplusPsi(Corrplus):        
+    def __init__(self, state):
+        super().__init__(state)
+    
+    def _computation(self, pdb, traj, xtc, pq):
+        dih = "psi"
+        corr = self.corrplus.calcMDsingleDihedralCC(pdb, traj, dihedralType = dih, saveMatrix = False)
+        return corr, xtc, pq
+
+    
+class CorrplusPhi(Corrplus):        
+    def __init__(self, state):
+        super().__init__(state)
+    
+    def _computation(self, pdb, traj, xtc, pq):
+        dih = "phi"
+        corr = self.corrplus.calcMDsingleDihedralCC(pdb, traj, dihedralType = dih, saveMatrix = False)
+        return corr, xtc, pq
 
 
-
-
+class CorrplusOmega(Corrplus):        
+    def __init__(self, state):
+        super().__init__(state)
+    
+    def _computation(self, pdb, traj, xtc, pq):
+        dih = "omega"
+        corr = self.corrplus.calcMDsingleDihedralCC(pdb, traj, dihedralType = dih, saveMatrix = False)
+        return corr, xtc, pq
 
 
 
@@ -403,6 +432,7 @@ class MDTASK(Matrixoutput):
     # mdtask = lazy_import.lazy_module("calc_correlation") # REVERT mdtask FOLDER CREATION!
     # import mdtask.calc_correlation as mdtask
     # from .Forks.correlationplus.correlationplus import calculate as corrplus ADAPT TO MD-TASK WHEN FOLDER CREATION IS REVERSED
+    # from .Forks.correlationplus.correlationplus import calculate as corrplus
     
     def __init__(self, state):
         super().__init__(state)
@@ -531,5 +561,76 @@ class PyinteraphEne(Pyinteraph):
         
 # class Carma(): # needs the dcd
 # class Bio3D(): # R package; needs the dcd
+# class gRINN(): # needs the dcd; could be use with the dcd + pdb and psf + NAMD binaries (in the docs it's recommended to remove non-protein)
 # class wordom(): # doesn't have python bindings for croscorr and lmi but if it had it would've been great because it looks fast?
 
+
+
+# only for local
+class G_correlationCA(Matrixoutput):
+    os.environ["GMXDIR"] = "/home/frann/gromacs-3.3.1/"
+    os.environ["GMXLIB"] = "/home/frann/gromacs-3.3.1/gromacs/share/gromacs/top/"
+                
+    def __init__(self, state):        
+        super().__init__(state)
+        
+        
+        
+    def _calculate(self, xtc):
+        pool, pdb, traj, pq = super()._calculate(xtc)
+        
+        pool.apply_async(self._computation,
+                         args=(pdb, traj, xtc, pq),
+                         callback=self._save_pq)
+        
+        
+    def _computation(self, pdb, traj, xtc, pq):
+        # Send g_correlation
+        if not os.path.isfile(f"{pq}.dat"):
+            proc = pexpect.spawnu(f"/home/frann/g_correlation -f {traj} -s {pdb} -o {pq}.dat")
+            proc.logfile = sys.stdout
+            proc.expect('Select a group: ')
+            # proc.send('1')
+            proc.sendline('1')
+            proc.expect('Select a group: ')
+            # proc.send('3')
+            proc.sendline('3')
+            proc.sendline()
+            proc.wait()
+        
+        
+        # Read output.dat
+        size = self.state.mdau.select_atoms("protein and name CA").n_atoms
+        corr = np.empty([size, size])
+        rown = 0
+        row = []
+        
+        with open(f"{pq}.dat", "r") as f:
+            for num, line in enumerate(f):
+                if num == 0:
+                    pass
+                else:
+                    row.extend( line.strip().split() )
+
+                if len(row) >= size:
+                    corr[rown, :] = row[:size]
+                    rown += 1
+                    del row[:size]
+        
+        
+        return corr, xtc, pq
+
+    
+    
+    
+class G_correlationCOM(G_correlationCA, COMpkg):
+    def __init__(self, state):        
+        super().__init__(state)
+        
+        
+    def _calculate(self, xtc):
+        pool, pdb, traj, pq = COMpkg._calculate(self, xtc)
+        
+        pool.apply_async(self._computation,
+                         args=(pdb, traj, xtc, pq),
+                         callback=self._save_pq)

@@ -1,6 +1,7 @@
 import sys, os, io, re, pandas, time
 import MDAnalysis as mda
 import numpy as np
+from multiprocess import Pool
 import matplotlib, nglview#, ipywidgets, matplotlib.cm
 from matplotlib import pyplot as pl
 
@@ -8,10 +9,15 @@ from networkx import from_pandas_edgelist as networkx_from_pandas
 from networkx.algorithms.centrality import edge_betweenness_centrality, edge_betweenness_centrality_subset # edge_betweenness
 from networkx.algorithms.centrality import edge_current_flow_betweenness_centrality, edge_current_flow_betweenness_centrality_subset
 
-# import .Pkgs
 from . import Pkgs
-# from Analysis import Analysis
-from .utils import *
+
+from . import utils
+rgetattr = utils.rgetattr
+rhasattr = utils.rhasattr
+
+class Store:
+    pass
+
 
 pkgsl = ["MDTASK", "getcontacts", "pyinteraph", "pyinteraphEne", "dynetan", "pytrajCA", "pytrajCB", "corrplus", "corrplusLMI", "corrplusCOM", "corrplusCOMLMI"] #"dynetanCOM", 
 metricsl = ["cfb", "cfb_subset", "btw", "btw_subset"]
@@ -86,73 +92,108 @@ class Pair:
     
     
     
-    def calculate(self, pkg="all", cores=None, ow=False, filterby="incontact"):  
+    def calculate(self, pkg="all", cores=1): # , ow=False, filterby="incontact"
         pkgs = pkgsl if pkg=="all" else pkg if isinstance(pkg, list) else [pkg]
         
-        if filterby == "incontact":
-            if not hasattr(self, "_incontact"):
-                self.get_incontact(cores)
-            if "getcontacts" in pkgs: pkgs.remove("getcontacts")
-            # with Pool(cores) as pool:
-            #     for state in self.states:
-            #         if not hasattr(state.data, "raw") or not hasattr(state.data.raw, "getcontacts") or ow:
-            #             state._send_calc("getcontacts", ow, filterby, pool)
-            #     pool.close()
-            #     pool.join()
-            # [state._add_pkg("getcontacts") for state in self.states]
-            # pkgs.remove("getcontacts")
+        if any(["COM" in pkg for pkg in pkgs]):
+            for state in self.states: state._add_comtrajs()
         
-        with Pool(cores) as pool:
+        mypool = Pool(cores)
+        utils.pool = mypool
+        
+        for state in self.states:
             for pkg in pkgs:
-                for state in self.states:
-                    if not rhasattr(state.data, "raw", pkg) or ow:
-                        #print(f"sending {state.name} {pkg}")
-                        state._send_calc(pkg, ow, filterby, pool)
-            pool.close()
-            pool.join()
+                self._set_pkgclass(state, pkg)
         
-        [state._add_pkg(pkg) for pkg in pkgs for state in self.states]
+        mypool.close()
+        mypool.join()
         
-        return
-    
-    
-    
-    def get_incontact(self, cores=None, ow=False):
-        with Pool(cores) as pool:
-            for state in self.states:
-                if not rhasattr(state.data, "raw", "getcontacts") or ow:
-                    #print(f"sending {state.name} {pkg}")
-                    state._send_calc("getcontacts", ow, "incontact", pool)
-            pool.close()
-            pool.join()
         
-        [state._add_pkg("getcontacts") for state in self.states]
         
-        edges = set((idx for idx in state.data.raw.getcontacts.index for state in self.states))
-        setattr(self, "_incontact", edges)
-        return edges
+#         pkgs = pkgsl if pkg=="all" else pkg if isinstance(pkg, list) else [pkg]
+        
+#         if filterby == "incontact":
+#             if not hasattr(self, "_incontact"):
+#                 self.get_incontact(cores)
+#             if "getcontacts" in pkgs: pkgs.remove("getcontacts")
+#             # with Pool(cores) as pool:
+#             #     for state in self.states:
+#             #         if not hasattr(state.data, "raw") or not hasattr(state.data.raw, "getcontacts") or ow:
+#             #             state._send_calc("getcontacts", ow, filterby, pool)
+#             #     pool.close()
+#             #     pool.join()
+#             # [state._add_pkg("getcontacts") for state in self.states]
+#             # pkgs.remove("getcontacts")
+        
+#         with Pool(cores) as pool:
+#             for pkg in pkgs:
+#                 for state in self.states:
+#                     if not rhasattr(state.data, "raw", pkg) or ow:
+#                         #print(f"sending {state.name} {pkg}")
+#                         state._send_calc(pkg, ow, filterby, pool)
+#             pool.close()
+#             pool.join()
+        
+#         [state._add_pkg(pkg) for pkg in pkgs for state in self.states]
+        
+#         return
+    
+    
+    
+#     def get_incontact(self, cores=None, ow=False):
+#         with Pool(cores) as pool:
+#             for state in self.states:
+#                 if not rhasattr(state.data, "raw", "getcontacts") or ow:
+#                     #print(f"sending {state.name} {pkg}")
+#                     state._send_calc("getcontacts", ow, "incontact", pool)
+#             pool.close()
+#             pool.join()
+        
+#         [state._add_pkg("getcontacts") for state in self.states]
+        
+#         edges = set((idx for idx in state.data.raw.getcontacts.index for state in self.states))
+#         setattr(self, "_incontact", edges)
+#         return edges
     
     
     
     
-    def analyze(self, pkg="all", metrics="all", normalize=True, ow=False, filterby="incontact"):
+    def analyze(self, pkg="all", metrics="all", filterby="incontact", normalize=True): # ow
         pkgs = pkgsl if pkg=="all" else pkg if isinstance(pkg, list) else [pkg]
         metrics = metricsl if metrics=="all" else metrics if isinstance(metrics, list) else [metrics]
+        filterbys = filterbyl if filterby=="all" else filterby if isinstance(filterby, list) else [filterby]
         
-        for state in self.states: state.data._check_raw(pkgs, normalize, filterby)
+        mypool = Pool(cores)
+        utils.pool = mypool
         
-        ps = []
         for state in self.states:
-            p = Process(target=state._send_anal, args=(pkgs, metrics, normalize, ow, filterby))
-            #print(f"sent analysis of {state.name} {filterby} data of {pkgs} packages for {metrics} metrics: {p.name}")
-            ps.append(p)
-            p.start()
+            for filterby in filterbys:
+                for pkg in pkgs:
+                    self._set_anaclass(state, pkg, metrics, filterby, normalize)
         
-        [p.join() for p in ps]
+        mypool.close()
+        mypool.join()
         
-        [state.data._add_anal(pkg, metrics, normalize, ow, filterby) for pkg in pkgs for state in self.states]
         
-        return
+        
+        
+#         pkgs = pkgsl if pkg=="all" else pkg if isinstance(pkg, list) else [pkg]
+#         metrics = metricsl if metrics=="all" else metrics if isinstance(metrics, list) else [metrics]
+        
+#         for state in self.states: state.data._check_raw(pkgs, normalize, filterby)
+        
+#         ps = []
+#         for state in self.states:
+#             p = Process(target=state._send_anal, args=(pkgs, metrics, normalize, ow, filterby))
+#             #print(f"sent analysis of {state.name} {filterby} data of {pkgs} packages for {metrics} metrics: {p.name}")
+#             ps.append(p)
+#             p.start()
+        
+#         [p.join() for p in ps]
+        
+#         [state.data._add_anal(pkg, metrics, normalize, ow, filterby) for pkg in pkgs for state in self.states]
+        
+#         return
 
 
     
@@ -282,17 +323,24 @@ class State:#(Entity):
     
     
     
-    def calculate(self, pkg="all"): # ow
+    def calculate(self, pkg="all", cores=1): # ow
         pkgs = pkgsl if pkg=="all" else pkg if isinstance(pkg, list) else [pkg]
         
         if any(["COM" in pkg for pkg in pkgs]):
             self._add_comtrajs()
         
-        for pkg in pkgs:
-            pkgclass = eval(f"Pkgs.{pkg[0].upper() + pkg[1:]}") if isinstance(pkg, str) else pkg
-            if not hasattr(self, pkgclass.__name__):
-                setattr(self, pkgclass.__name__, pkgclass(self))
-    
+        mypool = Pool(cores)
+        utils.pool = mypool
+        
+        for pkg in pkgs: self._set_pkgclass(self, pkg)
+        
+        mypool.close()
+        mypool.join()
+        
+    def _set_pkgclass(self, state, pkg):
+        pkgclass = eval(f"Pkgs.{pkg[0].upper() + pkg[1:]}") if isinstance(pkg, str) else pkg
+        if not hasattr(state, pkgclass.__name__):
+            setattr(state, pkgclass.__name__, pkgclass(state))
     
     
     
@@ -301,16 +349,27 @@ class State:#(Entity):
         metrics = metricsl if metrics=="all" else metrics if isinstance(metrics, list) else [metrics]
         filterbys = filterbyl if filterby=="all" else filterby if isinstance(filterby, list) else [filterby]
         
+        mypool = Pool(cores)
+        utils.pool = mypool
+        
         for filterby in filterbys:
             for pkg in pkgs:
-                pkgclass = eval(f"Pkgs.{pkg[0].upper() + pkg[1:]}") if isinstance(pkg, str) else pkg
-                pkgobj = getattr(self, pkgclass.__name__)
-
-                # anaclass = eval(f"Analysis.{filterby[0].upper() + filterby[1:]}") if isinstance(filterby, str) else filterby
-                anaclass = eval(f"{filterby[0].upper() + filterby[1:]}") if isinstance(filterby, str) else filterby
-                if not hasattr(pkgobj, anaclass.__name__):
-                    setattr(pkgobj, anaclass.__name__, anaclass(pkgobj, metrics, normalize))
+                self._set_anaclass(self, pkg, metrics, filterby, normalize)
+                
+        
+        mypool.close()
+        mypool.join()
     
+    
+    def _set_anaclass(self, state, pkg, metrics, filterby, normalize):
+        pkgclass = eval(f"Pkgs.{pkg[0].upper() + pkg[1:]}") if isinstance(pkg, str) else pkg
+        pkgobj = getattr(state, pkgclass.__name__)
+
+        # anaclass = eval(f"Analysis.{filterby[0].upper() + filterby[1:]}") if isinstance(filterby, str) else filterby
+        anaclass = eval(f"{filterby[0].upper() + filterby[1:]}") if isinstance(filterby, str) else filterby
+        if not hasattr(pkgobj, anaclass.__name__):
+            setattr(pkgobj, anaclass.__name__, anaclass(pkgobj, metrics, normalize))
+        
     
     
         
@@ -497,7 +556,7 @@ class Analysis:
             return data
         
         add_data = lambda args: setattr(self, norm, Edges(self.pkg.state, get_data(args)))
-        get_pool().apply_async(wait_analyze,
+        utils.get_pool().apply_async(wait_analyze,
                                args=(pqs, data),
                                callback=add_data)
         return
@@ -506,7 +565,7 @@ class Analysis:
     
     
     def _analyze(self, metric, normalize, pq):
-        pool = get_pool()
+        pool = utils.get_pool()
         rawdata = self._filtdata.drop("weight_std", axis=1)
         
         
