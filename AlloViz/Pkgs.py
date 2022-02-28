@@ -1,4 +1,4 @@
-import sys, os, pandas, time, lazy_import, pexpect
+import sys, os, pandas, time, lazy_import#, pexpect
 import numpy as np
 from .utils import *
 from contextlib import redirect_stdout, redirect_stderr
@@ -561,7 +561,7 @@ class PyinteraphEne(Pyinteraph):
         
 # class Carma(): # needs the dcd
 # class Bio3D(): # R package; needs the dcd
-# class gRINN(): # needs the dcd; could be use with the dcd + pdb and psf + NAMD binaries (in the docs it's recommended to remove non-protein)
+# class gRINN(): # needs the dcd; could be used with the dcd + pdb and psf + NAMD binaries (in the docs it's recommended to remove non-protein)
 # class wordom(): # doesn't have python bindings for croscorr and lmi but if it had it would've been great because it looks fast?
 
 
@@ -587,16 +587,23 @@ class G_correlationCA(Matrixoutput):
     def _computation(self, pdb, traj, xtc, pq):
         # Send g_correlation
         if not os.path.isfile(f"{pq}.dat"):
-            proc = pexpect.spawnu(f"/home/frann/g_correlation -f {traj} -s {pdb} -o {pq}.dat")
-            proc.logfile = sys.stdout
-            proc.expect('Select a group: ')
-            # proc.send('1')
-            proc.sendline('1')
-            proc.expect('Select a group: ')
-            # proc.send('3')
-            proc.sendline('3')
-            proc.sendline()
-            proc.wait()
+            os.system(f"""
+/home/frann/g_correlation -f {traj} -s {pdb} -o {pq}.dat <<EOF
+1
+3
+EOF
+""")
+            # proc = pexpect.spawnu(f"/home/frann/g_correlation -f {traj} -s {pdb} -o {pq}.dat")
+            # proc.logfile = sys.stdout
+            # proc.expect('Select a group: ')
+            # # proc.send('1')
+            # proc.sendline('1')
+            # proc.expect('Select a group: ')
+            # # proc.send('3')
+            # proc.sendline('3')
+            # proc.sendline()
+            # proc.sendline()
+            # proc.wait()
         
         
         # Read output.dat
@@ -634,3 +641,6 @@ class G_correlationCOM(G_correlationCA, COMpkg):
         pool.apply_async(self._computation,
                          args=(pdb, traj, xtc, pq),
                          callback=self._save_pq)
+        
+        
+        

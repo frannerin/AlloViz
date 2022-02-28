@@ -19,7 +19,8 @@ class Store:
     pass
 
 
-pkgsl = ["MDTASK", "getcontacts", "pyinteraph", "pyinteraphEne", "dynetan", "pytrajCA", "pytrajCB", "corrplus", "corrplusLMI", "corrplusCOM", "corrplusCOMLMI"] #"dynetanCOM", 
+pkgsl = ["MDTASK", "getcontacts", "pyinteraph", "pyinteraphEne", "dynetan", "pytrajCA", "pytrajCB",
+         "corrplus", "corrplusLMI", "corrplusCOM", "corrplusCOMLMI", "corrplusPsi", "corrplusPhi", "corrplusOmega"] #"dynetanCOM", 
 metricsl = ["cfb", "cfb_subset", "btw", "btw_subset"]
 filterbyl = ["whole", "incontact", "intercontact"]
 
