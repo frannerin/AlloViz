@@ -13,9 +13,6 @@
 [submodule "AlloViz/Forks/pyinteraph2"]
 	path = AlloViz/Forks/pyinteraph2
 	url = https://github.com/frannerin/pyinteraph2
-[submodule "AlloViz/Forks/gRINN"]
-	path = AlloViz/Forks/gRINN
-	url = https://fnerin@bitbucket.org/fnerin/grinn.git
 [submodule "AlloViz/Forks/gRINN_Bitbucket"]
 	path = AlloViz/Forks/gRINN_Bitbucket
 	url = https://fnerin@bitbucket.org/fnerin/grinn_bitbucket.git
