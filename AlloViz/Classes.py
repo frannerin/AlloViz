@@ -322,6 +322,33 @@ class State:#(Entity):
         return
     
     
+    def _make_dcds(self):
+        import mdtraj, parmed
+        
+        dcdpath = f"{self.name}/data/dcds"
+        if not os.path.isdir(dcdpath): os.makedirs(dcdpath, exist_ok=True)
+        
+        atoms = self.mdau.select_atoms("protein")
+        
+        dcdpdb = f"{dcdpath}/prot.pdb"
+        atoms.write(dcdpdb)
+        
+        dcdpsf = f"{dcdpath}/prot.psf"
+        psf = parmed.load_file(self._psff)
+        psf.title = self.name
+        psf[atoms.indices].write_psf(dcdpsf)
+        
+        
+        dcds = [f"{dcdpath}/{xtc}.dcd" for xtc in self._trajs]
+        setattr(self, "_dcds", {num: traj for num, traj in enumerate(dcds, 1)})
+
+        for xtc, dcd in self._dcds.items():
+            if not os.path.isfile(dcd):
+                traj = mdtraj.load(f"{self.name}/{self._trajs[xtc]}", top=self._pdbf, atom_indices=atoms.indices)
+                traj.save_dcd(dcd)
+        return
+    
+    
     
     
     def calculate(self, pkg="all", cores=1): # ow
@@ -329,6 +356,9 @@ class State:#(Entity):
         
         if any(["COM" in pkg for pkg in pkgs]):
             self._add_comtrajs()
+            
+        if any([re.search("(carma|grinn)", pkg.lower()) for pkg in pkgs]):
+            self._make_dcds()
         
         mypool = Pool(cores)
         utils.pool = mypool

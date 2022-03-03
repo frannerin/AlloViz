@@ -557,13 +557,6 @@ class PyinteraphEne(Pyinteraph):
 
         
         
-        
-        
-# class Carma(): # needs the dcd
-# class Bio3D(): # R package; needs the dcd
-# class gRINN(): # needs the dcd; could be used with the dcd + pdb and psf + NAMD binaries (in the docs it's recommended to remove non-protein)
-# class wordom(): # doesn't have python bindings for croscorr and lmi but if it had it would've been great because it looks fast?
-
 
 
 # only for local
@@ -644,3 +637,10 @@ class G_correlationCOM(G_correlationCA, COMpkg):
         
         
         
+
+
+
+# class Carma(): # needs the dcd
+# class Bio3D(): # R package; needs the dcd
+# class gRINN(): # needs the dcd; could be used with the dcd + pdb and psf + NAMD binaries (in the docs it's recommended to remove non-protein)
+# class wordom(): # doesn't have python bindings for croscorr and lmi but if it had it would've been great because it looks fast?
