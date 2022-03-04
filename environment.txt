@@ -37,6 +37,7 @@ vmd-python>=3.0 # for getcontacts
 matplotlib # for MDTASK probably; ALSO FOR VIZ
 mdtraj>=1.9 # for MDTASK
 
+cython # for dynetan
 numba>=0.55 # for dynetan
 h5py # for dynetan
 python-louvain # for dynetan; imported as community

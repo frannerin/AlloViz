@@ -1,4 +1,4 @@
-import sys, os, pandas, time, lazy_import#, pexpect
+import sys, os, pandas, time#, lazy_import#, pexpect
 import numpy as np
 from .utils import *
 from contextlib import redirect_stdout, redirect_stderr
@@ -462,7 +462,8 @@ class PytrajCA(Matrixoutput):
     #     import pytraj
     # except:
     #     print(_cannot_import(__qualname__))
-    corrplus = lazy_import.lazy_module("pytraj")
+    # corrplus = lazy_import.lazy_module("pytraj")
+    import pytraj
             
     def __init__(self, state):
         super().__init__(state)
@@ -664,9 +665,9 @@ class GRINN(dcdpkg, Multicorepkg):
     def __init__(self, state):
         namd = find_executable('namd2')
         if namd is None:
-            namd = 
+            print(namd)#namd = 
 
-        print(VMD)
+        # print(VMD)
         super().__init__(state)
         
         

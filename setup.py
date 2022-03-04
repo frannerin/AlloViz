@@ -130,8 +130,8 @@ setup(
     #     'console_scripts': ['mycli=mymodule:cli'],
     # },
     ext_modules = [libinteract],
-    install_requires=REQUIRED,
-    extras_require=EXTRAS,
+    #install_requires=REQUIRED,
+    #extras_require=EXTRAS,
     include_package_data=True,
     license='MIT',
     classifiers=[
