@@ -205,13 +205,15 @@ class Pair:
 
 
 
-
+class Store:
+    pass
 
 class State:#(Entity):    
     def __init__(self, pdb='', trajs:list=[], path='', psf=None, parameters=None, gpcrmd=True, idx=''):
         self._gpcrmd = gpcrmd
         
         if gpcrmd:
+            self._gpcrmdid = idx
             self._path = f"{idx}"
             os.makedirs(self._path, exist_ok=True)
             if not any([re.search("(pdb$|psf$|xtc$|parameters$)", file) for file in os.listdir(self._path)]):
@@ -220,7 +222,7 @@ class State:#(Entity):
             self._pdbf = self._path + '/' + next(file for file in files if re.search("pdb$", file))
             self._psff = self._path + '/' + next(file for file in files if re.search("psf$", file))
             self._paramf = self._path + '/' + next(file for file in files if re.search("parameters$", file))
-            self._trajs = dict(enumerate(sorted( f"{self._path}/traj" for traj in files if re.search("^(?!\.).*\.xtc$", traj) ), 1))
+            self._trajs = dict(enumerate(sorted( f"{self._path}/{traj}" for traj in files if re.search("^(?!\.).*\.xtc$", traj) ), 1))
         
         else:
             psf_params = parameters is not None and psf is not None
@@ -239,13 +241,13 @@ class State:#(Entity):
                 self._paramf = parameters
                 
         self._datadir = f"{self._path}/data"
+        os.makedirs(self._datadir, exist_ok=True)
         self.mdau = self._get_mdau()
         
     
     
     def __sub__(self, other):
-        class Store:
-            pass
+        
         
         delta = Store()
         
@@ -270,7 +272,7 @@ class State:#(Entity):
 
         web = "https://submission.gpcrmd.org"
         
-        html = requests.get(f"{web}/dynadb/dynamics/id/{self.idx}/")
+        html = requests.get(f"{web}/dynadb/dynamics/id/{self._gpcrmdid}/")
         soup = BeautifulSoup(html.text, features="html.parser").find_all('a')
         links = [link.get('href') for link in soup if re.search("(xtc|pdb|psf|prm)", link.get('href'))]
         

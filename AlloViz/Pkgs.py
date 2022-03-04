@@ -22,7 +22,7 @@ class Pkg: #abc.ABC
         
         self._name = self.__class__.__name__
         # self._path = lambda filterby: f"{self.state.name}/data/{self._name}/{filterby}" # lambda FILTERBY MIGHT BE NOT NEEDED 
-        self._path = f"{self.state.name}/data/{self._name}/raw"
+        self._path = f"{self.state._path}/data/{self._name}/raw"
         os.makedirs(self._path, exist_ok=True)
         self._rawpq = lambda xtc: f"{self._path}/{xtc if isinstance(xtc, int) else xtc.rsplit('.', 1)[0]}.pq"
         
@@ -53,7 +53,7 @@ class Pkg: #abc.ABC
             return pqs
                 
         def get_raw(pqs): # *args
-            print(f"adding raw data of {self._name} for {self.state.name}: ", pqs)
+            print(f"adding raw data of {self._name} for {self.state.__name__}: ", pqs)
             flist = map(lambda pq: pandas.read_parquet(pq), pqs)
             df = pandas.concat(flist, axis=1)
             cols = [f"{num}" for num in self.state._trajs]
@@ -463,7 +463,7 @@ class PytrajCA(Matrixoutput):
     # except:
     #     print(_cannot_import(__qualname__))
     # corrplus = lazy_import.lazy_module("pytraj")
-    import pytraj
+    #import pytraj
             
     def __init__(self, state):
         super().__init__(state)
@@ -562,8 +562,9 @@ class PyinteraphEne(Pyinteraph):
 
 # only for local
 class G_correlationCA(Matrixoutput):
-    os.environ["GMXDIR"] = "/home/frann/gromacs-3.3.1/"
-    os.environ["GMXLIB"] = "/home/frann/gromacs-3.3.1/gromacs/share/gromacs/top/"
+    # os.environ["GMXDIR"] = "/home/frann/gromacs-3.3.1/"
+    # os.environ["GMXLIB"] = "/home/frann/gromacs-3.3.1/gromacs/share/gromacs/top/"
+    os.system("module load g_correlation")
                 
     def __init__(self, state):        
         super().__init__(state)
@@ -582,7 +583,7 @@ class G_correlationCA(Matrixoutput):
         # Send g_correlation
         if not os.path.isfile(f"{pq}.dat"):
             os.system(f"""
-/home/frann/g_correlation -f {traj} -s {pdb} -o {pq}.dat <<EOF
+g_correlation -f {traj} -s {pdb} -o {pq}.dat <<EOF
 1
 3
 EOF
@@ -638,7 +639,10 @@ class G_correlationCOM(G_correlationCA, COMpkg):
         
         
         
+        
 
+        
+        
 class dcdpkg(Matrixoutput):
     def __init__(self, state):
         if not hasattr(state, "_dcds"):
@@ -650,7 +654,6 @@ class dcdpkg(Matrixoutput):
     def _calculate(self, xtc):
         pool, pdb, traj, pq = super()._calculate(xtc)
         pdb = self.state._protf("pdb")
-        psf = self.state._protf("psf")
         traj = self.state._dcds[xtc]
         
         return pool, pdb, traj, pq # psf? cores! multicorepkg
@@ -661,37 +664,56 @@ class dcdpkg(Matrixoutput):
         
 class GRINN(dcdpkg, Multicorepkg):
     from .Forks.gRINN_Bitbucket.source import grinn, calc
+
+    from distutils.spawn import find_executable
+    namd = find_executable('namd2')
+    if namd is None:
+        namd = f"{grinn.__file__.rsplit('/', 1)[0]}/NAMD_2.14_Linux-x86_64-multicore/namd2"
                 
     def __init__(self, state):
-        namd = find_executable('namd2')
-        if namd is None:
-            print(namd)#namd = 
-
-        # print(VMD)
         super().__init__(state)
         
         
         
     def _calculate(self, xtc):
         pool, pdb, traj, pq = super()._calculate(xtc)
+        psf = self.state._protf("psf")
+        params = self.state._paramf
         
         pool.apply_async(self._computation,
-                         args=(pdb, traj, xtc, pq), # psf, self.taskcpus
+                         args=(pdb, traj, xtc, pq, psf, params, self.taskcpus), # psf, self.taskcpus
                          callback=self._save_pq)
         
-        for _ in range(self.taskcpus-1): pool.apply_async(self._calculate_empty, args=(pq,))
+        if self._name == "GRINN":
+            for _ in range(self.taskcpus-1): pool.apply_async(self._calculate_empty, args=(pq,))
         
         
-    def _computation(self, pdb, traj, xtc, pq):
+    def _computation(self, pdb, traj, xtc, pq, psf, params, cores):
         out = f"{self._path}/{xtc}"
         if os.path.isdir(out):
             import shutil.rmtree
             shutil.rmtree(out)
             
-        self.calc.getResIntEn(self.grinn.arg_parser(f"-calc --pdb {pdb} --top {psf} --traj {traj} --exe {myexe} --outfolder {out} --numcores {cores} --parameterfile parameters".split())) # calc.getResIntCorr(grinn.arg_parser(f"".split()), logfile=None)
+        self.calc.getResIntEn(self.grinn.arg_parser(f"-calc --pdb {pdb} --top {psf} --traj {traj} --exe {self.namd} --outfolder {out} --numcores {cores} --parameterfile {params}".split())) # calc.getResIntCorr(grinn.arg_parser(f"".split()), logfile=None)
         corr = np.loadtxt(f"{out}/energies_intEnMeanTotal.dat") # energies_resCorr.dat
         return corr, xtc, pq
 
+    
+    
+
+class GRINNcorr(GRINN):
+    def __init__(self, state):
+        super().__init__(state)
+        
+    def _computation(self, pdb, traj, xtc, pq, psf, params, cores):
+        out = f"{self._path}/{xtc}"
+        # if os.path.isdir(out):
+        #     import shutil.rmtree
+        #     shutil.rmtree(out)
+            
+        self.calc.getResIntCorr(self.grinn.arg_parser(f"-corr --corrinfile {out}/energies_intEnTotal.csv".split()), logfile=None)
+        corr = np.loadtxt(f"{out}/energies_resCorr.dat.dat") # 
+        return corr, xtc, pq
 
 
 # class Carma(): # needs the dcd
