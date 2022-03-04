@@ -1,4 +1,4 @@
-import sys, os, io, re, pandas, time
+import sys, os, io, re, pandas, time, requests
 import MDAnalysis as mda
 import numpy as np
 from multiprocess import Pool
@@ -14,9 +14,6 @@ from . import Pkgs
 from . import utils
 rgetattr = utils.rgetattr
 rhasattr = utils.rhasattr
-
-class Store:
-    pass
 
 
 pkgsl = ["MDTASK", "getcontacts", "pyinteraph", "pyinteraphEne", "dynetan", "pytrajCA", "pytrajCB",
@@ -211,30 +208,44 @@ class Pair:
 
 
 class State:#(Entity):    
-    def __init__(self, pdb='', xtc=[], path='', gpcrmd=True, idx):
+    def __init__(self, pdb='', trajs:list=[], path='', psf=None, parameters=None, gpcrmd=True, idx=''):
+        self._gpcrmd = gpcrmd
+        
         if gpcrmd:
             self._path = f"{idx}"
-            if not any([re.search("(pdb$|psf$|xtc$|parameters$)", file) for file in os.listdir("active")]):
+            os.makedirs(self._path, exist_ok=True)
+            if not any([re.search("(pdb$|psf$|xtc$|parameters$)", file) for file in os.listdir(self._path)]):
                 self._download_files()
             files = os.listdir(self._path)
-            self._pdbf = re.search("pdb$", file) for file in files
-            self._psff = f"{self.name}/{self.name}_1.psf"
+            self._pdbf = self._path + '/' + next(file for file in files if re.search("pdb$", file))
+            self._psff = self._path + '/' + next(file for file in files if re.search("psf$", file))
+            self._paramf = self._path + '/' + next(file for file in files if re.search("parameters$", file))
+            self._trajs = dict(enumerate(sorted( f"{self._path}/traj" for traj in files if re.search("^(?!\.).*\.xtc$", traj) ), 1))
         
-        self.name = name
-        self.idx = idx
-        # self.data = Data(self)
-        
-        
-        
-        self._pdbf = f"{self.name}/{self.name}_1.pdb"
-        self._psff = f"{self.name}/{self.name}_1.psf"
-        self._trajs = dict(enumerate(sorted( traj for traj in os.listdir(self.name) if re.search("^(?!\.).*\.xtc$", traj) ), 1))
-        
+        else:
+            psf_params = parameters is not None and psf is not None
+            
+            files_to_check = trajs + [pdb] if not psf_params else trajs + [pdb, psf, parameters]
+            files_exist = {file: os.path.isfile(file) for file in files_to_check}
+            if any([not file_exist for file_exist in files_exist.values()]):
+                raise FileNotFoundError(f"Some of the files could not be found: {files_exist}")
+            
+            self._path = path
+            os.makedirs(self._path, exist_ok=True)
+            self._pdbf = pdb
+            self._trajs = dict(enumerate(trajs, 1))
+            if psf_params:
+                self._psff = psf
+                self._paramf = parameters
+                
+        self._datadir = f"{self._path}/data"
         self.mdau = self._get_mdau()
         
     
     
     def __sub__(self, other):
+        class Store:
+            pass
         
         delta = Store()
         
@@ -255,55 +266,57 @@ class State:#(Entity):
     def _download_files(self):
         from bs4 import BeautifulSoup
         import urllib.request as pwget
-        import requests
-
+        import tarfile
 
         web = "https://submission.gpcrmd.org"
-
-        os.makedirs(self.name, exist_ok=True)
-
+        
         html = requests.get(f"{web}/dynadb/dynamics/id/{self.idx}/")
         soup = BeautifulSoup(html.text, features="html.parser").find_all('a')
-        links = (link.get('href') for link in soup if re.search("(xtc|pdb|psf|prm)", link.get('href')))
+        links = [link.get('href') for link in soup if re.search("(xtc|pdb|psf|prm)", link.get('href'))]
         
         for link in links:
-            ext = f".{link.rsplit('.', 1)[-1]}"
-            num = len([file for file in os.listdir(self.name) if ext in file])+1
-            fname = f"{self.name}/{self.name}_{num}{ext}"
+            fname = f"{self._path}/{link.rsplit('/')[-1]}"
             print(f"downloading {fname}")
             pwget.urlretrieve(f"{web}{link}", fname)
             
+            if re.search("prm", fname):
+                with tarfile.open(fname) as tar:
+                    tar.extractall(self._path)
+                os.remove(fname)
+                
         return
+    
     
     
 
     def _get_mdau(self):
-        import requests
+        mdau = mda.Universe(self._pdbf, *self._trajs.values())
         
-        trajs = [f"{self.name}/{self._trajs[xtc]}" for xtc in self._trajs]
-        mdau = mda.Universe(self._pdbf, *trajs)
-        prot = mdau.select_atoms("protein")
-        
-        prot_numsf = f"{self.name}/{self.name}_nums.pdb"
-        
-        if not os.path.isfile(prot_numsf):
-            print(f"retrieving {prot_numsf}")
-            with io.StringIO() as protf:
-                with mda.lib.util.NamedStream(protf, "prot.pdb") as f:
-                    prot.write(f, file_format="pdb")
-                response = requests.post('https://gpcrdb.org/services/structure/assign_generic_numbers', 
-                                         files = {'pdb_file': protf.getvalue()})
-                with open(prot_numsf, "w") as prot_nums:
-                    prot_nums.write(response.text)
-        
-        nums = mda.Universe(prot_numsf).select_atoms("protein").tempfactors
-        prot.tempfactors = nums.round(2)
+        if self._gpcrmd:
+            prot = mdau.select_atoms("protein")
+
+            prot_numsf = f"{self._datadir}/gpcrdb_gennums.pdb"
+
+            if not os.path.isfile(prot_numsf):
+                print(f"retrieving {prot_numsf}")
+                with io.StringIO() as protf:
+                    with mda.lib.util.NamedStream(protf, "prot.pdb") as f:
+                        prot.write(f, file_format="pdb")
+                    response = requests.post('https://gpcrdb.org/services/structure/assign_generic_numbers', 
+                                             files = {'pdb_file': protf.getvalue()})
+                    with open(prot_numsf, "w") as prot_nums:
+                        prot_nums.write(response.text)
+
+            nums = mda.Universe(prot_numsf).select_atoms("protein").tempfactors
+            prot.tempfactors = nums.round(2)
                     
         return mdau
     
     
+    
+    
     def _add_comtrajs(self):
-        compath = f"{self.name}/data/COMtrajs"
+        compath = f"{self._datadir}/COMtrajs"
         if not os.path.isdir(compath): os.makedirs(compath, exist_ok=True)
 
         compdb = f"{compath}/ca.pdb"
@@ -318,7 +331,7 @@ class State:#(Entity):
         for xtc, comtraj in self._comtrajs.items():
             if not os.path.isfile(comtraj):
                 prot = self.mdau.select_atoms("protein")
-                traj = next(traj for traj in self.mdau.trajectory.readers if traj.filename == f"{self.name}/{self._trajs[xtc]}")
+                traj = next(traj for traj in self.mdau.trajectory.readers if traj.filename == self._trajs[xtc])
                 arr = np.empty((prot.n_residues, traj.n_frames, 3))
                 for ts in traj:
                     arr[:, ts.frame] = prot.center_of_mass(compound='residues')
@@ -330,10 +343,12 @@ class State:#(Entity):
         return
     
     
+    
+    
     def _make_dcds(self):
-        import mdtraj, parmed
+        import parmed, mdtraj
         
-        dcdpath = f"{self.name}/data/dcds"
+        dcdpath = f"{self._datadir}/dcds"
         if not os.path.isdir(dcdpath): os.makedirs(dcdpath, exist_ok=True)
         setattr(self, "_protf", lambda ext: f"{dcdpath}/prot.{ext}")
         
@@ -344,7 +359,7 @@ class State:#(Entity):
         
         dcdpsf = self._protf("psf")
         psf = parmed.load_file(self._psff)
-        psf.title = self.name
+        psf.title = self._psf
         psf[atoms.indices].write_psf(dcdpsf)
         
         
@@ -353,7 +368,7 @@ class State:#(Entity):
 
         for xtc, dcd in self._dcds.items():
             if not os.path.isfile(dcd):
-                traj = mdtraj.load(f"{self.name}/{self._trajs[xtc]}", top=self._pdbf, atom_indices=atoms.indices)
+                traj = mdtraj.load(self._trajs[xtc], top=self._pdbf, atom_indices=atoms.indices)
                 traj.save_dcd(dcd)
         return
     
@@ -377,10 +392,12 @@ class State:#(Entity):
         mypool.close()
         mypool.join()
         
+        
     def _set_pkgclass(self, state, pkg):
         pkgclass = eval(f"Pkgs.{pkg[0].upper() + pkg[1:]}") if isinstance(pkg, str) else pkg
         if not hasattr(state, pkgclass.__name__):
             setattr(state, pkgclass.__name__, pkgclass(state))
+    
     
     
     

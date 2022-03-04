@@ -71,7 +71,7 @@ class Pkg: #abc.ABC
     def _calculate(self, xtc):
         pool = get_pool()
         pdb = self.state._pdbf
-        traj = f"{self.state.name}/{self.state._trajs[xtc]}"
+        traj = self.state._trajs[xtc]
         pq = self._rawpq(xtc)
         print(f"making {pq}")
         return pool, pdb, traj, pq
