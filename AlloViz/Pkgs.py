@@ -75,6 +75,7 @@ class Pkg: #abc.ABC
         pq = self._rawpq(xtc)
         print(f"making {pq}")
         return pool, pdb, traj, pq
+        
     
     # abstractmethod
     def _computation(self, xtc):
@@ -564,7 +565,6 @@ class PyinteraphEne(Pyinteraph):
 class G_correlationCA(Matrixoutput):
     # os.environ["GMXDIR"] = "/home/frann/gromacs-3.3.1/"
     # os.environ["GMXLIB"] = "/home/frann/gromacs-3.3.1/gromacs/share/gromacs/top/"
-    os.system("module load g_correlation")
                 
     def __init__(self, state):        
         super().__init__(state)
@@ -582,6 +582,7 @@ class G_correlationCA(Matrixoutput):
     def _computation(self, pdb, traj, xtc, pq):
         # Send g_correlation
         if not os.path.isfile(f"{pq}.dat"):
+            os.system("module load g_correlation")
             os.system(f"""
 g_correlation -f {traj} -s {pdb} -o {pq}.dat <<EOF
 1
@@ -691,8 +692,8 @@ class GRINN(dcdpkg, Multicorepkg):
     def _computation(self, pdb, traj, xtc, pq, psf, params, cores):
         out = f"{self._path}/{xtc}"
         if os.path.isdir(out):
-            import shutil.rmtree
-            shutil.rmtree(out)
+            from shutil import rmtree
+            rmtree(out)
             
         self.calc.getResIntEn(self.grinn.arg_parser(f"-calc --pdb {pdb} --top {psf} --traj {traj} --exe {self.namd} --outfolder {out} --numcores {cores} --parameterfile {params}".split())) # calc.getResIntCorr(grinn.arg_parser(f"".split()), logfile=None)
         corr = np.loadtxt(f"{out}/energies_intEnMeanTotal.dat") # energies_resCorr.dat

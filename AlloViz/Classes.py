@@ -268,7 +268,7 @@ class State:#(Entity):
     def _download_files(self):
         from bs4 import BeautifulSoup
         import urllib.request as pwget
-        import tarfile
+        import tarfile, fileinput
 
         web = "https://submission.gpcrmd.org"
         
@@ -285,6 +285,13 @@ class State:#(Entity):
                 with tarfile.open(fname) as tar:
                     tar.extractall(self._path)
                 os.remove(fname)
+                
+                for line in fileinput.input(f"{self._path}/parameters", inplace=True):
+                    if line.strip().startswith('HBOND'):
+                        line = 'HBOND CUTHB 0.5\n'
+                    elif line.strip().startswith('END'):
+                        line = 'END\n'
+                    sys.stdout.write(line)
                 
         return
     
@@ -357,12 +364,13 @@ class State:#(Entity):
         atoms = self.mdau.select_atoms("protein")
         
         dcdpdb = self._protf("pdb")
-        atoms.write(dcdpdb) # could it be prot_nums? IT HAS THE LIGAND THOUGH
+        if not os.path.isfile(dcdpdb): atoms.write(dcdpdb) # could it be prot_nums? IT HAS THE LIGAND THOUGH
         
         dcdpsf = self._protf("psf")
-        psf = parmed.load_file(self._psff)
-        psf.title = self._psf
-        psf[atoms.indices].write_psf(dcdpsf)
+        if not os.path.isfile(dcdpsf):
+            psf = parmed.load_file(self._psff)
+            psf.title = self._psff
+            psf[atoms.indices].write_psf(dcdpsf)
         
         
         dcds = [f"{dcdpath}/{xtc}.dcd" for xtc in self._trajs]
