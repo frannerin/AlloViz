@@ -211,12 +211,20 @@ class Pair:
 
 
 class State:#(Entity):    
-    def __init__(self, name, idx):
+    def __init__(self, pdb='', xtc=[], path='', gpcrmd=True, idx):
+        if gpcrmd:
+            self._path = f"{idx}"
+            if not any([re.search("(pdb$|psf$|xtc$|parameters$)", file) for file in os.listdir("active")]):
+                self._download_files()
+            files = os.listdir(self._path)
+            self._pdbf = re.search("pdb$", file) for file in files
+            self._psff = f"{self.name}/{self.name}_1.psf"
+        
         self.name = name
         self.idx = idx
         # self.data = Data(self)
         
-        if not os.path.isdir(self.name): self._download_files()
+        
         
         self._pdbf = f"{self.name}/{self.name}_1.pdb"
         self._psff = f"{self.name}/{self.name}_1.psf"
@@ -256,7 +264,7 @@ class State:#(Entity):
 
         html = requests.get(f"{web}/dynadb/dynamics/id/{self.idx}/")
         soup = BeautifulSoup(html.text, features="html.parser").find_all('a')
-        links = (link.get('href') for link in soup if re.search("(xtc|pdb|psf)", link.get('href')))
+        links = (link.get('href') for link in soup if re.search("(xtc|pdb|psf|prm)", link.get('href')))
         
         for link in links:
             ext = f".{link.rsplit('.', 1)[-1]}"
@@ -327,13 +335,14 @@ class State:#(Entity):
         
         dcdpath = f"{self.name}/data/dcds"
         if not os.path.isdir(dcdpath): os.makedirs(dcdpath, exist_ok=True)
+        setattr(self, "_protf", lambda ext: f"{dcdpath}/prot.{ext}")
         
         atoms = self.mdau.select_atoms("protein")
         
-        dcdpdb = f"{dcdpath}/prot.pdb"
-        atoms.write(dcdpdb)
+        dcdpdb = self._protf("pdb")
+        atoms.write(dcdpdb) # could it be prot_nums? IT HAS THE LIGAND THOUGH
         
-        dcdpsf = f"{dcdpath}/prot.psf"
+        dcdpsf = self._protf("psf")
         psf = parmed.load_file(self._psff)
         psf.title = self.name
         psf[atoms.indices].write_psf(dcdpsf)

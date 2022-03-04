@@ -638,6 +638,59 @@ class G_correlationCOM(G_correlationCA, COMpkg):
         
         
 
+class dcdpkg(Matrixoutput):
+    def __init__(self, state):
+        if not hasattr(state, "_dcds"):
+            self.state._make_dcds()
+            
+        super().__init__(state)
+    
+    
+    def _calculate(self, xtc):
+        pool, pdb, traj, pq = super()._calculate(xtc)
+        pdb = self.state._protf("pdb")
+        psf = self.state._protf("psf")
+        traj = self.state._dcds[xtc]
+        
+        return pool, pdb, traj, pq # psf? cores! multicorepkg
+        
+        
+        
+        
+        
+class GRINN(dcdpkg, Multicorepkg):
+    from .Forks.gRINN_Bitbucket.source import grinn, calc
+                
+    def __init__(self, state):
+        namd = find_executable('namd2')
+        if namd is None:
+            namd = 
+
+        print(VMD)
+        super().__init__(state)
+        
+        
+        
+    def _calculate(self, xtc):
+        pool, pdb, traj, pq = super()._calculate(xtc)
+        
+        pool.apply_async(self._computation,
+                         args=(pdb, traj, xtc, pq), # psf, self.taskcpus
+                         callback=self._save_pq)
+        
+        for _ in range(self.taskcpus-1): pool.apply_async(self._calculate_empty, args=(pq,))
+        
+        
+    def _computation(self, pdb, traj, xtc, pq):
+        out = f"{self._path}/{xtc}"
+        if os.path.isdir(out):
+            import shutil.rmtree
+            shutil.rmtree(out)
+            
+        self.calc.getResIntEn(self.grinn.arg_parser(f"-calc --pdb {pdb} --top {psf} --traj {traj} --exe {myexe} --outfolder {out} --numcores {cores} --parameterfile parameters".split())) # calc.getResIntCorr(grinn.arg_parser(f"".split()), logfile=None)
+        corr = np.loadtxt(f"{out}/energies_intEnMeanTotal.dat") # energies_resCorr.dat
+        return corr, xtc, pq
+
 
 
 # class Carma(): # needs the dcd

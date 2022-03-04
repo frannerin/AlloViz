@@ -11,9 +11,9 @@
 
 A Python package to interactively computate, analyze and visualize protein allosteric communication (residue interaction) networks and delta-networks.
 
-AlloViz binds together some new modules with 6 Python packages that provide different ways of calculating residue interactions: [getcontacts](https://github.com/getcontacts/getcontacts), [correlationplus](https://github.com/tekpinar/correlationplus), [dynetan](https://github.com/melomcr/dynetan), [PyInteraph2](https://github.com/ELELAB/pyinteraph2), [pytraj](https://github.com/Amber-MD/pytraj) and [MD-TASK](https://github.com/RUBi-ZA/MD-TASK).
+AlloViz binds together some new modules with 8 Python packages that provide different ways of calculating residue interactions: [getcontacts](https://github.com/getcontacts/getcontacts), [correlationplus](https://github.com/tekpinar/correlationplus), [dynetan](https://github.com/melomcr/dynetan), [PyInteraph2](https://github.com/ELELAB/pyinteraph2), [pytraj](https://github.com/Amber-MD/pytraj), [MD-TASK](https://github.com/RUBi-ZA/MD-TASK), [gRINN](https://bitbucket.org/onursercinoglu/grinn) and [g_correlation](https://www.mpinat.mpg.de/grubmueller/g_correlation).
 
-For the same topology and molecular dynamics (MD) trajectory, the network can be constructed based on residue contacts, movement correlation or pseudo-interaction energies, depending on the package selected. Moreover, for movement correlation, the movement tracked can be that of the whole residue, its center of mass, its alpha-C or its beta-C; and it can be calculated as the Pearson's correlation coefficient, Mutual Information (MI) or Linear MI (LMI). See [below](#available-information-sources-for-network-generation).
+For the same topology and molecular dynamics (MD) trajectory, the network can be constructed based on residue contacts, movement correlation or interaction energies, depending on the package selected. Moreover, for movement correlation, the movement tracked can be that of the whole residue, its center of mass, its alpha-C or its beta-C; and it can be calculated as the Pearson's correlation coefficient, Mutual Information (MI) or Linear MI (LMI). See [below](#available-information-sources-for-network-generation).
 
 The network can be analyzed with edge centrality metrics algorithms provided by the Python package [networkx](https://github.com/networkx/networkx), and they can be visualized in a Notebook using [nglview](https://github.com/nglviewer/nglview).
 
@@ -53,12 +53,12 @@ activeB2AR.view()
 
 <!-- https://www.tablesgenerator.com/html_tables -->
 
-<table style="undefined;table-layout: fixed; width: 539px">
+<table style="undefined;table-layout: fixed; width: 653px">
 <colgroup>
-<col style="width: 195px">
-<col style="width: 111px">
-<col style="width: 124px">
-<col style="width: 109px">
+<col style="width: 236px">
+<col style="width: 135px">
+<col style="width: 150px">
+<col style="width: 132px">
 </colgroup>
 <thead>
   <tr>
@@ -72,24 +72,48 @@ activeB2AR.view()
   <tr>
     <td rowspan="2">Contact frequency</td>
     <td>getcontacts</td>
-    <td></td>
+    <td>-</td>
     <td>Whole residue</td>
   </tr>
   <tr>
     <td rowspan="2">PyInteraph2</td>
-    <td></td>
+    <td>-</td>
     <td>Whole residue</td>
   </tr>
   <tr>
-    <td>Pseudo-interaction energies</td>
-    <td></td>
+    <td rowspan="3">Interaction energies</td>
+    <td>-</td>
     <td>Whole residue</td>
   </tr>
   <tr>
-    <td rowspan="9">Movement correlation</td>
+    <td rowspan="2">gRINN</td>
+    <td>-</td>
+    <td>Whole residue</td>
+  </tr>
+  <tr>
+    <td>Pearson's</td>
+    <td>Whole residue</td>
+  </tr>
+  <tr>
+    <td rowspan="13">Movement correlation</td>
     <td rowspan="2">dynetan</td>
     <td rowspan="2">Mutual Information (MI)</td>
     <td>Whole residue</td>
+  </tr>
+  <tr>
+    <td>Residue COM</td>
+  </tr>
+  <tr>
+    <td rowspan="4">g_correlation</td>
+    <td rowspan="2">MI</td>
+    <td>alpha-C</td>
+  </tr>
+  <tr>
+    <td>Residue COM</td>
+  </tr>
+  <tr>
+    <td rowspan="2">Linear MI (LMI)</td>
+    <td>alpha-C</td>
   </tr>
   <tr>
     <td>Residue COM</td>
@@ -116,7 +140,7 @@ activeB2AR.view()
     <td>Residue COM</td>
   </tr>
   <tr>
-    <td rowspan="2">Linear MI</td>
+    <td rowspan="2">LMI</td>
     <td>alpha-C</td>
   </tr>
   <tr>
