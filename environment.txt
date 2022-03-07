@@ -5,6 +5,7 @@
 # main pkgs
 multiprocess
 #lazy_import>=0.2.2
+lazyasd
 mdanalysis>=2.0
 
 numpy>=1.21.5,<1.21.6 # pyinteraph might need 1.22; 1.21.0 exact maximum version needed for numba; ¡¡¡1.21.5 should work!!!

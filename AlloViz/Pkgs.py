@@ -1,7 +1,8 @@
-import sys, os, pandas, time#, lazy_import#, pexpect
+import sys, os, pandas, time, importlib#, lazy_import#, pexpect
 import numpy as np
 from .utils import *
 from contextlib import redirect_stdout, redirect_stderr
+from lazyasd import LazyObject
 
 # sys.path.append(f"{__file__.rsplit('/', 1)[0]}/Forks")
 
@@ -163,7 +164,11 @@ class Getcontacts(Multicorepkg):
     # get_dynamic_contacts = lazy_import.lazy_module("get_dynamic_contacts")
     # get_contact_frequencies = lazy_import.lazy_module("get_contact_frequencies")
     # from getcontacts import get_dynamic_contacts, get_contact_frequencies
-    from .Forks.getcontacts import get_dynamic_contacts, get_contact_frequencies
+    
+    # from .Forks.getcontacts import get_dynamic_contacts, get_contact_frequencies
+    get_dynamic_contacts = LazyObject(lambda: importlib.import_module(".Forks.getcontacts.get_dynamic_contacts"))
+    get_contact_frequencies = LazyObject(lambda: importlib.import_module(".Forks.getcontacts.get_contact_frequencies"))
+    
     
     def __init__(self, state):        
         super().__init__(state)
@@ -223,7 +228,9 @@ class Dynetan(Matrixoutput, Multicorepkg):
     #from proctraj import DNAproc as dynetan
     #from .Forks.dynetan.dynetan.proctraj import DNAproc as dynetan
     #from .Forks.dynetan.dynetan import proctraj
-    from .Forks.dynetan.dynetan.proctraj import DNAproc as dynetan
+    
+    # from .Forks.dynetan.dynetan.proctraj import DNAproc as dynetan
+    dynetanf = LazyObject(lambda: importlib.import_module(".Forks.dynetan.dynetan.proctraj").DNAproc )
             
     def __init__(self, state):
         super().__init__(state)
@@ -242,7 +249,7 @@ class Dynetan(Matrixoutput, Multicorepkg):
     
     
     def _computation(self, pdb, traj, xtc, pq, taskcpus):
-        obj = self.dynetan()
+        obj = self.dynetanf()
         obj.loadSystem(pdb, traj) # pdb.replace("pdb", "psf")
         prot = obj.getU().select_atoms("protein")
 
@@ -295,7 +302,9 @@ class Corrplus(Matrixoutput):
     #corrplus = lazy_import.lazy_module(".Forks.correlationplus.correlationplus.calculate")
     #print(dir(), dir(corrpluscalc))
     # import correlationplus.calculate as corrplus
-    from .Forks.correlationplus.correlationplus import calculate as corrplus
+    
+    # from .Forks.correlationplus.correlationplus import calculate as corrplus
+    corrplusf = LazyObject(lambda: importlib.import_module(".Forks.correlationplus.calculate") )
         
     def __init__(self, state):
         super().__init__(state)
@@ -310,7 +319,7 @@ class Corrplus(Matrixoutput):
     
     
     def _computation(self, pdb, traj, xtc, pq):
-        corr = self.corrplus.calcMDnDCC(pdb, traj, saveMatrix = False)
+        corr = self.corrplusf.calcMDnDCC(pdb, traj, saveMatrix = False)
         return corr, xtc, pq
 
         
@@ -321,7 +330,7 @@ class CorrplusLMI(Corrplus):
         super().__init__(state)
     
     def _computation(self, pdb, traj, xtc, pq):
-        corr = self.corrplus.calcMD_LMI(pdb, traj, saveMatrix = False)
+        corr = self.corrplusf.calcMD_LMI(pdb, traj, saveMatrix = False)
         return corr, xtc, pq
         
         
@@ -360,7 +369,7 @@ class CorrplusPsi(Corrplus):
     
     def _computation(self, pdb, traj, xtc, pq):
         dih = "psi"
-        corr = self.corrplus.calcMDsingleDihedralCC(pdb, traj, dihedralType = dih, saveMatrix = False)
+        corr = self.corrplusf.calcMDsingleDihedralCC(pdb, traj, dihedralType = dih, saveMatrix = False)
         return corr, xtc, pq
 
     
@@ -370,7 +379,7 @@ class CorrplusPhi(Corrplus):
     
     def _computation(self, pdb, traj, xtc, pq):
         dih = "phi"
-        corr = self.corrplus.calcMDsingleDihedralCC(pdb, traj, dihedralType = dih, saveMatrix = False)
+        corr = self.corrplusf.calcMDsingleDihedralCC(pdb, traj, dihedralType = dih, saveMatrix = False)
         return corr, xtc, pq
 
 
@@ -380,11 +389,13 @@ class CorrplusOmega(Corrplus):
     
     def _computation(self, pdb, traj, xtc, pq):
         dih = "omega"
-        corr = self.corrplus.calcMDsingleDihedralCC(pdb, traj, dihedralType = dih, saveMatrix = False)
+        corr = self.corrplusf.calcMDsingleDihedralCC(pdb, traj, dihedralType = dih, saveMatrix = False)
         return corr, xtc, pq
 
 
 
+    
+    
 
 class MDTASK(Matrixoutput):
     # try:
@@ -396,6 +407,9 @@ class MDTASK(Matrixoutput):
     # import mdtask.calc_correlation as mdtask
     # from .Forks.correlationplus.correlationplus import calculate as corrplus ADAPT TO MD-TASK WHEN FOLDER CREATION IS REVERSED
     # from .Forks.correlationplus.correlationplus import calculate as corrplus
+    
+    mdtaskf = LazyObject(lambda: importlib.import_module(".Forks.MD-TASK.calc_correlation") )
+    
     
     def __init__(self, state):
         super().__init__(state)
@@ -426,7 +440,9 @@ class PytrajCA(Matrixoutput):
     # except:
     #     print(_cannot_import(__qualname__))
     # corrplus = lazy_import.lazy_module("pytraj")
+    
     #import pytraj
+    pytrajf = LazyObject(lambda: importlib.import_module("pytraj") )
             
     def __init__(self, state):
         super().__init__(state)
@@ -443,9 +459,9 @@ class PytrajCA(Matrixoutput):
     
     
     def _computation(self, pdb, traj, mask, xtc, pq):
-        top = self.pytraj.load_topology(pdb)
-        traj = self.pytraj.load(traj, top, mask = f'@{mask}')
-        corr = self.pytraj.matrix.correl(traj, f'@{mask}')
+        top = self.pytrajf.load_topology(pdb)
+        traj = self.pytrajf.load(traj, top, mask = f'@{mask}')
+        corr = self.pytrajf.matrix.correl(traj, f'@{mask}')
         return corr, xtc, pq
 
     
@@ -480,8 +496,10 @@ class Pyinteraph(Matrixoutput):
     #     print(_cannot_import(__qualname__))
     # sys.path.append(f"{__file__.rsplit('/', 1)[0]}/Forks/pyinteraph2/pyinteraph")
     # pyinteraph = lazy_import.lazy_module("main")
-    import pyinteraph.main as pyinteraph
+    #import pyinteraph.main as pyinteraph
     #from .Forks.pyinteraph2.pyinteraph import main as pyinteraph
+    pyinteraphf = LazyObject(lambda: importlib.import_module("pyinteraph.main") )
+    
                 
     def __init__(self, state):        
         super().__init__(state)
@@ -499,7 +517,7 @@ class Pyinteraph(Matrixoutput):
         
         
     def _computation(self, pdb, traj, xtc, pq, CLIargs):
-        corr = self.pyinteraph.main(f"-s {pdb} -t {traj} {CLIargs}".split()) / 100
+        corr = self.pyinteraphf.main(f"-s {pdb} -t {traj} {CLIargs}".split()) / 100
         return corr, xtc, pq
 
     
@@ -626,7 +644,9 @@ class dcdpkg(Matrixoutput):
         
         
 class GRINN(dcdpkg, Multicorepkg):
-    from .Forks.gRINN_Bitbucket.source import grinn, calc
+    #from .Forks.gRINN_Bitbucket.source import grinn, calc
+    grinnf = LazyObject(lambda: importlib.import_module(".Forks.gRINN_Bitbucket.source.grinn") )
+    calcf = LazyObject(lambda: importlib.import_module(".Forks.gRINN_Bitbucket.source.calc") )
 
     from distutils.spawn import find_executable
     namd = find_executable('namd2')
@@ -657,7 +677,7 @@ class GRINN(dcdpkg, Multicorepkg):
             from shutil import rmtree
             rmtree(out)
             
-        self.calc.getResIntEn(self.grinn.arg_parser(f"-calc --pdb {pdb} --top {psf} --traj {traj} --exe {self.namd} --outfolder {out} --numcores {cores} --parameterfile {params}".split())) # calc.getResIntCorr(grinn.arg_parser(f"".split()), logfile=None)
+        self.calcf.getResIntEn(self.grinnf.arg_parser(f"-calc --pdb {pdb} --top {psf} --traj {traj} --exe {self.namd} --outfolder {out} --numcores {cores} --parameterfile {params}".split())) # calc.getResIntCorr(grinn.arg_parser(f"".split()), logfile=None)
         corr = np.loadtxt(f"{out}/energies_intEnMeanTotal.dat") # energies_resCorr.dat
         return corr, xtc, pq
 
@@ -674,7 +694,7 @@ class GRINNcorr(GRINN):
         #     import shutil.rmtree
         #     shutil.rmtree(out)
             
-        self.calc.getResIntCorr(self.grinn.arg_parser(f"-corr --corrinfile {out}/energies_intEnTotal.csv".split()), logfile=None)
+        self.calcf.getResIntCorr(self.grinnf.arg_parser(f"-corr --corrinfile {out}/energies_intEnTotal.csv".split()), logfile=None)
         corr = np.loadtxt(f"{out}/energies_resCorr.dat.dat") # 
         return corr, xtc, pq
 
