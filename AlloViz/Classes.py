@@ -368,9 +368,9 @@ class State:#(Entity):
         
         dcdpsf = self._protf("psf")
         if not os.path.isfile(dcdpsf):
-            psf = parmed.load_file(self._psff)
+            psf = parmed.load_file(self._psff)[atoms.indices]
             psf.title = self._psff
-            psf[atoms.indices].write_psf(dcdpsf)
+            psf.write_psf(dcdpsf)
         
         
         dcds = [f"{dcdpath}/{xtc}.dcd" for xtc in self._trajs]

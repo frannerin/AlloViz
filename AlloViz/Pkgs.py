@@ -12,7 +12,6 @@ from contextlib import redirect_stdout, redirect_stderr
 
 
 
-
 class Pkg: #abc.ABC
     def __init__(self, state):#, ¿pkg?): #metrics="all", filterby="whole", normalize=True, cores=None, ow=False
         args = locals()
@@ -28,9 +27,9 @@ class Pkg: #abc.ABC
         
         #try:     
             # if self.state.__class__.__name__ == "State":
-        with open(f"{self._path}/{self._name}.log", "a+") as f:
-            with redirect_stdout(f), redirect_stderr(f):
-                self._initialize()
+        # with open(f"{self._path}/{self._name}.log", "a+") as f:
+        #     with redirect_stdout(f), redirect_stderr(f):
+        self._initialize()
         #except ImportError:
         #    print(f"{self._name} can't be imported")
         
@@ -53,7 +52,7 @@ class Pkg: #abc.ABC
             return pqs
                 
         def get_raw(pqs): # *args
-            print(f"adding raw data of {self._name} for {self.state.__name__}: ", pqs)
+            print(f"adding raw data of {self._name} for {self.state._pdbf}: ", pqs)
             flist = map(lambda pq: pandas.read_parquet(pq), pqs)
             df = pandas.concat(flist, axis=1)
             cols = [f"{num}" for num in self.state._trajs]
@@ -69,12 +68,23 @@ class Pkg: #abc.ABC
         
     
     def _calculate(self, xtc):
-        pool = get_pool()
+        # pool = get_pool()
         pdb = self.state._pdbf
         traj = self.state._trajs[xtc]
         pq = self._rawpq(xtc)
         print(f"making {pq}")
         return pool, pdb, traj, pq
+    
+    
+    def _send_and_log(self, *args):#func=None, args:tuple=(), callback=print):
+        # if func is None:
+        #     func = self._computation
+        with open(f"{self._path}/{self._name}.log", "a+") as f:
+            with redirect_stdout(f), redirect_stderr(f):
+                return self._computation(*args)
+                # get_pool().apply_async(func = func,
+                #                        args = args,
+                #                        callback = callback)
         
     
     # abstractmethod
@@ -88,54 +98,6 @@ class Pkg: #abc.ABC
     
     
     
-    
-    
-#     def _analyze(self, ):
-#         norm = self._state._get_norm_str(normalize)
-        
-        
-#         os.makedirs(self._state._datapn(filterby, normalize, pkg), exist_ok=True)
-#         raw = getattr(self.raw, pkg)
-#         if filterby == "incontact" or filterby == "intercontact":
-#             raw = raw.filter(self.raw.getcontacts.index, axis=0)
-#             if filterby == "intercontact":
-#                 get_resnum = lambda res: int(res.rsplit(":")[-1])
-#                 raw = raw.filter(get_intercontacts(raw.index), axis=0)
-#         if filterby == "whole":
-#             metrics = [metric for metric in metrics if "subset" not in metric]
-            
-        
-#         data = rgetattr(self, filterby, norm, pkg).df
-        
-#         if any([f"{metric}_avg" not in data.columns for metric in metrics]) or ow:
-#             #print(f"analyzing {metrics} from {self._state.name} {pkg} data for {filterby} residues")
-#             raw_data = raw[[col for col in raw.columns if col != "weight_std"]]
-#             self._send_anal(raw_data, pkg, metrics, normalize, ow, filterby)
-#             # setattr(self.incontact, pkg, Edges(self._state, data.join(analyzed)))
-            
-#         return
-        
-        
-#     def _send_anal(self, rawdata, pkg, metrics, normalize, ow, filterby):
-#         data = None
-        
-#         if filterby == "whole":
-#             metrics = [metric for metric in metrics if "subset" not in metric]
-        
-#         for metric in metrics:
-#             pqf = self._state._datafn(filterby, normalize, pkg, metric)
-            
-#             if not os.path.isfile(pqf) or ow:
-#                 print(f"\tmaking {pqf}")
-#                 newcolnames = {name: f"{metric}_{name}" for name in rawdata.columns}
-#                 df = rawdata.apply(self._networkx_analysis, args=(metric, normalize)).rename(columns=newcolnames)
-#                 df.to_parquet(pqf)
-            
-#         return   
-        
-
-
-
 
 
 class Multicorepkg(Pkg):
@@ -215,7 +177,7 @@ class Getcontacts(Multicorepkg):
         ctcs = f"{path}/{xtc}.tsv"
         freqs = f"{path}/{xtc}_freqs.tsv"
         
-        pool.apply_async(self._computation,
+        pool.apply_async(self._send_and_log,
                          args=(pdb, traj, xtc, pq, ctcs, freqs, self.taskcpus),
                          callback=self._save_pq)
         # update_pdict((self.name, self._name, xtc), p)
@@ -272,7 +234,7 @@ class Dynetan(Matrixoutput, Multicorepkg):
     def _calculate(self, xtc):
         pool, pdb, traj, pq = super()._calculate(xtc)
         
-        pool.apply_async(self._computation,
+        pool.apply_async(self._send_and_log,
                          args=(pdb, traj, xtc, pq, self.taskcpus),
                          callback=self._save_pq)
         for _ in range(self.taskcpus-1): pool.apply_async(self._calculate_empty, args=(pq,))
@@ -310,7 +272,7 @@ class DynetanCOM(Dynetan, COMpkg):
     def _calculate(self, xtc):
         pool, pdb, traj, pq = COMpkg._calculate(self, xtc)
         self.taskcpus = 4
-        pool.apply_async(self._computation,
+        pool.apply_async(self._send_and_log,
                          args=(pdb, traj, xtc, pq, self.taskcpus),
                          callback=self._save_pq)
         #for _ in range(self.taskcpus-1): pool.apply_async(self._calculate_empty, args=(pq,))
@@ -342,7 +304,7 @@ class Corrplus(Matrixoutput):
     def _calculate(self, xtc):
         pool, pdb, traj, pq = super()._calculate(xtc)
         
-        pool.apply_async(self._computation,
+        pool.apply_async(self._send_and_log,
                          args=(pdb, traj, xtc, pq),
                          callback=self._save_pq)
     
@@ -371,7 +333,7 @@ class CorrplusCOM(Corrplus, COMpkg):
     def _calculate(self, xtc):
         pool, pdb, traj, pq = COMpkg._calculate(self, xtc)
         
-        pool.apply_async(self._computation,
+        pool.apply_async(self._send_and_log,
                          args=(pdb, traj, xtc, pq),
                          callback=self._save_pq)
         
@@ -385,7 +347,7 @@ class CorrplusCOMLMI(CorrplusLMI, COMpkg):
     def _calculate(self, xtc):
         pool, pdb, traj, pq = COMpkg._calculate(self, xtc)
         
-        pool.apply_async(self._computation,
+        pool.apply_async(self._send_and_log,
                          args=(pdb, traj, xtc, pq),
                          callback=self._save_pq)
 
@@ -442,7 +404,7 @@ class MDTASK(Matrixoutput):
     def _calculate(self, xtc):
         pool, pdb, traj, pq = super()._calculate(xtc)
         
-        pool.apply_async(self._computation,
+        pool.apply_async(self._send_and_log,
                          args=(pdb, traj, xtc, pq),
                          callback=self._save_pq)
     
@@ -474,7 +436,7 @@ class PytrajCA(Matrixoutput):
         pool, pdb, traj, pq = super()._calculate(xtc)
         mask = self.__class__.__name__[-2:]
         
-        pool.apply_async(self._computation,
+        pool.apply_async(self._send_and_log,
                          args=(pdb, traj, mask, xtc, pq),
                          callback=self._save_pq)
     
@@ -498,7 +460,7 @@ class PytrajCB(PytrajCA):
         mask = self.__class__.__name__[-2:]
         self._selection = "protein and not resname GLY"
         
-        pool.apply_async(self._computation,
+        pool.apply_async(self._send_and_log,
                          args=(pdb, traj, mask, xtc, pq),
                          callback=self._save_pq)
 
@@ -531,7 +493,7 @@ class Pyinteraph(Matrixoutput):
         
         CLIargs = "-m --cmpsn-graph dummy"
         
-        pool.apply_async(self._computation,
+        pool.apply_async(self._send_and_log,
                          args=(pdb, traj, xtc, pq, CLIargs),
                          callback=self._save_pq)
         
@@ -553,7 +515,7 @@ class PyinteraphEne(Pyinteraph):
         
         CLIargs = "-p --kbp-graph dummy"
         
-        pool.apply_async(self._computation,
+        pool.apply_async(self._send_and_log,
                          args=(pdb, traj, xtc, pq, CLIargs),
                          callback=self._save_pq)
 
@@ -574,7 +536,7 @@ class G_correlationCA(Matrixoutput):
     def _calculate(self, xtc):
         pool, pdb, traj, pq = super()._calculate(xtc)
         
-        pool.apply_async(self._computation,
+        pool.apply_async(self._send_and_log,
                          args=(pdb, traj, xtc, pq),
                          callback=self._save_pq)
         
@@ -582,9 +544,9 @@ class G_correlationCA(Matrixoutput):
     def _computation(self, pdb, traj, xtc, pq):
         # Send g_correlation
         if not os.path.isfile(f"{pq}.dat"):
-            os.system("module load g_correlation")
+            # os.system("")
             os.system(f"""
-g_correlation -f {traj} -s {pdb} -o {pq}.dat <<EOF
+module load g_correlation && g_correlation -f {traj} -s {pdb} -o {pq}.dat <<EOF
 1
 3
 EOF
@@ -634,7 +596,7 @@ class G_correlationCOM(G_correlationCA, COMpkg):
     def _calculate(self, xtc):
         pool, pdb, traj, pq = COMpkg._calculate(self, xtc)
         
-        pool.apply_async(self._computation,
+        pool.apply_async(self._send_and_log,
                          args=(pdb, traj, xtc, pq),
                          callback=self._save_pq)
         
@@ -681,7 +643,7 @@ class GRINN(dcdpkg, Multicorepkg):
         psf = self.state._protf("psf")
         params = self.state._paramf
         
-        pool.apply_async(self._computation,
+        pool.apply_async(self._send_and_log,
                          args=(pdb, traj, xtc, pq, psf, params, self.taskcpus), # psf, self.taskcpus
                          callback=self._save_pq)
         
