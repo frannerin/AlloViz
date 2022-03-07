@@ -408,7 +408,7 @@ class MDTASK(Matrixoutput):
     # from .Forks.correlationplus.correlationplus import calculate as corrplus ADAPT TO MD-TASK WHEN FOLDER CREATION IS REVERSED
     # from .Forks.correlationplus.correlationplus import calculate as corrplus
     
-    mdtaskf = LazyObject(lambda: importlib.import_module(".Forks.MD-TASK.calc_correlation", package="AlloViz"), globals(), "mdtaskf")
+    mdtaskf = LazyObject(lambda: importlib.import_module(".Forks.MD-TASK.mdtask.calc_correlation", package="AlloViz"), globals(), "mdtaskf")
     
     
     def __init__(self, state):
@@ -423,7 +423,7 @@ class MDTASK(Matrixoutput):
                          callback=self._save_pq)
     
     def _computation(self, pdb, traj, xtc, pq):
-        corr = self.mdtaskf.correlate(self.mdtask.parse_traj(traj = traj, topology = pdb))
+        corr = self.mdtaskf.correlate(self.mdtaskf.parse_traj(traj = traj, topology = pdb))
         return corr, xtc, pq
 
 
@@ -564,7 +564,9 @@ class G_correlationCA(Matrixoutput):
         if not os.path.isfile(f"{pq}.dat"):
             # os.system("")
             os.system(f"""
-module load g_correlation && g_correlation -f {traj} -s {pdb} -o {pq}.dat <<EOF
+module load g_correlation
+export GMXLIB=/soft/EB_repo/bio/sequence/programs/noarch/gromacs/3.3.1/share/gromacs/top/
+g_correlation -f {traj} -s {pdb} -o {pq}.dat <<EOF
 1
 3
 EOF
