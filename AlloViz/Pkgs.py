@@ -166,8 +166,8 @@ class Getcontacts(Multicorepkg):
     # from getcontacts import get_dynamic_contacts, get_contact_frequencies
     
     # from .Forks.getcontacts import get_dynamic_contacts, get_contact_frequencies
-    get_dynamic_contacts = LazyObject(lambda: importlib.import_module(".Forks.getcontacts.get_dynamic_contacts"))
-    get_contact_frequencies = LazyObject(lambda: importlib.import_module(".Forks.getcontacts.get_contact_frequencies"))
+    get_dynamic_contacts = LazyObject(lambda: importlib.import_module(".Forks.getcontacts.get_dynamic_contacts", package="AlloViz"), globals(), "get_dynamic_contacts")
+    get_contact_frequencies = LazyObject(lambda: importlib.import_module(".Forks.getcontacts.get_contact_frequencies", package="AlloViz"), globals(), "get_contact_frequencies")
     
     
     def __init__(self, state):        
@@ -230,7 +230,7 @@ class Dynetan(Matrixoutput, Multicorepkg):
     #from .Forks.dynetan.dynetan import proctraj
     
     # from .Forks.dynetan.dynetan.proctraj import DNAproc as dynetan
-    dynetanf = LazyObject(lambda: importlib.import_module(".Forks.dynetan.dynetan.proctraj").DNAproc )
+    dynetanf = LazyObject(lambda: importlib.import_module(".Forks.dynetan.dynetan.proctraj", package="AlloViz").DNAproc, globals(), "dynetanf")
             
     def __init__(self, state):
         super().__init__(state)
@@ -304,7 +304,7 @@ class Corrplus(Matrixoutput):
     # import correlationplus.calculate as corrplus
     
     # from .Forks.correlationplus.correlationplus import calculate as corrplus
-    corrplusf = LazyObject(lambda: importlib.import_module(".Forks.correlationplus.calculate") )
+    corrplusf = LazyObject(lambda: importlib.import_module(".Forks.correlationplus.correlationplus.calculate", package="AlloViz"), globals(), "corrplusf")
         
     def __init__(self, state):
         super().__init__(state)
@@ -408,7 +408,7 @@ class MDTASK(Matrixoutput):
     # from .Forks.correlationplus.correlationplus import calculate as corrplus ADAPT TO MD-TASK WHEN FOLDER CREATION IS REVERSED
     # from .Forks.correlationplus.correlationplus import calculate as corrplus
     
-    mdtaskf = LazyObject(lambda: importlib.import_module(".Forks.MD-TASK.calc_correlation") )
+    mdtaskf = LazyObject(lambda: importlib.import_module(".Forks.MD-TASK.calc_correlation", package="AlloViz"), globals(), "mdtaskf")
     
     
     def __init__(self, state):
@@ -423,7 +423,7 @@ class MDTASK(Matrixoutput):
                          callback=self._save_pq)
     
     def _computation(self, pdb, traj, xtc, pq):
-        corr = self.mdtask.correlate(self.mdtask.parse_traj(traj = traj, topology = pdb))
+        corr = self.mdtaskf.correlate(self.mdtask.parse_traj(traj = traj, topology = pdb))
         return corr, xtc, pq
 
 
@@ -442,7 +442,7 @@ class PytrajCA(Matrixoutput):
     # corrplus = lazy_import.lazy_module("pytraj")
     
     #import pytraj
-    pytrajf = LazyObject(lambda: importlib.import_module("pytraj") )
+    pytrajf = LazyObject(lambda: importlib.import_module("pytraj"), globals(), "pytrajf")
             
     def __init__(self, state):
         super().__init__(state)
@@ -498,7 +498,7 @@ class Pyinteraph(Matrixoutput):
     # pyinteraph = lazy_import.lazy_module("main")
     #import pyinteraph.main as pyinteraph
     #from .Forks.pyinteraph2.pyinteraph import main as pyinteraph
-    pyinteraphf = LazyObject(lambda: importlib.import_module("pyinteraph.main") )
+    pyinteraphf = LazyObject(lambda: importlib.import_module("pyinteraph.main"), globals(), "pyinteraphf")
     
                 
     def __init__(self, state):        
@@ -645,13 +645,14 @@ class dcdpkg(Matrixoutput):
         
 class GRINN(dcdpkg, Multicorepkg):
     #from .Forks.gRINN_Bitbucket.source import grinn, calc
-    grinnf = LazyObject(lambda: importlib.import_module(".Forks.gRINN_Bitbucket.source.grinn") )
-    calcf = LazyObject(lambda: importlib.import_module(".Forks.gRINN_Bitbucket.source.calc") )
+    grinnf = LazyObject(lambda: importlib.import_module(".Forks.gRINN_Bitbucket.source.grinn", package="AlloViz"), globals(), "grinnf")
+    calcf = LazyObject(lambda: importlib.import_module(".Forks.gRINN_Bitbucket.source.calc", package="AlloViz"), globals(), "calcf")
 
+    from .Forks.gRINN_Bitbucket import source
     from distutils.spawn import find_executable
     namd = find_executable('namd2')
     if namd is None:
-        namd = f"{grinn.__file__.rsplit('/', 1)[0]}/NAMD_2.14_Linux-x86_64-multicore/namd2"
+        namd = f"{source.__file__.rsplit('/', 1)[0]}/NAMD_2.14_Linux-x86_64-multicore/namd2"
                 
     def __init__(self, state):
         super().__init__(state)

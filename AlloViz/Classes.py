@@ -98,6 +98,7 @@ class Pair:
         
         mypool = Pool(cores)
         utils.pool = mypool
+        print(utils.pool)
         
         for state in self.states:
             for pkg in pkgs:
@@ -163,6 +164,7 @@ class Pair:
         
         mypool = Pool(cores)
         utils.pool = mypool
+        print(utils.pool)
         
         for state in self.states:
             for filterby in filterbys:
@@ -396,6 +398,7 @@ class State:#(Entity):
         
         mypool = Pool(cores)
         utils.pool = mypool
+        print(utils.pool)
         
         for pkg in pkgs: self._set_pkgclass(self, pkg)
         
@@ -418,6 +421,7 @@ class State:#(Entity):
         
         mypool = Pool(cores)
         utils.pool = mypool
+        print(utils.pool)
         
         for filterby in filterbys:
             for pkg in pkgs:
