@@ -597,7 +597,7 @@ class Analysis:
         
     
     def add_metrics(self, metrics, normalize=True):
-        norm = norm(normalize)
+        norm = utils.norm(normalize)
         os.makedirs(self._path(norm), exist_ok=True)
         
         if not hasattr(self, norm):
