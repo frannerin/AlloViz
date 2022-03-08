@@ -9,7 +9,7 @@
 
 # AlloViz 🔭
 
-A Python package to interactively computate, analyze and visualize protein allosteric communication (residue interaction) networks and delta-networks.
+A Python package to interactively compute, analyze and visualize protein allosteric communication (residue interaction) networks and delta-networks.
 
 AlloViz binds together some new modules with 8 Python packages that provide different ways of calculating residue interactions: [getcontacts](https://github.com/getcontacts/getcontacts), [correlationplus](https://github.com/tekpinar/correlationplus), [dynetan](https://github.com/melomcr/dynetan), [PyInteraph2](https://github.com/ELELAB/pyinteraph2), [pytraj](https://github.com/Amber-MD/pytraj), [MD-TASK](https://github.com/RUBi-ZA/MD-TASK), [gRINN](https://bitbucket.org/onursercinoglu/grinn) and [g_correlation](https://www.mpinat.mpg.de/grubmueller/g_correlation).
 
@@ -27,26 +27,26 @@ cd AlloViz
 conda create AlloViz -c conda-forge --file environment.txt
 ```
 
-Then install AlloViz preferably with `pip install .`. Alternatively, use `python setup.py install`.
+Then activate the environment with `conda activate AlloViz` and install the package preferably with `pip install .`. Alternatively, use `python setup.py install`.
 
 ## Quickstart
 
+There main class to be used is `State`, `Pair` is used to bind two States for delta-network analysis.
+
 ### for GPCRmd files
 
-There are two main classes to be used: `State` and also `Pair`, for delta-network analysis.
-
-A State is defined with a name and the GPCRmd dynamics ID number. For example:
+A State is simply defined with the GPCRmd dynamics ID number, with which files are automatically retrieved. For example:
 
 ```python
-activeB2AR = AlloViz.State("activeB2AR", 169)
+activeMuOR = AlloViz.State(GPCRmdID=169)
 ```
 
-And then network computations, analyses and visualizations are performed with associated methods. For example:
+And then network computations, analyses and visualizations are performed with associated class methods. For example:
 
 ```python
-activeB2AR.calculate(pkg = "Getcontacts")
-activeB2AR.analyze(metrics = "btw")
-activeB2AR.view()
+activeMuOR.calculate(pkg = "Getcontacts")
+activeMuOR.analyze(metrics = "btw")
+activeMuOR.view("Getcontacts", "btw_avg")
 ```
 
 ## Available information sources for network generation
