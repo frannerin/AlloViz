@@ -11,7 +11,7 @@
 	path = alloviz/Forks/MD-TASK
 	url = https://github.com/frannerin/MD-TASK
 [submodule "alloviz/Forks/pyinteraph2"]
-	path = AlloViz/Forks/pyinteraph2
+	path = alloviz/Forks/pyinteraph2
 	url = https://github.com/frannerin/pyinteraph2
 [submodule "alloviz/Forks/gRINN_Bitbucket"]
 	path = alloviz/Forks/gRINN_Bitbucket
