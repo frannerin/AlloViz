@@ -4,7 +4,6 @@
 
 # main pkgs
 multiprocess
-#lazy_import>=0.2.2
 lazyasd
 mdanalysis>=2.0
 
@@ -49,6 +48,7 @@ prody>=2.0.1 # for correlationplus; prob 2.0.2 needed for a gRINN dep
 pyprind # for gRINN
 panedr # for gRINN
 natsort # for gRINN
+parmed # for dcd generation
 #mdtraj and parmed are needed for dcd generation and thus for gRINN; they might be installed for other reasons (mdtraj is needed for MD-TASK and parmed comes with ambertools)
 
 

@@ -14,6 +14,8 @@ from . import Pkgs
 from . import utils
 rgetattr = utils.rgetattr
 rhasattr = utils.rhasattr
+capitalize = utils.capitalize
+norm = utils.norm
 
 
 # pkgsl = ["MDTASK", "getcontacts", "pyinteraph", "pyinteraphEne", "dynetan", "pytrajCA", "pytrajCB",
@@ -21,8 +23,10 @@ rhasattr = utils.rhasattr
 pkgsl = ["MDTASK", "getcontacts", "pyinteraph", "pyinteraphEne", "dynetan", #"pytrajCA", "pytrajCB",
          "corrplus", "corrplusLMI", "corrplusCOM", "corrplusCOMLMI", "corrplusPsi", "corrplusPhi", "corrplusOmega",
         "gRINN", "gRINNcorr", "g_correlationCA", "g_correlationCOM"] #"dynetanCOM", 
-metricsl = ["cfb", "cfb_subset", "btw", "btw_subset"]
-filterbyl = ["whole", "incontact", "intercontact"]
+# metricsl = ["cfb", "cfb_subset", "btw", "btw_subset"]
+metricsl = ["cfb", "btw"]
+#filterbyl = ["whole", "incontact", "intercontact"]
+filterbyl = ["whole"]
 
 
 
@@ -202,10 +206,11 @@ class Pair:
     
     
     def view(self, pkg, metric, normalize=True, filterby="incontact", num=20):
-        norm = self.state1._get_norm_str(normalize)
+        # norm = self.state1._get_norm_str(normalize)
+        # self.state1.pkg.filterby._norm
         if not hasattr(self, "delta"): self.get_delta()
-        if not rhasattr(self.delta, filterby, norm, pkg): self.analyze(pkg)
-        return rgetattr(self.delta, filterby, norm, pkg).view(metric, num, filterby)
+        if not rhasattr(self.delta, capitalize(pkg), capitalize(filterby), norm(normalize)): self.analyze(pkg, filterby=filterby, normalize=normalize)
+        return rgetattr(self.delta, capitalize(pkg), capitalize(filterby), norm(normalize)).view(metric, num)
 
 
 
@@ -214,15 +219,14 @@ class Store:
     pass
 
 class State:#(Entity):    
-    def __init__(self, pdb='', trajs:list=[], path='', psf=None, parameters=None, gpcrmd=True, idx=''):
-        self._gpcrmd = gpcrmd
-        
-        if gpcrmd:
-            self._gpcrmdid = idx
-            self._path = f"{idx}"
+    def __init__(self, pdb='', trajs:list=[], path='', psf=None, parameters=None, GPCRmdID=None):
+        if GPCRmdID:
+            self._gpcrmdid = GPCRmdID
+            self._path = f"{GPCRmdID}"
             os.makedirs(self._path, exist_ok=True)
             if not any([re.search("(pdb$|psf$|xtc$|parameters$)", file) for file in os.listdir(self._path)]):
                 self._download_files()
+                
             files = os.listdir(self._path)
             self._pdbf = self._path + '/' + next(file for file in files if re.search("pdb$", file))
             self._psff = self._path + '/' + next(file for file in files if re.search("psf$", file))
@@ -306,7 +310,7 @@ class State:#(Entity):
     def _get_mdau(self):
         mdau = mda.Universe(self._pdbf, *self._trajs.values())
         
-        if self._gpcrmd:
+        if hasattr(self, "_gpcrmdid"):
             prot = mdau.select_atoms("protein")
 
             prot_numsf = f"{self._datadir}/gpcrdb_gennums.pdb"
@@ -330,6 +334,8 @@ class State:#(Entity):
     
     
     def _add_comtrajs(self):
+        print(f"Making trajectories of residue COM for {self._pdbf}")
+        
         compath = f"{self._datadir}/COMtrajs"
         if not os.path.isdir(compath): os.makedirs(compath, exist_ok=True)
 
@@ -361,6 +367,7 @@ class State:#(Entity):
     
     def _make_dcds(self):
         import parmed, mdtraj
+        print(f"Making dcd trajectories for {self._pdbf}")
         
         dcdpath = f"{self._datadir}/dcds"
         if not os.path.isdir(dcdpath): os.makedirs(dcdpath, exist_ok=True)
@@ -410,14 +417,14 @@ class State:#(Entity):
         
         
     def _set_pkgclass(self, state, pkg):
-        pkgclass = eval(f"Pkgs.{pkg[0].upper() + pkg[1:]}") if isinstance(pkg, str) else pkg
+        pkgclass = eval(f"Pkgs.{capitalize(pkg)}") if isinstance(pkg, str) else pkg
         if not hasattr(state, pkgclass.__name__):
             setattr(state, pkgclass.__name__, pkgclass(state))
     
     
     
     
-    def analyze(self, pkg="all", metrics="all", filterby="incontact", normalize=True): # ow
+    def analyze(self, pkg="all", metrics="all", filterby="incontact", normalize=True, cores=1): # ow
         pkgs = pkgsl if pkg=="all" else pkg if isinstance(pkg, list) else [pkg]
         metrics = metricsl if metrics=="all" else metrics if isinstance(metrics, list) else [metrics]
         filterbys = filterbyl if filterby=="all" else filterby if isinstance(filterby, list) else [filterby]
@@ -429,18 +436,17 @@ class State:#(Entity):
         for filterby in filterbys:
             for pkg in pkgs:
                 self._set_anaclass(self, pkg, metrics, filterby, normalize)
-                
         
         mypool.close()
         mypool.join()
     
     
     def _set_anaclass(self, state, pkg, metrics, filterby, normalize):
-        pkgclass = eval(f"Pkgs.{pkg[0].upper() + pkg[1:]}") if isinstance(pkg, str) else pkg
+        pkgclass = eval(f"Pkgs.{capitalize(pkg)}") if isinstance(pkg, str) else pkg
         pkgobj = getattr(state, pkgclass.__name__)
 
         # anaclass = eval(f"Analysis.{filterby[0].upper() + filterby[1:]}") if isinstance(filterby, str) else filterby
-        anaclass = eval(f"{filterby[0].upper() + filterby[1:]}") if isinstance(filterby, str) else filterby
+        anaclass = eval(f"{capitalize(filterby)}") if isinstance(filterby, str) else filterby
         if not hasattr(pkgobj, anaclass.__name__):
             setattr(pkgobj, anaclass.__name__, anaclass(pkgobj, metrics, normalize))
         
@@ -448,11 +454,11 @@ class State:#(Entity):
     
         
     def view(self, pkg, metric, normalize=True, filterby="incontact", num=20):
-        norm = self._get_norm_str(normalize)
+        # norm = self._get_norm_str(normalize)
         # if not rhasattr(self.data, filterby, norm, pkg):
         #     self.analyze(pkg, normalize=normalize, filterby=filterby)
             
-        return rgetattr(self, filterby, norm, pkg).view(metric, num, filterby)
+        return rgetattr(self, capitalize(pkg), capitalize(filterby), norm(normalize)).view(metric, num)
 
 
 
@@ -488,9 +494,10 @@ class Edges:
     
     def _get_cmap(self):
         if isinstance(self._parent, Pair): 
-            colors = {"inactive": "r", "active": "g",
-                     "Gprotein": "y", "Barr": "b"}
-            color2, color1 = colors[self._parent.state1.name], colors[self._parent.state2.name]
+            # colors = {"inactive": "r", "active": "g",
+            #          "Gprotein": "y", "Barr": "b"}
+            # color2, color1 = colors[self._parent.state1._pdbf], colors[self._parent.state2._pdbf]
+            color2, color1 = ["r", "g"]
         else:
             color1, color2 = "orange", "turquoise"
         
@@ -525,7 +532,7 @@ class Edges:
         pl.gca().set_visible(False)
         if isinstance(self._parent, Pair):
             cbar = pl.colorbar(orientation = "horizontal", ticks = [0,1])
-            cbar.ax.set_xticklabels([self._parent.state2.name.capitalize(), self._parent.state1.name.capitalize()])
+            cbar.ax.set_xticklabels([self._parent.state2._pdbf.capitalize(), self._parent.state1._pdbf.capitalize()])
         else:
             cbar = pl.colorbar(orientation = "horizontal", ticks = [])
 
@@ -574,8 +581,7 @@ class Analysis:
         self.normalize = normalize
         self._name = self.__class__.__name__
         
-        self._norm = lambda normalize: "norm" if normalize else "no_norm"
-        self._path = lambda norm: f"{self.pkg.state.name}/data/{self.pkg._name}/{self._name}/{norm}" # lambda norm might not be needed
+        self._path = lambda norm: f"{self.pkg.state._datadir}/{self.pkg._name}/{self._name}/{norm}" # lambda norm might not be needed
         self._datapq = lambda norm, metric: f"{self._path(norm)}/{metric}.pq"
         
         self._filtdata = self._get_filt_data()
@@ -591,7 +597,7 @@ class Analysis:
         
     
     def add_metrics(self, metrics, normalize=True):
-        norm = self._norm(normalize)
+        norm = norm(normalize)
         os.makedirs(self._path(norm), exist_ok=True)
         
         if not hasattr(self, norm):
@@ -616,7 +622,7 @@ class Analysis:
 
         def get_data(args):
             pqs, data = args
-            print(f"adding analyzed {norm} data of {self._name} for {self.pkg.state.name}")
+            print(f"adding analyzed {norm} data of {self._name} for {self.pkg.state._pdbf}")
             
             for pq in pqs:
                 metric = pq.rsplit("/", 1)[-1].split(".")[0]

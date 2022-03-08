@@ -1,38 +1,25 @@
-import sys, os, pandas, time, importlib#, lazy_import#, pexpect
+import sys, os, pandas, time, importlib
 import numpy as np
 from .utils import *
 from contextlib import redirect_stdout, redirect_stderr
 from lazyasd import LazyObject
 
-# sys.path.append(f"{__file__.rsplit('/', 1)[0]}/Forks")
 
 
-
-# def _cannot_import(pkgname):
-#         return f"{pkgname} can't be imported"
 
 
 
 class Pkg: #abc.ABC
     def __init__(self, state):#, ¿pkg?): #metrics="all", filterby="whole", normalize=True, cores=None, ow=False
-        args = locals()
-        del args["self"]
-        if "args" in args: del args["args"]
-        self.__dict__.update(args)
-        
+        self.state = state        
         self._name = self.__class__.__name__
+        
         # self._path = lambda filterby: f"{self.state.name}/data/{self._name}/{filterby}" # lambda FILTERBY MIGHT BE NOT NEEDED 
-        self._path = f"{self.state._path}/data/{self._name}/raw"
+        self._path = f"{self.state._datadir}/{self._name}/raw"
         os.makedirs(self._path, exist_ok=True)
         self._rawpq = lambda xtc: f"{self._path}/{xtc if isinstance(xtc, int) else xtc.rsplit('.', 1)[0]}.pq"
         
-        #try:     
-            # if self.state.__class__.__name__ == "State":
-        # with open(f"{self._path}/{self._name}.log", "a+") as f:
-        #     with redirect_stdout(f), redirect_stderr(f):
         self._initialize()
-        #except ImportError:
-        #    print(f"{self._name} can't be imported")
         
         
     
@@ -40,8 +27,6 @@ class Pkg: #abc.ABC
         pqs = [self._rawpq(xtc) for xtc in self.state._trajs]
         no_exist = lambda pqs: [not os.path.isfile(pq) for pq in pqs]
         
-        # with open(f"{self._path}/{self._name}.log", "a+") as f:
-        #     with redirect_stdout(f), redirect_stderr(f):
         if any(no_exist(pqs)):
             for xtc in (xtc for xtc in self.state._trajs if no_exist(pqs)[xtc-1]):
                 self._calculate(xtc)
