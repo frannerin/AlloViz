@@ -4,17 +4,44 @@ from .utils import *
 from contextlib import redirect_stdout, redirect_stderr
 from lazyasd import LazyObject
 
+imports = {
+"_getcontacts_contacts": ".Forks.getcontacts.get_dynamic_contacts",
+"_getcontacts_freqs": ".Forks.getcontacts.get_contact_frequencies",
+"_dynetan": ".Forks.dynetan.dynetan.proctraj",
+"_corrplus": ".Forks.correlationplus.correlationplus.calculate",
+"_mdtask": ".Forks.MD-TASK.mdtask.calc_correlation",
+"_pytraj": "pytraj",
+"_pyinteraph": "pyinteraph.main",
+"_grinn_args": ".Forks.gRINN_Bitbucket.source.grinn",
+"_grinn_calc": ".Forks.gRINN_Bitbucket.source.calc"
+}
+
+for key, val in imports.items():
+    exec(f"{key} = LazyObject(lambda: importlib.import_module('{val}', package='AlloViz'), globals(), '{key}')")
+# locals().update( {key: LazyObject(lambda: importlib.import_module(val, package="AlloViz"), globals(), key) for key, val in imports.items()} )
+
+
+# print(locals(), globals())
 
 
 
+# get_dynamic_contacts = LazyObject(lambda: importlib.import_module(".Forks.getcontacts.get_dynamic_contacts", package="AlloViz"), globals(), "get_dynamic_contacts")
+# get_contact_frequencies = LazyObject(lambda: importlib.import_module(".Forks.getcontacts.get_contact_frequencies", package="AlloViz"), globals(), "get_contact_frequencies")
+# dynetanf = LazyObject(lambda: importlib.import_module(".Forks.dynetan.dynetan.proctraj", package="AlloViz").DNAproc, globals(), "dynetanf")
+# corrplusf = LazyObject(lambda: importlib.import_module(".Forks.correlationplus.correlationplus.calculate", package="AlloViz"), globals(), "corrplusf")
+# mdtaskf = LazyObject(lambda: importlib.import_module(".Forks.MD-TASK.mdtask.calc_correlation", package="AlloViz"), globals(), "mdtaskf")
+# pytrajf = LazyObject(lambda: importlib.import_module("pytraj"), globals(), "pytrajf")
+# pyinteraphf = LazyObject(lambda: importlib.import_module("pyinteraph.main"), globals(), "pyinteraphf")
+# grinnf = LazyObject(lambda: importlib.import_module(".Forks.gRINN_Bitbucket.source.grinn", package="AlloViz"), globals(), "grinnf")
+# calcf = LazyObject(lambda: importlib.import_module(".Forks.gRINN_Bitbucket.source.calc", package="AlloViz"), globals(), "calcf")
 
 
-class Pkg: #abc.ABC
-    def __init__(self, state):#, ¿pkg?): #metrics="all", filterby="whole", normalize=True, cores=None, ow=False
+
+class Pkg:
+    def __init__(self, state):
         self.state = state        
         self._name = self.__class__.__name__
         
-        # self._path = lambda filterby: f"{self.state.name}/data/{self._name}/{filterby}" # lambda FILTERBY MIGHT BE NOT NEEDED 
         self._path = f"{self.state._datadir}/{self._name}/raw"
         os.makedirs(self._path, exist_ok=True)
         self._rawpq = lambda xtc: f"{self._path}/{xtc if isinstance(xtc, int) else xtc.rsplit('.', 1)[0]}.pq"
@@ -37,7 +64,7 @@ class Pkg: #abc.ABC
                 time.sleep(5)
             return pqs
                 
-        def get_raw(pqs): # *args
+        def get_raw(pqs):
             print(f"adding raw data of {self._name} for {self.state._pdbf}: ", pqs)
             flist = map(lambda pq: pandas.read_parquet(pq), pqs)
             df = pandas.concat(flist, axis=1)
@@ -54,7 +81,7 @@ class Pkg: #abc.ABC
         
     
     def _calculate(self, xtc):
-        # pool = get_pool()
+        pool = get_pool()
         pdb = self.state._pdbf
         traj = self.state._trajs[xtc]
         pq = self._rawpq(xtc)
@@ -62,15 +89,10 @@ class Pkg: #abc.ABC
         return pool, pdb, traj, pq
     
     
-    def _send_and_log(self, *args):#func=None, args:tuple=(), callback=print):
-        # if func is None:
-        #     func = self._computation
+    def _send_and_log(self, *args):
         with open(f"{self._path}/{self._name}.log", "a+") as f:
             with redirect_stdout(f), redirect_stderr(f):
                 return self._computation(*args)
-                # get_pool().apply_async(func = func,
-                #                        args = args,
-                #                        callback = callback)
         
     
     # abstractmethod
@@ -145,19 +167,8 @@ class COMpkg(Pkg):
 
 
 class Getcontacts(Multicorepkg):
-    # sys.path.append(f"{__file__.rsplit('/', 1)[0]}/Forks/getcontacts") #/getcontacts
-    # get_dynamic_contacts = lazy_import.lazy_module("get_dynamic_contacts")
-    # get_contact_frequencies = lazy_import.lazy_module("get_contact_frequencies")
-    # from getcontacts import get_dynamic_contacts, get_contact_frequencies
-    
-    # from .Forks.getcontacts import get_dynamic_contacts, get_contact_frequencies
-    get_dynamic_contacts = LazyObject(lambda: importlib.import_module(".Forks.getcontacts.get_dynamic_contacts", package="AlloViz"), globals(), "get_dynamic_contacts")
-    get_contact_frequencies = LazyObject(lambda: importlib.import_module(".Forks.getcontacts.get_contact_frequencies", package="AlloViz"), globals(), "get_contact_frequencies")
-    
-    
     def __init__(self, state):        
         super().__init__(state)
-        
         
         
     def _calculate(self, xtc):
@@ -170,15 +181,14 @@ class Getcontacts(Multicorepkg):
         pool.apply_async(self._send_and_log,
                          args=(pdb, traj, xtc, pq, ctcs, freqs, self.taskcpus),
                          callback=self._save_pq)
-        # update_pdict((self.name, self._name, xtc), p)
         
         for _ in range(self.taskcpus-1): pool.apply_async(self._calculate_empty, args=(pq,))
         
         
     def _computation(self, pdb, traj, xtc, pq, ctcs, freqs, taskcpus):
         if not os.path.isfile(freqs):# or ow:
-            self.get_dynamic_contacts.main(f"--topology {pdb} --trajectory {traj} --output {ctcs} --itypes all --cores {taskcpus}".split())
-            self.get_contact_frequencies.main(f"--input_files {ctcs} --output_file {freqs}".split())
+            _getcontacts._contacts.main(f"--topology {pdb} --trajectory {traj} --output {ctcs} --itypes all --cores {taskcpus}".split())
+            _getcontacts._freqs.main(f"--input_files {ctcs} --output_file {freqs}".split())
         return freqs, xtc, pq
         
         
@@ -204,24 +214,9 @@ class Getcontacts(Multicorepkg):
 
 
 class Dynetan(Matrixoutput, Multicorepkg):
-    # try: 
-    #     from dynetan.proctraj import DNAproc as dynetan
-    # except:
-    #     print(_cannot_import(__qualname__))
-    #sys.path.append(f"{__file__.rsplit('/', 1)[0]}/Forks/dynetan/dynetan")
-    #dynetan = lazy_import.lazy_callable(".Forks.dynetan.dynetan.proctraj.DNAproc")
-    #from proctraj import DNAproc as dynetan
-    #from .Forks.dynetan.dynetan.proctraj import DNAproc as dynetan
-    #from .Forks.dynetan.dynetan import proctraj
-    
-    # from .Forks.dynetan.dynetan.proctraj import DNAproc as dynetan
-    dynetanf = LazyObject(lambda: importlib.import_module(".Forks.dynetan.dynetan.proctraj", package="AlloViz").DNAproc, globals(), "dynetanf")
-            
     def __init__(self, state):
         super().__init__(state)
-    
-    
-    
+        
     
     def _calculate(self, xtc):
         pool, pdb, traj, pq = super()._calculate(xtc)
@@ -229,12 +224,12 @@ class Dynetan(Matrixoutput, Multicorepkg):
         pool.apply_async(self._send_and_log,
                          args=(pdb, traj, xtc, pq, self.taskcpus),
                          callback=self._save_pq)
+        
         for _ in range(self.taskcpus-1): pool.apply_async(self._calculate_empty, args=(pq,))
     
     
-    
     def _computation(self, pdb, traj, xtc, pq, taskcpus):
-        obj = self.dynetanf()
+        obj = _dynetan.DNAproc()
         obj.loadSystem(pdb, traj) # pdb.replace("pdb", "psf")
         prot = obj.getU().select_atoms("protein")
 
@@ -263,11 +258,12 @@ class DynetanCOM(Dynetan, COMpkg):
         
     def _calculate(self, xtc):
         pool, pdb, traj, pq = COMpkg._calculate(self, xtc)
-        self.taskcpus = 4
+        
         pool.apply_async(self._send_and_log,
                          args=(pdb, traj, xtc, pq, self.taskcpus),
                          callback=self._save_pq)
-        #for _ in range(self.taskcpus-1): pool.apply_async(self._calculate_empty, args=(pq,))
+        
+        for _ in range(self.taskcpus-1): pool.apply_async(self._calculate_empty, args=(pq,))
 
 
 
@@ -279,18 +275,6 @@ class DynetanCOM(Dynetan, COMpkg):
 
 
 class Corrplus(Matrixoutput):
-    # try:
-    #     import correlationplus.calculate as corrplus
-    # except:
-    #     print(_cannot_import(__qualname__))
-    #sys.path.append(f"{__file__.rsplit('/', 1)[0]}/Forks/correlationplus/correlationplus")
-    #corrplus = lazy_import.lazy_module(".Forks.correlationplus.correlationplus.calculate")
-    #print(dir(), dir(corrpluscalc))
-    # import correlationplus.calculate as corrplus
-    
-    # from .Forks.correlationplus.correlationplus import calculate as corrplus
-    corrplusf = LazyObject(lambda: importlib.import_module(".Forks.correlationplus.correlationplus.calculate", package="AlloViz"), globals(), "corrplusf")
-        
     def __init__(self, state):
         super().__init__(state)
         
@@ -304,7 +288,7 @@ class Corrplus(Matrixoutput):
     
     
     def _computation(self, pdb, traj, xtc, pq):
-        corr = self.corrplusf.calcMDnDCC(pdb, traj, saveMatrix = False)
+        corr = _corrplus.calcMDnDCC(pdb, traj, saveMatrix = False)
         return corr, xtc, pq
 
         
@@ -315,7 +299,7 @@ class CorrplusLMI(Corrplus):
         super().__init__(state)
     
     def _computation(self, pdb, traj, xtc, pq):
-        corr = self.corrplusf.calcMD_LMI(pdb, traj, saveMatrix = False)
+        corr = _corrplus.calcMD_LMI(pdb, traj, saveMatrix = False)
         return corr, xtc, pq
         
         
@@ -350,32 +334,36 @@ class CorrplusCOMLMI(CorrplusLMI, COMpkg):
         
 class CorrplusPsi(Corrplus):        
     def __init__(self, state):
+        self._dih = "psi"
         super().__init__(state)
     
     def _computation(self, pdb, traj, xtc, pq):
-        dih = "psi"
-        corr = self.corrplusf.calcMDsingleDihedralCC(pdb, traj, dihedralType = dih, saveMatrix = False)
+        # dih = "psi"
+        corr = _corrplus.calcMDsingleDihedralCC(pdb, traj, dihedralType = self._dih, saveMatrix = False)
         return corr, xtc, pq
 
     
-class CorrplusPhi(Corrplus):        
+class CorrplusPhi(CorrplusPsi, Corrplus):        
     def __init__(self, state):
-        super().__init__(state)
+        self._dih = "phi"
+        Corrplus.__init__(self, state)
     
-    def _computation(self, pdb, traj, xtc, pq):
-        dih = "phi"
-        corr = self.corrplusf.calcMDsingleDihedralCC(pdb, traj, dihedralType = dih, saveMatrix = False)
-        return corr, xtc, pq
+    # def _computation(self, pdb, traj, xtc, pq):
+    #     # dih = "phi"
+    #     corr = _corrplus.calcMDsingleDihedralCC(pdb, traj, dihedralType = self._dih, saveMatrix = False)
+    #     return corr, xtc, pq
 
 
 class CorrplusOmega(Corrplus):        
     def __init__(self, state):
-        super().__init__(state)
+        self._dih = "omega"
+        Corrplus.__init__(self, state)
+        # super().__init__(state)
     
-    def _computation(self, pdb, traj, xtc, pq):
-        dih = "omega"
-        corr = self.corrplusf.calcMDsingleDihedralCC(pdb, traj, dihedralType = dih, saveMatrix = False)
-        return corr, xtc, pq
+    # def _computation(self, pdb, traj, xtc, pq):
+    #     # dih = "omega"
+    #     corr = self.corrplusf.calcMDsingleDihedralCC(pdb, traj, dihedralType = self._dih, saveMatrix = False)
+    #     return corr, xtc, pq
 
 
 
@@ -383,19 +371,6 @@ class CorrplusOmega(Corrplus):
     
 
 class MDTASK(Matrixoutput):
-    # try:
-    #     import MDTASK.calc_correlation as mdtask
-    # except:
-    #     print(_cannot_import(__qualname__))
-    # sys.path.append(f"{__file__.rsplit('/', 1)[0]}/Forks/MD-TASK/mdtask")
-    # mdtask = lazy_import.lazy_module("calc_correlation") # REVERT mdtask FOLDER CREATION!
-    # import mdtask.calc_correlation as mdtask
-    # from .Forks.correlationplus.correlationplus import calculate as corrplus ADAPT TO MD-TASK WHEN FOLDER CREATION IS REVERSED
-    # from .Forks.correlationplus.correlationplus import calculate as corrplus
-    
-    mdtaskf = LazyObject(lambda: importlib.import_module(".Forks.MD-TASK.mdtask.calc_correlation", package="AlloViz"), globals(), "mdtaskf")
-    
-    
     def __init__(self, state):
         super().__init__(state)
     
@@ -407,8 +382,9 @@ class MDTASK(Matrixoutput):
                          args=(pdb, traj, xtc, pq),
                          callback=self._save_pq)
     
+    
     def _computation(self, pdb, traj, xtc, pq):
-        corr = self.mdtaskf.correlate(self.mdtaskf.parse_traj(traj = traj, topology = pdb))
+        corr = _mdtask.correlate(_mdtask.parse_traj(traj = traj, topology = pdb))
         return corr, xtc, pq
 
 
@@ -420,15 +396,6 @@ class MDTASK(Matrixoutput):
 
 
 class PytrajCA(Matrixoutput):
-    # try:
-    #     import pytraj
-    # except:
-    #     print(_cannot_import(__qualname__))
-    # corrplus = lazy_import.lazy_module("pytraj")
-    
-    #import pytraj
-    pytrajf = LazyObject(lambda: importlib.import_module("pytraj"), globals(), "pytrajf")
-            
     def __init__(self, state):
         super().__init__(state)
     
@@ -442,11 +409,10 @@ class PytrajCA(Matrixoutput):
                          callback=self._save_pq)
     
     
-    
     def _computation(self, pdb, traj, mask, xtc, pq):
-        top = self.pytrajf.load_topology(pdb)
-        traj = self.pytrajf.load(traj, top, mask = f'@{mask}')
-        corr = self.pytrajf.matrix.correl(traj, f'@{mask}')
+        top = _pytraj.load_topology(pdb)
+        traj = _pytraj.load(traj, top, mask = f'@{mask}')
+        corr = _pytraj.matrix.correl(traj, f'@{mask}')
         return corr, xtc, pq
 
     
@@ -473,22 +439,8 @@ class PytrajCB(PytrajCA):
         
         
 class Pyinteraph(Matrixoutput):
-    # try:
-    #     #print(dir(), __module__, __qualname__)
-    #     # from pyinteraph.main import main as pyinteraph
-    #     import pyinteraph.main as pyinteraph
-    # except:
-    #     print(_cannot_import(__qualname__))
-    # sys.path.append(f"{__file__.rsplit('/', 1)[0]}/Forks/pyinteraph2/pyinteraph")
-    # pyinteraph = lazy_import.lazy_module("main")
-    #import pyinteraph.main as pyinteraph
-    #from .Forks.pyinteraph2.pyinteraph import main as pyinteraph
-    pyinteraphf = LazyObject(lambda: importlib.import_module("pyinteraph.main"), globals(), "pyinteraphf")
-    
-                
     def __init__(self, state):        
         super().__init__(state)
-        
         
         
     def _calculate(self, xtc):
@@ -502,7 +454,7 @@ class Pyinteraph(Matrixoutput):
         
         
     def _computation(self, pdb, traj, xtc, pq, CLIargs):
-        corr = self.pyinteraphf.main(f"-s {pdb} -t {traj} {CLIargs}".split()) / 100
+        corr = _pyinteraph.main(f"-s {pdb} -t {traj} {CLIargs}".split()) / 100
         return corr, xtc, pq
 
     
@@ -528,12 +480,8 @@ class PyinteraphEne(Pyinteraph):
 
 # only for local
 class G_correlationCA(Matrixoutput):
-    # os.environ["GMXDIR"] = "/home/frann/gromacs-3.3.1/"
-    # os.environ["GMXLIB"] = "/home/frann/gromacs-3.3.1/gromacs/share/gromacs/top/"
-                
     def __init__(self, state):        
         super().__init__(state)
-        
         
         
     def _calculate(self, xtc):
@@ -547,7 +495,6 @@ class G_correlationCA(Matrixoutput):
     def _computation(self, pdb, traj, xtc, pq):
         # Send g_correlation
         if not os.path.isfile(f"{pq}.dat"):
-            # os.system("")
             os.system(f"""
 module load g_correlation
 export GMXLIB=/soft/EB_repo/bio/sequence/programs/noarch/gromacs/3.3.1/share/gromacs/top/
@@ -556,19 +503,6 @@ g_correlation -f {traj} -s {pdb} -o {pq}.dat <<EOF
 3
 EOF
 """)
-            # proc = pexpect.spawnu(f"/home/frann/g_correlation -f {traj} -s {pdb} -o {pq}.dat")
-            # proc.logfile = sys.stdout
-            # proc.expect('Select a group: ')
-            # # proc.send('1')
-            # proc.sendline('1')
-            # proc.expect('Select a group: ')
-            # # proc.send('3')
-            # proc.sendline('3')
-            # proc.sendline()
-            # proc.sendline()
-            # proc.wait()
-        
-        
         # Read output.dat
         size = self.state.mdau.select_atoms("protein and name CA").n_atoms
         corr = np.empty([size, size])
@@ -631,10 +565,6 @@ class dcdpkg(Matrixoutput):
         
         
 class GRINN(dcdpkg, Multicorepkg):
-    #from .Forks.gRINN_Bitbucket.source import grinn, calc
-    grinnf = LazyObject(lambda: importlib.import_module(".Forks.gRINN_Bitbucket.source.grinn", package="AlloViz"), globals(), "grinnf")
-    calcf = LazyObject(lambda: importlib.import_module(".Forks.gRINN_Bitbucket.source.calc", package="AlloViz"), globals(), "calcf")
-
     from .Forks.gRINN_Bitbucket import source
     from distutils.spawn import find_executable
     namd = find_executable('namd2')
@@ -645,28 +575,27 @@ class GRINN(dcdpkg, Multicorepkg):
         super().__init__(state)
         
         
-        
     def _calculate(self, xtc):
         pool, pdb, traj, pq = super()._calculate(xtc)
+        out = f"{self._path}/{xtc}"
         psf = self.state._protf("psf")
         params = self.state._paramf
         
         pool.apply_async(self._send_and_log,
-                         args=(pdb, traj, xtc, pq, psf, params, self.taskcpus), # psf, self.taskcpus
+                         args=(pdb, traj, xtc, pq, psf, params, self.taskcpus),
                          callback=self._save_pq)
         
         if self._name == "GRINN":
             for _ in range(self.taskcpus-1): pool.apply_async(self._calculate_empty, args=(pq,))
         
         
-    def _computation(self, pdb, traj, xtc, pq, psf, params, cores):
-        out = f"{self._path}/{xtc}"
+    def _computation(self, pdb, traj, out, xtc, pq, psf, params, cores):
         if os.path.isdir(out):
             from shutil import rmtree
             rmtree(out)
             
-        self.calcf.getResIntEn(self.grinnf.arg_parser(f"-calc --pdb {pdb} --top {psf} --traj {traj} --exe {self.namd} --outfolder {out} --numcores {cores} --parameterfile {params}".split())) # calc.getResIntCorr(grinn.arg_parser(f"".split()), logfile=None)
-        corr = np.loadtxt(f"{out}/energies_intEnMeanTotal.dat") # energies_resCorr.dat
+        _grinn.calc.getResIntEn(_grinn.args.arg_parser(f"-calc --pdb {pdb} --top {psf} --traj {traj} --exe {self.namd} --outfolder {out} --numcores {cores} --parameterfile {params}".split()))
+        corr = np.loadtxt(f"{out}/energies_intEnMeanTotal.dat")
         return corr, xtc, pq
 
     
@@ -676,13 +605,8 @@ class GRINNcorr(GRINN):
     def __init__(self, state):
         super().__init__(state)
         
-    def _computation(self, pdb, traj, xtc, pq, psf, params, cores):
-        out = f"{self._path}/{xtc}"
-        # if os.path.isdir(out):
-        #     import shutil.rmtree
-        #     shutil.rmtree(out)
-            
-        self.calcf.getResIntCorr(self.grinnf.arg_parser(f"-corr --corrinfile {out}/energies_intEnTotal.csv".split()), logfile=None)
+    def _computation(self, pdb, traj, out, xtc, pq, psf, params, cores):
+        _grinn.calc.getResIntCorr(_grinn.args.arg_parser(f"-corr --corrinfile {out}/energies_intEnTotal.csv".split()), logfile=None)
         corr = np.loadtxt(f"{out}/energies_resCorr.dat.dat") # 
         return corr, xtc, pq
 
