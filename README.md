@@ -38,6 +38,7 @@ The package is designed for use in interactive notebooks (i.e., [Jupyter](https:
 A State is simply defined with the GPCRmd dynamics ID number, with which files are automatically retrieved. For example:
 
 ```python
+import AlloViz
 activeMuOR = AlloViz.State(GPCRmdID=169)
 ```
 
