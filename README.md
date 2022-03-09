@@ -22,7 +22,7 @@ The network can be analyzed with edge centrality metrics algorithms provided by 
 It is recommended to use a virtual environment. This repository includes submodules that need to be appropriately cloned alongside the main repository using the `--recursive` flag. At present, virtual environment dependencies can only be installed with conda due to vmd-python not being available in PyPi.
 
 ```bash
-git clone --recursive https://github.com/frannerin/AlloViz
+git clone --recursive --shallow-submodules https://github.com/frannerin/AlloViz
 cd AlloViz
 conda create AlloViz -c conda-forge --file environment.txt
 ```
