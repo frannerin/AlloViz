@@ -1,18 +1,24 @@
 [submodule "alloviz/Forks/getcontacts"]
 	path = alloviz/Forks/getcontacts
 	url = https://github.com/frannerin/getcontacts.git
+	shallow = true
 [submodule "alloviz/Forks/dynetan"]
 	path = alloviz/Forks/dynetan
 	url = https://github.com/frannerin/dynetan
+	shallow = true
 [submodule "alloviz/Forks/correlationplus"]
 	path = alloviz/Forks/correlationplus
 	url = https://github.com/frannerin/correlationplus
+	shallow = true
 [submodule "alloviz/Forks/MD-TASK"]
 	path = alloviz/Forks/MD-TASK
 	url = https://github.com/frannerin/MD-TASK
+	shallow = true
 [submodule "alloviz/Forks/pyinteraph2"]
 	path = alloviz/Forks/pyinteraph2
 	url = https://github.com/frannerin/pyinteraph2
+	shallow = true
 [submodule "alloviz/Forks/gRINN_Bitbucket"]
 	path = alloviz/Forks/gRINN_Bitbucket
 	url = https://bitbucket.org/fnerin/grinn_bitbucket.git
+	shallow = true

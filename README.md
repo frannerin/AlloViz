@@ -11,7 +11,7 @@
 
 A Python package to interactively compute, analyze and visualize protein allosteric communication (residue interaction) networks and delta-networks.
 
-AlloViz binds together some new modules with 8 Python packages that provide different ways of calculating residue interactions: [getcontacts](https://github.com/getcontacts/getcontacts), [correlationplus](https://github.com/tekpinar/correlationplus), [dynetan](https://github.com/melomcr/dynetan), [PyInteraph2](https://github.com/ELELAB/pyinteraph2), [pytraj](https://github.com/Amber-MD/pytraj), [MD-TASK](https://github.com/RUBi-ZA/MD-TASK), [gRINN](https://bitbucket.org/onursercinoglu/grinn) and [g_correlation](https://www.mpinat.mpg.de/grubmueller/g_correlation).
+AlloViz binds together some newly written modules with 8 Python packages that provide different ways of calculating residue interactions: [getcontacts](https://github.com/getcontacts/getcontacts), [correlationplus](https://github.com/tekpinar/correlationplus), [dynetan](https://github.com/melomcr/dynetan), [PyInteraph2](https://github.com/ELELAB/pyinteraph2), [pytraj](https://github.com/Amber-MD/pytraj), [MD-TASK](https://github.com/RUBi-ZA/MD-TASK), [gRINN](https://bitbucket.org/onursercinoglu/grinn) and [g_correlation](https://www.mpinat.mpg.de/grubmueller/g_correlation).
 
 For the same topology and molecular dynamics (MD) trajectory, the network can be constructed based on residue contacts, movement correlation or interaction energies, depending on the package selected. Moreover, for movement correlation, the movement tracked can be that of the whole residue, its center of mass, its alpha-C or its beta-C; and it can be calculated as the Pearson's correlation coefficient, Mutual Information (MI) or Linear MI (LMI). See [below](#available-information-sources-for-network-generation).
 
@@ -31,7 +31,7 @@ Then activate the environment with `conda activate AlloViz` and install the pack
 
 ## Quickstart
 
-There main class to be used is `State`, `Pair` is used to bind two States for delta-network analysis.
+The package is designed for use in interactive notebooks (i.e., [Jupyter](https://jupyter.org/)). The main class to be used is `State`; `Pair` allows to bind two States for delta-network analysis.
 
 ### for GPCRmd files
 
