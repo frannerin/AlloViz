@@ -22,7 +22,7 @@ The network can be analyzed with edge centrality metrics algorithms provided by 
 It is recommended to use a virtual environment. This repository includes submodules that need to be appropriately cloned alongside the main repository using the `--recursive` flag. At present, virtual environment dependencies can only be installed with conda due to vmd-python not being available in PyPi.
 
 ```bash
-git clone --recursive --shallow-submodules https://github.com/frannerin/AlloViz
+git clone --recursive --shallow-submodules -j 6 https://github.com/frannerin/AlloViz
 cd AlloViz
 conda create AlloViz -c conda-forge --file environment.txt
 ```
@@ -44,9 +44,9 @@ activeMuOR = AlloViz.State(GPCRmdID=169)
 And then network computations, analyses and visualizations are performed with associated class methods. For example:
 
 ```python
-activeMuOR.calculate(pkg = "Getcontacts")
-activeMuOR.analyze(metrics = "btw")
-activeMuOR.view("Getcontacts", "btw_avg")
+activeMuOR.calculate(pkg = "corrplusCOM")
+activeMuOR.analyze(metrics = "btw", filterby="whole")
+activeMuOR.view("corrplusCOM", "btw_avg", filterby="whole")
 ```
 
 ## Available information sources for network generation
