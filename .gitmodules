@@ -15,4 +15,4 @@
 	url = https://github.com/frannerin/pyinteraph2
 [submodule "alloviz/Forks/gRINN_Bitbucket"]
 	path = alloviz/Forks/gRINN_Bitbucket
-	url = https://fnerin@bitbucket.org/fnerin/grinn_bitbucket.git
+	url = https://bitbucket.org/fnerin/grinn_bitbucket.git
