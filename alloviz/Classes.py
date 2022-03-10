@@ -1,7 +1,9 @@
 import sys, os, io, re, pandas, time, requests
 import MDAnalysis as mda
 import numpy as np
-from multiprocess import Pool
+#from multiprocess import Pool, set_start_method
+#set_start_method("spawn", force=True)
+import multiprocess
 import matplotlib, nglview#, ipywidgets, matplotlib.cm
 from matplotlib import pyplot as pl
 
@@ -103,7 +105,7 @@ class Pair:
         if any(["COM" in pkg for pkg in pkgs]):
             for state in self.states: state._add_comtrajs()
         
-        mypool = Pool(cores)
+        mypool = multiprocess.get_context("spawn").Pool(cores)
         utils.pool = mypool
         print(utils.pool)
         
@@ -169,7 +171,7 @@ class Pair:
         metrics = metricsl if metrics=="all" else metrics if isinstance(metrics, list) else [metrics]
         filterbys = filterbyl if filterby=="all" else filterby if isinstance(filterby, list) else [filterby]
         
-        mypool = Pool(cores)
+        mypool = multiprocess.get_context("spawn").Pool(cores)
         utils.pool = mypool
         print(utils.pool)
         
@@ -406,7 +408,7 @@ class State:#(Entity):
         if any([re.search("(carma|grinn)", pkg.lower()) for pkg in pkgs]):
             self._make_dcds()
         
-        mypool = Pool(cores)
+        mypool = multiprocess.get_context("spawn").Pool(cores)
         utils.pool = mypool
         print(utils.pool)
         
@@ -429,7 +431,7 @@ class State:#(Entity):
         metrics = metricsl if metrics=="all" else metrics if isinstance(metrics, list) else [metrics]
         filterbys = filterbyl if filterby=="all" else filterby if isinstance(filterby, list) else [filterby]
         
-        mypool = Pool(cores)
+        mypool = multiprocess.get_context("spawn").Pool(cores)
         utils.pool = mypool
         print(utils.pool)
         

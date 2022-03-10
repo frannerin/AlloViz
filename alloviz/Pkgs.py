@@ -187,8 +187,8 @@ class Getcontacts(Multicorepkg):
         
     def _computation(self, pdb, traj, xtc, pq, ctcs, freqs, taskcpus):
         if not os.path.isfile(freqs):# or ow:
-            _getcontacts._contacts.main(f"--topology {pdb} --trajectory {traj} --output {ctcs} --itypes all --cores {taskcpus}".split())
-            _getcontacts._freqs.main(f"--input_files {ctcs} --output_file {freqs}".split())
+            _getcontacts_contacts.main(f"--topology {pdb} --trajectory {traj} --output {ctcs} --itypes all --cores {taskcpus}".split())
+            _getcontacts_freqs.main(f"--input_files {ctcs} --output_file {freqs}".split())
         return freqs, xtc, pq
         
         
