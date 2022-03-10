@@ -582,7 +582,7 @@ class GRINN(dcdpkg, Multicorepkg):
         params = self.state._paramf
         
         pool.apply_async(self._send_and_log,
-                         args=(pdb, traj, xtc, pq, psf, params, self.taskcpus),
+                         args=(pdb, traj, out, xtc, pq, psf, params, self.taskcpus),
                          callback=self._save_pq)
         
         if self._name == "GRINN":
@@ -594,7 +594,7 @@ class GRINN(dcdpkg, Multicorepkg):
             from shutil import rmtree
             rmtree(out)
             
-        _grinn.calc.getResIntEn(_grinn.args.arg_parser(f"-calc --pdb {pdb} --top {psf} --traj {traj} --exe {self.namd} --outfolder {out} --numcores {cores} --parameterfile {params}".split()))
+        _grinn_calc.getResIntEn(_grinn_args.arg_parser(f"-calc --pdb {pdb} --top {psf} --traj {traj} --exe {self.namd} --outfolder {out} --numcores {cores} --parameterfile {params}".split()))
         corr = np.loadtxt(f"{out}/energies_intEnMeanTotal.dat")
         return corr, xtc, pq
 
@@ -606,7 +606,7 @@ class GRINNcorr(GRINN):
         super().__init__(state)
         
     def _computation(self, pdb, traj, out, xtc, pq, psf, params, cores):
-        _grinn.calc.getResIntCorr(_grinn.args.arg_parser(f"-corr --corrinfile {out}/energies_intEnTotal.csv".split()), logfile=None)
+        _grinn_calc.getResIntCorr(_grinn_args.arg_parser(f"-corr --corrinfile {out}/energies_intEnTotal.csv".split()), logfile=None)
         corr = np.loadtxt(f"{out}/energies_resCorr.dat.dat") # 
         return corr, xtc, pq
 
