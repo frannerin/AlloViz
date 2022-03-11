@@ -479,26 +479,27 @@ class PyinteraphEne(Pyinteraph):
 
 
 # only for local
-class G_correlationCA(Matrixoutput):
+class G_corrCAMI(Matrixoutput):
     def __init__(self, state):        
         super().__init__(state)
         
         
     def _calculate(self, xtc):
         pool, pdb, traj, pq = super()._calculate(xtc)
+        CLIargs = f"-f {traj} -s {pdb} -o {pq}.dat"
         
         pool.apply_async(self._send_and_log,
-                         args=(pdb, traj, xtc, pq),
+                         args=(pdb, traj, xtc, pq, CLIargs),
                          callback=self._save_pq)
         
         
-    def _computation(self, pdb, traj, xtc, pq):
+    def _computation(self, pdb, traj, xtc, pq, CLIargs):
         # Send g_correlation
         if not os.path.isfile(f"{pq}.dat"):
             os.system(f"""
 module load g_correlation
 export GMXLIB=/soft/EB_repo/bio/sequence/programs/noarch/gromacs/3.3.1/share/gromacs/top/
-g_correlation -f {traj} -s {pdb} -o {pq}.dat <<EOF
+g_correlation {CLIargs} &> {self._path}/{xtc}.log <<EOF
 1
 3
 EOF
@@ -527,17 +528,51 @@ EOF
     
     
     
-class G_correlationCOM(G_correlationCA, COMpkg):
+class G_corrCOMMI(G_corrCAMI, COMpkg):
     def __init__(self, state):        
         super().__init__(state)
         
         
     def _calculate(self, xtc):
         pool, pdb, traj, pq = COMpkg._calculate(self, xtc)
+        CLIargs = f"-f {traj} -s {pdb} -o {pq}.dat"
         
         pool.apply_async(self._send_and_log,
-                         args=(pdb, traj, xtc, pq),
+                         args=(pdb, traj, xtc, pq, CLIargs),
                          callback=self._save_pq)
+        
+        
+        
+        
+class G_corrCALMI(G_corrCAMI):
+    def __init__(self, state):        
+        super().__init__(state)
+        
+        
+    def _calculate(self, xtc):
+        pool, pdb, traj, pq = super(G_corrCAMI, self)._calculate(xtc)
+        CLIargs = f"-f {traj} -s {pdb} -o {pq}.dat -linear"
+        
+        pool.apply_async(self._send_and_log,
+                         args=(pdb, traj, xtc, pq, CLIargs),
+                         callback=self._save_pq)
+    
+
+    
+class G_corrCOMLMI(G_corrCAMI, COMpkg):
+    def __init__(self, state):        
+        super().__init__(state)
+        
+        
+    def _calculate(self, xtc):
+        pool, pdb, traj, pq = COMpkg._calculate(self, xtc)
+        CLIargs = f"-f {traj} -s {pdb} -o {pq}.dat -linear"
+        
+        pool.apply_async(self._send_and_log,
+                         args=(pdb, traj, xtc, pq, CLIargs),
+                         callback=self._save_pq)
+        
+
         
         
         
@@ -565,10 +600,10 @@ class dcdpkg(Matrixoutput):
         
         
 class GRINN(dcdpkg, Multicorepkg):
-    from .Forks.gRINN_Bitbucket import source
     from distutils.spawn import find_executable
     namd = find_executable('namd2')
     if namd is None:
+        from .Forks.gRINN_Bitbucket import source
         namd = f"{source.__file__.rsplit('/', 1)[0]}/NAMD_2.14_Linux-x86_64-multicore/namd2"
                 
     def __init__(self, state):
