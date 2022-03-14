@@ -38,7 +38,7 @@ for key, val in imports.items():
 
 
 class Pkg:
-    def __init__(self, state):
+    def __init__(self, state, **kwargs):
         self.state = state        
         self._name = self.__class__.__name__
         
@@ -109,8 +109,12 @@ class Pkg:
 
 
 class Multicorepkg(Pkg):
-    def __init__(self, state, taskcpus = 3):
-        self.taskcpus = taskcpus
+    def __init__(self, state, **kwargs):
+        if "taskcpus" not in kwargs:
+            self.taskcpus = 3
+        else:
+            self.taskcpus = kwargs["taskcpus"]
+            
         super().__init__(state)
     
     def _calculate_empty(self, pqf):
@@ -125,7 +129,7 @@ class Multicorepkg(Pkg):
 
 
 class Matrixoutput(Pkg):
-    def __init__(self, state):
+    def __init__(self, state, **kwargs):
         self._selection = "protein"
         super().__init__(state)
     
@@ -147,7 +151,7 @@ class Matrixoutput(Pkg):
 
 
 class COMpkg(Pkg):
-    def __init__(self, state):
+    def __init__(self, state, **kwargs):
         if not hasattr(state, "_comtrajs"):
             self.state._add_comtrajs()
             
@@ -167,7 +171,7 @@ class COMpkg(Pkg):
 
 
 class Getcontacts(Multicorepkg):
-    def __init__(self, state):        
+    def __init__(self, state, **kwargs):        
         super().__init__(state)
         
         
@@ -214,7 +218,7 @@ class Getcontacts(Multicorepkg):
 
 
 class Dynetan(Matrixoutput, Multicorepkg):
-    def __init__(self, state):
+    def __init__(self, state, **kwargs):
         super().__init__(state)
         
     
@@ -252,7 +256,7 @@ class Dynetan(Matrixoutput, Multicorepkg):
 
 
 class DynetanCOM(Dynetan, COMpkg):
-    def __init__(self, state):
+    def __init__(self, state, **kwargs):
         super().__init__(state)
         
         
@@ -275,7 +279,7 @@ class DynetanCOM(Dynetan, COMpkg):
 
 
 class Corrplus(Matrixoutput):
-    def __init__(self, state):
+    def __init__(self, state, **kwargs):
         super().__init__(state)
         
         
@@ -295,7 +299,7 @@ class Corrplus(Matrixoutput):
         
         
 class CorrplusLMI(Corrplus):
-    def __init__(self, state):
+    def __init__(self, state, **kwargs):
         super().__init__(state)
     
     def _computation(self, pdb, traj, xtc, pq):
@@ -305,7 +309,7 @@ class CorrplusLMI(Corrplus):
         
         
 class CorrplusCOM(Corrplus, COMpkg):
-    def __init__(self, state):
+    def __init__(self, state, **kwargs):
         super().__init__(state)
         
     def _calculate(self, xtc):
@@ -319,7 +323,7 @@ class CorrplusCOM(Corrplus, COMpkg):
         
         
 class CorrplusCOMLMI(CorrplusLMI, COMpkg):
-    def __init__(self, state):
+    def __init__(self, state, **kwargs):
         super().__init__(state)
         
     def _calculate(self, xtc):
@@ -333,7 +337,7 @@ class CorrplusCOMLMI(CorrplusLMI, COMpkg):
         
         
 class CorrplusPsi(Corrplus):        
-    def __init__(self, state):
+    def __init__(self, state, **kwargs):
         self._dih = "psi"
         super().__init__(state)
     
@@ -344,9 +348,9 @@ class CorrplusPsi(Corrplus):
 
     
 class CorrplusPhi(CorrplusPsi, Corrplus):        
-    def __init__(self, state):
+    def __init__(self, state, **kwargs):
         self._dih = "phi"
-        Corrplus.__init__(self, state)
+        Corrplus.__init__(self, state, **kwargs)
     
     # def _computation(self, pdb, traj, xtc, pq):
     #     # dih = "phi"
@@ -355,9 +359,9 @@ class CorrplusPhi(CorrplusPsi, Corrplus):
 
 
 class CorrplusOmega(Corrplus):        
-    def __init__(self, state):
+    def __init__(self, state, **kwargs):
         self._dih = "omega"
-        Corrplus.__init__(self, state)
+        Corrplus.__init__(self, state, **kwargs)
         # super().__init__(state)
     
     # def _computation(self, pdb, traj, xtc, pq):
@@ -371,7 +375,7 @@ class CorrplusOmega(Corrplus):
     
 
 class MDTASK(Matrixoutput):
-    def __init__(self, state):
+    def __init__(self, state, **kwargs):
         super().__init__(state)
     
     
@@ -396,7 +400,7 @@ class MDTASK(Matrixoutput):
 
 
 class PytrajCA(Matrixoutput):
-    def __init__(self, state):
+    def __init__(self, state, **kwargs):
         super().__init__(state)
     
     
@@ -418,7 +422,7 @@ class PytrajCA(Matrixoutput):
     
     
 class PytrajCB(PytrajCA):
-    def __init__(self, state):
+    def __init__(self, state, **kwargs):
         super().__init__(state)
     
     
@@ -439,7 +443,7 @@ class PytrajCB(PytrajCA):
         
         
 class Pyinteraph(Matrixoutput):
-    def __init__(self, state):        
+    def __init__(self, state, **kwargs):        
         super().__init__(state)
         
         
@@ -460,7 +464,7 @@ class Pyinteraph(Matrixoutput):
     
     
 class PyinteraphEne(Pyinteraph):
-    def __init__(self, state):        
+    def __init__(self, state, **kwargs):        
         super().__init__(state)
         
         
@@ -480,7 +484,7 @@ class PyinteraphEne(Pyinteraph):
 
 # only for local
 class G_corrCAMI(Matrixoutput):
-    def __init__(self, state):        
+    def __init__(self, state, **kwargs):        
         super().__init__(state)
         
         
@@ -529,7 +533,7 @@ EOF
     
     
 class G_corrCOMMI(G_corrCAMI, COMpkg):
-    def __init__(self, state):        
+    def __init__(self, state, **kwargs):        
         super().__init__(state)
         
         
@@ -545,7 +549,7 @@ class G_corrCOMMI(G_corrCAMI, COMpkg):
         
         
 class G_corrCALMI(G_corrCAMI):
-    def __init__(self, state):        
+    def __init__(self, state, **kwargs):        
         super().__init__(state)
         
         
@@ -560,7 +564,7 @@ class G_corrCALMI(G_corrCAMI):
 
     
 class G_corrCOMLMI(G_corrCAMI, COMpkg):
-    def __init__(self, state):        
+    def __init__(self, state, **kwargs):        
         super().__init__(state)
         
         
@@ -574,6 +578,42 @@ class G_corrCOMLMI(G_corrCAMI, COMpkg):
         
 
         
+
+        
+# only for local
+class GSAtools(Matrixoutput):
+    def __init__(self, state, **kwargs):        
+        super().__init__(state)
+        
+        
+    def _calculate(self, xtc):
+        pool, pdb, traj, pq = super()._calculate(xtc)
+        out = f"{self._path}/{xtc}"
+        
+        pool.apply_async(self._send_and_log,
+                         args=(pdb, traj, xtc, pq, out),
+                         callback=self._save_pq)
+        
+        
+    def _computation(self, pdb, traj, xtc, pq, out):
+        # Send gsatools
+        if not os.path.isfile(f"{out}/lf_nMImat.out"):
+            os.system(f"""
+module load GSAtools
+g_sa_encode -s {pdb} -f {traj} -rmsdlf {out}/lf_rmsd.xvg -strlf {out}/lf_str.out -log {out}/log.log 
+g_sa_analyze -sa {out}/lf_str.out -MImatrix -MImat {out}/lf_MImat.out -eeMImat {out}/lf_eeMImat.out -jHmat {out}/lf_jHmat.out -nMImat {out}/lf_nMImat.out >>{out}/{xtc}.log 2>&1 
+""")
+        # Read output
+        corr = np.loadtxt(f"{out}/lf_nMImat.out")        
+        
+        return corr, xtc, pq        
+        
+        
+        
+        
+        
+        
+        
         
         
         
@@ -581,7 +621,7 @@ class G_corrCOMLMI(G_corrCAMI, COMpkg):
         
         
 class dcdpkg(Matrixoutput):
-    def __init__(self, state):
+    def __init__(self, state, **kwargs):
         if not hasattr(state, "_dcds"):
             self.state._make_dcds()
             
@@ -600,13 +640,22 @@ class dcdpkg(Matrixoutput):
         
         
 class GRINN(dcdpkg, Multicorepkg):
-    from distutils.spawn import find_executable
-    namd = find_executable('namd2')
-    if namd is None:
-        from .Forks.gRINN_Bitbucket import source
-        namd = f"{source.__file__.rsplit('/', 1)[0]}/NAMD_2.14_Linux-x86_64-multicore/namd2"
+    # from distutils.spawn import find_executable
+    # namd = find_executable('namd2')
+    # if namd is None:
+    #     from .Forks.gRINN_Bitbucket import source
+    #     namd = f"{source.__file__.rsplit('/', 1)[0]}/NAMD_2.14_Linux-x86_64-multicore/namd2"
                 
-    def __init__(self, state):
+    def __init__(self, state, **kwargs):
+        if "namd" in kwargs:
+            self.namd = kwargs["namd"]
+        else:
+            from distutils.spawn import find_executable
+            namd = find_executable('namd2')
+            
+        if namd is None:
+            raise Error("namd executable for gRINN computation not found")
+            
         super().__init__(state)
         
         
@@ -625,19 +674,31 @@ class GRINN(dcdpkg, Multicorepkg):
         
         
     def _computation(self, pdb, traj, out, xtc, pq, psf, params, cores):
-        if os.path.isdir(out):
+        outf = f"{out}/energies_intEnMeanTotal.dat"
+        
+        if os.path.isdir(out) and not os.path.isfile(outf):
             from shutil import rmtree
             rmtree(out)
             
-        _grinn_calc.getResIntEn(_grinn_args.arg_parser(f"-calc --pdb {pdb} --top {psf} --traj {traj} --exe {self.namd} --outfolder {out} --numcores {cores} --parameterfile {params}".split()))
-        corr = np.loadtxt(f"{out}/energies_intEnMeanTotal.dat")
+            _grinn_calc.getResIntEn(_grinn_args.arg_parser(f"-calc --pdb {pdb} --top {psf} --traj {traj} --exe {self.namd} --outfolder {out} --numcores {cores} --parameterfile {params}".split()))
+            
+            
+        corr = np.loadtxt(outf)
         return corr, xtc, pq
 
     
     
+    
+    def _save_pq(self, args):
+        super()._save_pq(args)
+        self.state._set_pkgclass(self.state, "gRINNcorr", namd = self.namd)
+        
+        
+    
+    
 
 class GRINNcorr(GRINN):
-    def __init__(self, state):
+    def __init__(self, state, **kwargs):
         super().__init__(state)
         
     def _computation(self, pdb, traj, out, xtc, pq, psf, params, cores):

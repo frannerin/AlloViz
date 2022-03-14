@@ -336,13 +336,12 @@ class State:#(Entity):
     
     
     def _add_comtrajs(self):
-        print(f"Making trajectories of residue COM for {self._pdbf}")
-        
         compath = f"{self._datadir}/COMtrajs"
         if not os.path.isdir(compath): os.makedirs(compath, exist_ok=True)
 
         compdb = f"{compath}/ca.pdb"
         if not os.path.isfile(compdb):
+            print(f"Making trajectories of residue COM for {self._pdbf}")
             prot = self.mdau.select_atoms("protein and name CA")
             prot.write(compdb)
         setattr(self, "_compdbf", compdb)
@@ -367,10 +366,7 @@ class State:#(Entity):
     
     
     
-    def _make_dcds(self):
-        import parmed, mdtraj
-        print(f"Making dcd trajectories for {self._pdbf}")
-        
+    def _make_dcds(self):        
         dcdpath = f"{self._datadir}/dcds"
         if not os.path.isdir(dcdpath): os.makedirs(dcdpath, exist_ok=True)
         setattr(self, "_protf", lambda ext: f"{dcdpath}/prot.{ext}")
@@ -382,6 +378,8 @@ class State:#(Entity):
         
         dcdpsf = self._protf("psf")
         if not os.path.isfile(dcdpsf):
+            import parmed
+            print(f"Making dcd trajectories for {self._pdbf}")
             psf = parmed.load_file(self._psff)[atoms.indices]
             psf.title = self._psff
             psf.write_psf(dcdpsf)
@@ -389,7 +387,8 @@ class State:#(Entity):
         
         dcds = [f"{dcdpath}/{xtc}.dcd" for xtc in self._trajs]
         setattr(self, "_dcds", {num: traj for num, traj in enumerate(dcds, 1)})
-
+        
+        import mdtraj
         for xtc, dcd in self._dcds.items():
             if not os.path.isfile(dcd):
                 traj = mdtraj.load(self._trajs[xtc], top=self._pdbf, atom_indices=atoms.indices)
@@ -399,7 +398,7 @@ class State:#(Entity):
     
     
     
-    def calculate(self, pkg="all", cores=1): # ow
+    def calculate(self, pkg="all", cores=1, **kwargs): # ow
         pkgs = pkgsl if pkg=="all" else pkg if isinstance(pkg, list) else [pkg]
         
         if any(["COM" in pkg for pkg in pkgs]):
@@ -412,16 +411,16 @@ class State:#(Entity):
         utils.pool = mypool
         print(utils.pool)
         
-        for pkg in pkgs: self._set_pkgclass(self, pkg)
+        for pkg in pkgs: self._set_pkgclass(self, pkg, **kwargs)
         
         mypool.close()
         mypool.join()
         
         
-    def _set_pkgclass(self, state, pkg):
+    def _set_pkgclass(self, state, pkg, **kwargs):
         pkgclass = eval(f"Pkgs.{capitalize(pkg)}") if isinstance(pkg, str) else pkg
         if not hasattr(state, pkgclass.__name__):
-            setattr(state, pkgclass.__name__, pkgclass(state))
+            setattr(state, pkgclass.__name__, pkgclass(state, **kwargs))
     
     
     
