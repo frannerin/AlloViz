@@ -692,10 +692,10 @@ class Analysis:
         
         try:
             analyzed = metricf(network, normalized=normalize, weight="weight", **nodes)
-        except LinAlgError:
+            edges = {tuple(sorted(k, key = lambda x: int(x.split(":")[-1]))): analyzed[k] for k in analyzed}
+        except: # LinAlgError
             print("Singular matrix!")
-            raise
-        edges = {tuple(sorted(k, key = lambda x: int(x.split(":")[-1]))): analyzed[k] for k in analyzed}
+            edges = {tuple(sorted(k, key = lambda x: int(x.split(":")[-1]))): 0 for k in network.edges()}
         
         return pandas.Series(edges)#, pq
     
