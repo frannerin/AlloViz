@@ -347,30 +347,65 @@ class CorrplusPsi(Corrplus):
         return corr, xtc, pq
 
     
+    
 class CorrplusPhi(CorrplusPsi, Corrplus):        
     def __init__(self, state, **kwargs):
         self._dih = "phi"
         Corrplus.__init__(self, state, **kwargs)
-    
-    # def _computation(self, pdb, traj, xtc, pq):
-    #     # dih = "phi"
-    #     corr = _corrplus.calcMDsingleDihedralCC(pdb, traj, dihedralType = self._dih, saveMatrix = False)
-    #     return corr, xtc, pq
 
+        
 
 class CorrplusOmega(Corrplus):        
     def __init__(self, state, **kwargs):
         self._dih = "omega"
         Corrplus.__init__(self, state, **kwargs)
-        # super().__init__(state)
+
+        
+        
+        
     
-    # def _computation(self, pdb, traj, xtc, pq):
-    #     # dih = "omega"
-    #     corr = self.corrplusf.calcMDsingleDihedralCC(pdb, traj, dihedralType = self._dih, saveMatrix = False)
-    #     return corr, xtc, pq
+class CorrplusDihs(Corrplus):        
+    def __init__(self, state, **kwargs):
+        super().__init__(state)
+        
+        
+    def _calculate(self, xtc):
+        pool, pdb, traj, pq = super(Corrplus, self)._calculate(xtc)
+        
+        Dihl = ["Phi", "Psi", "Omega"]
+        no_exist = lambda Dihl: [not rhasattr(self, "state", f"corrplus{Dih}") for Dih in Dihl]
+        
+        if any(no_exist(Dihl)):
+            for Dih in (Dih for Dih in Dihl if no_exist(Dihl)[Dihl.index(Dih)]):
+                self.state._set_pkgclass(self.state, f"corrplus{Dih}")
 
-
-
+               
+        def wait_calculate(Dihl):
+            not_finished = lambda Dihl: [not rhasattr(self, "state", f"corrplus{Dih}", "raw") for Dih in Dihl]
+            while any(not_finished(Dihl)):
+                time.sleep(5)
+            return Dihl
+                
+        def save_pq(Dihl):
+            dfs = [rgetattr(self, "state", f"corrplus{Dih}", "raw")[f"{xtc}"].abs() for Dih in Dihl] #.iloc
+            
+            final = None
+            for df in dfs:
+                if final is None:
+                    final = df
+                else:
+                    final = final + df
+                    
+            df = (final - final.min()) / (final.max() - final.min()) # This is done column-wise
+            pandas.DataFrame(df).to_parquet(pq)
+            
+            
+        pool.apply_async(wait_calculate,
+                         args=(Dihl,),
+                         callback=save_pq)
+    
+    
+    
     
     
 
@@ -651,10 +686,9 @@ class GRINN(dcdpkg, Multicorepkg):
             self.namd = kwargs["namd"]
         else:
             from distutils.spawn import find_executable
-            namd = find_executable('namd2')
-            
-        if namd is None:
-            raise Error("namd executable for gRINN computation not found")
+            self.namd = find_executable('namd2')
+            if self.namd is None:
+                raise Exception("namd executable for gRINN computation not found")
             
         super().__init__(state)
         
@@ -676,9 +710,10 @@ class GRINN(dcdpkg, Multicorepkg):
     def _computation(self, pdb, traj, out, xtc, pq, psf, params, cores):
         outf = f"{out}/energies_intEnMeanTotal.dat"
         
-        if os.path.isdir(out) and not os.path.isfile(outf):
-            from shutil import rmtree
-            rmtree(out)
+        if not os.path.isfile(outf):
+            if os.path.isdir(out):
+                from shutil import rmtree
+                rmtree(out)
             
             _grinn_calc.getResIntEn(_grinn_args.arg_parser(f"-calc --pdb {pdb} --top {psf} --traj {traj} --exe {self.namd} --outfolder {out} --numcores {cores} --parameterfile {params}".split()))
             

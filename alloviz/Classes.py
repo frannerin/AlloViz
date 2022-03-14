@@ -432,6 +432,7 @@ class State:#(Entity):
         
         mypool = multiprocess.get_context("fork").Pool(cores)
         utils.pool = mypool
+        # utils.pool = utils.dummypool()
         print(utils.pool)
         
         for filterby in filterbys:
@@ -689,7 +690,11 @@ class Analysis:
                 metricf = eval(f"{metricf.__name__}_subset")
                 nodes = {"sources": self._state.sources_subset, "targets": self._state.targets_subset}            
         
-        analyzed = metricf(network, normalized=normalize, weight="weight", **nodes)
+        try:
+            analyzed = metricf(network, normalized=normalize, weight="weight", **nodes)
+        except LinAlgError:
+            print("Singular matrix!")
+            raise
         edges = {tuple(sorted(k, key = lambda x: int(x.split(":")[-1]))): analyzed[k] for k in analyzed}
         
         return pandas.Series(edges)#, pq
