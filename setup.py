@@ -98,8 +98,8 @@ import numpy
 #libinteract/innerloops
 libinteract = \
       Extension("libinteract.innerloops",
-                ["alloviz/Forks/pyinteraph2/libinteract/innerloops.pyx",
-                 "alloviz/Forks/pyinteraph2/libinteract/clibinteract.c"], \
+                ["Packages/pyinteraph2/libinteract/innerloops.pyx",
+                 "Packages/pyinteraph2/libinteract/clibinteract.c"], \
                 include_dirs = [numpy.get_include()])
 
 
@@ -118,8 +118,8 @@ setup(
     author_email=EMAIL,
     python_requires=REQUIRES_PYTHON,
     url=URL,
-    package_dir={"AlloViz": "alloviz", "pyinteraph": "alloviz/Forks/pyinteraph2/pyinteraph", "libinteract": "alloviz/Forks/pyinteraph2/libinteract"},
-    packages=["pyinteraph", "libinteract", "AlloViz"],#find_packages(exclude=["tests", "*.tests", "*.tests.*", "tests.*"])
+    package_dir={"AlloViz": "alloviz", "AlloViz.Packages": "Packages", "pyinteraph": "Packages/pyinteraph2/pyinteraph", "libinteract": "Packages/pyinteraph2/libinteract"},
+    packages=["pyinteraph", "libinteract", "AlloViz", "AlloViz.Packages"],#find_packages(exclude=["tests", "*.tests", "*.tests.*", "tests.*"])
     #data_files={"AlloViz/Forks": glob("AlloViz/Forks/*", recursive=True)},
     #data_files=[ ("Forks", glob("AlloViz/Forks/*", recursive=True)) ],
     #data_files=[ ("Forks", list(os.walk("AlloViz/Forks"))) ],
