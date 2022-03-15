@@ -13,7 +13,7 @@ imports = {
 "_pytraj": "pytraj",
 "_pyinteraph": "pyinteraph.main",
 "_grinn_args": ".Packages.gRINN_Bitbucket.source.grinn",
-"_grinn_calc": ".Packages.gRINN_Bitbucket.source.calc"
+"_grinn_calc": ".Packages.gRINN_Bitbucket.source.calc",
 "_grinn_corr": ".Packages.gRINN_Bitbucket.source.corr"
 }
 
@@ -676,12 +676,6 @@ class dcdpkg(Matrixoutput):
         
         
 class GRINN(dcdpkg, Multicorepkg):
-    # from distutils.spawn import find_executable
-    # namd = find_executable('namd2')
-    # if namd is None:
-    #     from .Packages.gRINN_Bitbucket import source
-    #     namd = f"{source.__file__.rsplit('/', 1)[0]}/NAMD_2.14_Linux-x86_64-multicore/namd2"
-                
     def __init__(self, state, **kwargs):
         if "namd" in kwargs:
             self.namd = kwargs["namd"]
@@ -690,8 +684,11 @@ class GRINN(dcdpkg, Multicorepkg):
             self.namd = find_executable('namd2')
             if self.namd is None:
                 raise Exception("namd executable for gRINN computation not found")
-            
+        
         super().__init__(state, **kwargs)
+        
+        if "auto_send" not in kwargs:
+            self.state._set_pkgclass(self.state, "gRINNcorr", namd = self.namd, auto_send=True)
         
         
     def _calculate(self, xtc):
@@ -704,8 +701,7 @@ class GRINN(dcdpkg, Multicorepkg):
                          args=(pdb, traj, out, xtc, pq, psf, params, self.taskcpus),
                          callback=self._save_pq)
         
-        if self._name == "GRINN":
-            for _ in range(self.taskcpus-1): pool.apply_async(self._calculate_empty, args=(pq,))
+        for _ in range(self.taskcpus-1): pool.apply_async(self._calculate_empty, args=(pq,))
         
         
     def _computation(self, pdb, traj, out, xtc, pq, psf, params, cores):
@@ -718,29 +714,91 @@ class GRINN(dcdpkg, Multicorepkg):
             
             _grinn_calc.getResIntEn(_grinn_args.arg_parser(f"-calc --pdb {pdb} --top {psf} --traj {traj} --exe {self.namd} --outfolder {out} --numcores {cores} --parameterfile {params}".split()))
             
-            
         corr = np.loadtxt(outf)
         return corr, xtc, pq
-
-    
-    
-    
-    def _save_pq(self, args):
-        super()._save_pq(args)
-        self.state._set_pkgclass(self.state, "gRINNcorr", namd = self.namd)
-        
-        
-    
     
 
-class GRINNcorr(GRINN):
+    
+    
+    
+    
+class GRINNcorr(GRINN):        
     def __init__(self, state, **kwargs):
+        if "auto_send" in kwargs:
+            self._auto_send = kwargs["auto_send"]
+        else:
+            self._auto_send = False
+        
         super().__init__(state, **kwargs)
         
-    def _computation(self, pdb, traj, out, xtc, pq, psf, params, cores):
-        _grinn_corr.getResIntCorr(_grinn_args.arg_parser(f"-corr --corrinfile {out}/energies_intEnTotal.csv".split()), logfile=None)
-        corr = np.loadtxt(f"{out}/energies_resCorr.dat") # 
+    
+    def _initialize(self):
+        if not rhasattr(self, "state", "GRINN") and not self._auto_send:
+            raise Exception("Make sure to send GRINN calculation before GRINNcorr")
+        
+        no_exist = lambda files: [not os.path.isfile(file) for file in files]
+        
+        pqs = [self._rawpq(xtc) for xtc in self.state._trajs]
+        
+        outf = lambda xtc: f"{self._path.replace('GRINNcorr', 'GRINN')}/{xtc}/energies_intEnTotal.csv"
+        outfs = [outf(xtc) for xtc in self.state._trajs]
+        
+        
+        def wait_calculate(pqs):
+            while any(no_exist(outfs)):
+                time.sleep(30)
+                
+            self._initialize_real()
+            
+            while any(no_exist(pqs)):
+                time.sleep(5)
+            return pqs
+                
+            
+        def get_raw(pqs):
+            print(f"adding raw data of {self._name} for {self.state._pdbf}: ", pqs)
+            flist = map(lambda pq: pandas.read_parquet(pq), pqs)
+            df = pandas.concat(flist, axis=1)
+            cols = [f"{num}" for num in self.state._trajs]
+            df["weight_avg"] = df[cols].fillna(0).mean(axis=1)
+            df["weight_std"] = df[cols].fillna(0).std(axis=1)
+            return df
+        
+        add_raw = lambda pqs: setattr(self, "raw", get_raw(pqs))
+        get_pool().apply_async(wait_calculate,
+                               args=(pqs,),
+                               callback=add_raw)
+            
+        
+    def _initialize_real(self):
+        pqs = [self._rawpq(xtc) for xtc in self.state._trajs]
+        no_exist = lambda pqs: [not os.path.isfile(pq) for pq in pqs]
+        
+        if any(no_exist(pqs)):
+            for xtc in (xtc for xtc in self.state._trajs if no_exist(pqs)[xtc-1]):
+                self._calculate(xtc)
+                
+        
+        
+    def _calculate(self, xtc):
+        pool, pdb, traj, pq = super(GRINN, self)._calculate(xtc)
+        out = f"{self._path}/{xtc}"
+        
+        pool.apply_async(self._send_and_log,
+                         args=(pdb, out, xtc, pq, self.taskcpus),
+                         callback=self._save_pq)
+        
+        for _ in range(self.taskcpus-1): pool.apply_async(self._calculate_empty, args=(pq,))
+        
+    
+        
+    def _computation(self, pdb, out, xtc, pq, cores):
+        logFile = f"{out}/grinncorr.log"
+        os.system(f"mkdir -p {out}; touch {logFile}")
+        _grinn_corr.getResIntCorr(_grinn_args.arg_parser(f"-corr --pdb {pdb} --corrinfile {out.replace('GRINNcorr', 'GRINN')}/energies_intEnTotal.csv --corrprefix {out}/energies --numcores {cores}".split()), logFile=logFile)
+        corr = np.loadtxt(f"{out}/energies_resCorr.dat") 
         return corr, xtc, pq
+    
 
 
 # class Carma(): # needs the dcd
