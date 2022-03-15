@@ -14,6 +14,7 @@ imports = {
 "_pyinteraph": "pyinteraph.main",
 "_grinn_args": ".Packages.gRINN_Bitbucket.source.grinn",
 "_grinn_calc": ".Packages.gRINN_Bitbucket.source.calc"
+"_grinn_corr": ".Packages.gRINN_Bitbucket.source.corr"
 }
 
 for key, val in imports.items():
@@ -115,7 +116,7 @@ class Multicorepkg(Pkg):
         else:
             self.taskcpus = kwargs["taskcpus"]
             
-        super().__init__(state)
+        super().__init__(state, **kwargs)
     
     def _calculate_empty(self, pqf):
         print("sleeping", pqf, os.getpid())
@@ -131,7 +132,7 @@ class Multicorepkg(Pkg):
 class Matrixoutput(Pkg):
     def __init__(self, state, **kwargs):
         self._selection = "protein"
-        super().__init__(state)
+        super().__init__(state, **kwargs)
     
     
     def _save_pq(self, args):
@@ -155,7 +156,7 @@ class COMpkg(Pkg):
         if not hasattr(state, "_comtrajs"):
             self.state._add_comtrajs()
             
-        super().__init__(state)
+        super().__init__(state, **kwargs)
     
     
     def _calculate(self, xtc):
@@ -172,7 +173,7 @@ class COMpkg(Pkg):
 
 class Getcontacts(Multicorepkg):
     def __init__(self, state, **kwargs):        
-        super().__init__(state)
+        super().__init__(state, **kwargs)
         
         
     def _calculate(self, xtc):
@@ -219,7 +220,7 @@ class Getcontacts(Multicorepkg):
 
 class Dynetan(Matrixoutput, Multicorepkg):
     def __init__(self, state, **kwargs):
-        super().__init__(state)
+        super().__init__(state, **kwargs)
         
     
     def _calculate(self, xtc):
@@ -257,7 +258,7 @@ class Dynetan(Matrixoutput, Multicorepkg):
 
 class DynetanCOM(Dynetan, COMpkg):
     def __init__(self, state, **kwargs):
-        super().__init__(state)
+        super().__init__(state, **kwargs)
         
         
     def _calculate(self, xtc):
@@ -280,7 +281,7 @@ class DynetanCOM(Dynetan, COMpkg):
 
 class Corrplus(Matrixoutput):
     def __init__(self, state, **kwargs):
-        super().__init__(state)
+        super().__init__(state, **kwargs)
         
         
     def _calculate(self, xtc):
@@ -300,7 +301,7 @@ class Corrplus(Matrixoutput):
         
 class CorrplusLMI(Corrplus):
     def __init__(self, state, **kwargs):
-        super().__init__(state)
+        super().__init__(state, **kwargs)
     
     def _computation(self, pdb, traj, xtc, pq):
         corr = _corrplus.calcMD_LMI(pdb, traj, saveMatrix = False)
@@ -310,7 +311,7 @@ class CorrplusLMI(Corrplus):
         
 class CorrplusCOM(Corrplus, COMpkg):
     def __init__(self, state, **kwargs):
-        super().__init__(state)
+        super().__init__(state, **kwargs)
         
     def _calculate(self, xtc):
         pool, pdb, traj, pq = COMpkg._calculate(self, xtc)
@@ -324,7 +325,7 @@ class CorrplusCOM(Corrplus, COMpkg):
         
 class CorrplusCOMLMI(CorrplusLMI, COMpkg):
     def __init__(self, state, **kwargs):
-        super().__init__(state)
+        super().__init__(state, **kwargs)
         
     def _calculate(self, xtc):
         pool, pdb, traj, pq = COMpkg._calculate(self, xtc)
@@ -339,7 +340,7 @@ class CorrplusCOMLMI(CorrplusLMI, COMpkg):
 class CorrplusPsi(Corrplus):        
     def __init__(self, state, **kwargs):
         self._dih = "psi"
-        super().__init__(state)
+        super().__init__(state, **kwargs)
     
     def _computation(self, pdb, traj, xtc, pq):
         # dih = "psi"
@@ -366,7 +367,7 @@ class CorrplusOmega(Corrplus):
     
 class CorrplusDihs(Corrplus):        
     def __init__(self, state, **kwargs):
-        super().__init__(state)
+        super().__init__(state, **kwargs)
         
         
     def _calculate(self, xtc):
@@ -411,7 +412,7 @@ class CorrplusDihs(Corrplus):
 
 class MDTASK(Matrixoutput):
     def __init__(self, state, **kwargs):
-        super().__init__(state)
+        super().__init__(state, **kwargs)
     
     
     def _calculate(self, xtc):
@@ -436,7 +437,7 @@ class MDTASK(Matrixoutput):
 
 class PytrajCA(Matrixoutput):
     def __init__(self, state, **kwargs):
-        super().__init__(state)
+        super().__init__(state, **kwargs)
     
     
     def _calculate(self, xtc):
@@ -458,7 +459,7 @@ class PytrajCA(Matrixoutput):
     
 class PytrajCB(PytrajCA):
     def __init__(self, state, **kwargs):
-        super().__init__(state)
+        super().__init__(state, **kwargs)
     
     
     def _calculate(self, xtc):
@@ -479,7 +480,7 @@ class PytrajCB(PytrajCA):
         
 class Pyinteraph(Matrixoutput):
     def __init__(self, state, **kwargs):        
-        super().__init__(state)
+        super().__init__(state, **kwargs)
         
         
     def _calculate(self, xtc):
@@ -500,7 +501,7 @@ class Pyinteraph(Matrixoutput):
     
 class PyinteraphEne(Pyinteraph):
     def __init__(self, state, **kwargs):        
-        super().__init__(state)
+        super().__init__(state, **kwargs)
         
         
         
@@ -520,7 +521,7 @@ class PyinteraphEne(Pyinteraph):
 # only for local
 class G_corrCAMI(Matrixoutput):
     def __init__(self, state, **kwargs):        
-        super().__init__(state)
+        super().__init__(state, **kwargs)
         
         
     def _calculate(self, xtc):
@@ -569,7 +570,7 @@ EOF
     
 class G_corrCOMMI(G_corrCAMI, COMpkg):
     def __init__(self, state, **kwargs):        
-        super().__init__(state)
+        super().__init__(state, **kwargs)
         
         
     def _calculate(self, xtc):
@@ -585,7 +586,7 @@ class G_corrCOMMI(G_corrCAMI, COMpkg):
         
 class G_corrCALMI(G_corrCAMI):
     def __init__(self, state, **kwargs):        
-        super().__init__(state)
+        super().__init__(state, **kwargs)
         
         
     def _calculate(self, xtc):
@@ -600,7 +601,7 @@ class G_corrCALMI(G_corrCAMI):
     
 class G_corrCOMLMI(G_corrCAMI, COMpkg):
     def __init__(self, state, **kwargs):        
-        super().__init__(state)
+        super().__init__(state, **kwargs)
         
         
     def _calculate(self, xtc):
@@ -618,7 +619,7 @@ class G_corrCOMLMI(G_corrCAMI, COMpkg):
 # only for local
 class GSAtools(Matrixoutput):
     def __init__(self, state, **kwargs):        
-        super().__init__(state)
+        super().__init__(state, **kwargs)
         
         
     def _calculate(self, xtc):
@@ -660,7 +661,7 @@ class dcdpkg(Matrixoutput):
         if not hasattr(state, "_dcds"):
             self.state._make_dcds()
             
-        super().__init__(state)
+        super().__init__(state, **kwargs)
     
     
     def _calculate(self, xtc):
@@ -690,7 +691,7 @@ class GRINN(dcdpkg, Multicorepkg):
             if self.namd is None:
                 raise Exception("namd executable for gRINN computation not found")
             
-        super().__init__(state)
+        super().__init__(state, **kwargs)
         
         
     def _calculate(self, xtc):
@@ -734,11 +735,11 @@ class GRINN(dcdpkg, Multicorepkg):
 
 class GRINNcorr(GRINN):
     def __init__(self, state, **kwargs):
-        super().__init__(state)
+        super().__init__(state, **kwargs)
         
     def _computation(self, pdb, traj, out, xtc, pq, psf, params, cores):
-        _grinn_calc.getResIntCorr(_grinn_args.arg_parser(f"-corr --corrinfile {out}/energies_intEnTotal.csv".split()), logfile=None)
-        corr = np.loadtxt(f"{out}/energies_resCorr.dat.dat") # 
+        _grinn_corr.getResIntCorr(_grinn_args.arg_parser(f"-corr --corrinfile {out}/energies_intEnTotal.csv".split()), logfile=None)
+        corr = np.loadtxt(f"{out}/energies_resCorr.dat") # 
         return corr, xtc, pq
 
 
