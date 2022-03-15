@@ -373,21 +373,21 @@ class CorrplusDihs(Corrplus):
         pool, pdb, traj, pq = super(Corrplus, self)._calculate(xtc)
         
         Dihl = ["Phi", "Psi", "Omega"]
-        no_exist = lambda Dihl: [not rhasattr(self, "state", f"corrplus{Dih}") for Dih in Dihl]
+        no_exist = lambda Dihl: [not rhasattr(self, "state", f"Corrplus{Dih}") for Dih in Dihl]
         
         if any(no_exist(Dihl)):
             for Dih in (Dih for Dih in Dihl if no_exist(Dihl)[Dihl.index(Dih)]):
-                self.state._set_pkgclass(self.state, f"corrplus{Dih}")
+                self.state._set_pkgclass(self.state, f"Corrplus{Dih}")
 
                
         def wait_calculate(Dihl):
-            not_finished = lambda Dihl: [not rhasattr(self, "state", f"corrplus{Dih}", "raw") for Dih in Dihl]
+            not_finished = lambda Dihl: [not rhasattr(self, "state", f"Corrplus{Dih}", "raw") for Dih in Dihl]
             while any(not_finished(Dihl)):
                 time.sleep(5)
             return Dihl
                 
         def save_pq(Dihl):
-            dfs = [rgetattr(self, "state", f"corrplus{Dih}", "raw")[f"{xtc}"].abs() for Dih in Dihl] #.iloc
+            dfs = [rgetattr(self, "state", f"Corrplus{Dih}", "raw")[f"{xtc}"].abs() for Dih in Dihl] #.iloc
             
             final = None
             for df in dfs:
