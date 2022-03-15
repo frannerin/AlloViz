@@ -5,15 +5,15 @@ from contextlib import redirect_stdout, redirect_stderr
 from lazyasd import LazyObject
 
 imports = {
-"_getcontacts_contacts": ".Forks.getcontacts.get_dynamic_contacts",
-"_getcontacts_freqs": ".Forks.getcontacts.get_contact_frequencies",
-"_dynetan": ".Forks.dynetan.dynetan.proctraj",
-"_corrplus": ".Forks.correlationplus.correlationplus.calculate",
-"_mdtask": ".Forks.MD-TASK.mdtask.calc_correlation",
+"_getcontacts_contacts": ".Packages.getcontacts.get_dynamic_contacts",
+"_getcontacts_freqs": ".Packages.getcontacts.get_contact_frequencies",
+"_dynetan": ".Packages.dynetan.dynetan.proctraj",
+"_corrplus": ".Packages.correlationplus.correlationplus.calculate",
+"_mdtask": ".Packages.MD-TASK.mdtask.calc_correlation",
 "_pytraj": "pytraj",
 "_pyinteraph": "pyinteraph.main",
-"_grinn_args": ".Forks.gRINN_Bitbucket.source.grinn",
-"_grinn_calc": ".Forks.gRINN_Bitbucket.source.calc"
+"_grinn_args": ".Packages.gRINN_Bitbucket.source.grinn",
+"_grinn_calc": ".Packages.gRINN_Bitbucket.source.calc"
 }
 
 for key, val in imports.items():
@@ -25,15 +25,15 @@ for key, val in imports.items():
 
 
 
-# get_dynamic_contacts = LazyObject(lambda: importlib.import_module(".Forks.getcontacts.get_dynamic_contacts", package="AlloViz"), globals(), "get_dynamic_contacts")
-# get_contact_frequencies = LazyObject(lambda: importlib.import_module(".Forks.getcontacts.get_contact_frequencies", package="AlloViz"), globals(), "get_contact_frequencies")
-# dynetanf = LazyObject(lambda: importlib.import_module(".Forks.dynetan.dynetan.proctraj", package="AlloViz").DNAproc, globals(), "dynetanf")
-# corrplusf = LazyObject(lambda: importlib.import_module(".Forks.correlationplus.correlationplus.calculate", package="AlloViz"), globals(), "corrplusf")
-# mdtaskf = LazyObject(lambda: importlib.import_module(".Forks.MD-TASK.mdtask.calc_correlation", package="AlloViz"), globals(), "mdtaskf")
+# get_dynamic_contacts = LazyObject(lambda: importlib.import_module(".Packages.getcontacts.get_dynamic_contacts", package="AlloViz"), globals(), "get_dynamic_contacts")
+# get_contact_frequencies = LazyObject(lambda: importlib.import_module(".Packages.getcontacts.get_contact_frequencies", package="AlloViz"), globals(), "get_contact_frequencies")
+# dynetanf = LazyObject(lambda: importlib.import_module(".Packages.dynetan.dynetan.proctraj", package="AlloViz").DNAproc, globals(), "dynetanf")
+# corrplusf = LazyObject(lambda: importlib.import_module(".Packages.correlationplus.correlationplus.calculate", package="AlloViz"), globals(), "corrplusf")
+# mdtaskf = LazyObject(lambda: importlib.import_module(".Packages.MD-TASK.mdtask.calc_correlation", package="AlloViz"), globals(), "mdtaskf")
 # pytrajf = LazyObject(lambda: importlib.import_module("pytraj"), globals(), "pytrajf")
 # pyinteraphf = LazyObject(lambda: importlib.import_module("pyinteraph.main"), globals(), "pyinteraphf")
-# grinnf = LazyObject(lambda: importlib.import_module(".Forks.gRINN_Bitbucket.source.grinn", package="AlloViz"), globals(), "grinnf")
-# calcf = LazyObject(lambda: importlib.import_module(".Forks.gRINN_Bitbucket.source.calc", package="AlloViz"), globals(), "calcf")
+# grinnf = LazyObject(lambda: importlib.import_module(".Packages.gRINN_Bitbucket.source.grinn", package="AlloViz"), globals(), "grinnf")
+# calcf = LazyObject(lambda: importlib.import_module(".Packages.gRINN_Bitbucket.source.calc", package="AlloViz"), globals(), "calcf")
 
 
 
@@ -678,7 +678,7 @@ class GRINN(dcdpkg, Multicorepkg):
     # from distutils.spawn import find_executable
     # namd = find_executable('namd2')
     # if namd is None:
-    #     from .Forks.gRINN_Bitbucket import source
+    #     from .Packages.gRINN_Bitbucket import source
     #     namd = f"{source.__file__.rsplit('/', 1)[0]}/NAMD_2.14_Linux-x86_64-multicore/namd2"
                 
     def __init__(self, state, **kwargs):
