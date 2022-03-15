@@ -2,7 +2,7 @@
 active/
 
 #Cython-derived files from installation
-AlloViz/Forks/pyinteraph2/libinteract/innerloops.c
+Packages/pyinteraph2/libinteract/innerloops.c
 
 
 # Byte-compiled / optimized / DLL files
