@@ -795,8 +795,12 @@ class GRINNcorr(GRINN):
     def _computation(self, pdb, out, xtc, pq, cores):
         logFile = f"{out}/grinncorr.log"
         os.system(f"mkdir -p {out}; touch {logFile}")
-        _grinn_corr.getResIntCorr(_grinn_args.arg_parser(f"-corr --pdb {pdb} --corrinfile {out.replace('GRINNcorr', 'GRINN')}/energies_intEnTotal.csv --corrprefix {out}/energies --numcores {cores}".split()), logFile=logFile)
-        corr = np.loadtxt(f"{out}/energies_resCorr.dat") 
+        outf = f"{out}/energies_resCorr.dat"
+        
+        if not os.path.isfile(outf):
+            _grinn_corr.getResIntCorr(_grinn_args.arg_parser(f"-corr --pdb {pdb} --corrinfile {out.replace('GRINNcorr', 'GRINN')}/energies_intEnTotal.csv --corrprefix {out}/energies --numcores {cores}".split()), logFile=logFile)
+            
+        corr = np.loadtxt(outf) 
         return corr, xtc, pq
     
 

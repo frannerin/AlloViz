@@ -105,16 +105,18 @@ class Pair:
         if any(["COM" in pkg for pkg in pkgs]):
             for state in self.states: state._add_comtrajs()
         
-        mypool = multiprocess.get_context("fork").Pool(cores)
-        utils.pool = mypool
+        if cores>1:
+            mypool = multiprocess.get_context("fork").Pool(cores)
+            utils.pool = mypool
         print(utils.pool)
         
         for state in self.states:
             for pkg in pkgs:
                 self._set_pkgclass(state, pkg)
         
-        mypool.close()
-        mypool.join()
+        if cores>1:
+            mypool.close()
+            mypool.join()
         
         
         
@@ -171,8 +173,9 @@ class Pair:
         metrics = metricsl if metrics=="all" else metrics if isinstance(metrics, list) else [metrics]
         filterbys = filterbyl if filterby=="all" else filterby if isinstance(filterby, list) else [filterby]
         
-        mypool = multiprocess.get_context("fork").Pool(cores)
-        utils.pool = mypool
+        if cores>1:
+            mypool = multiprocess.get_context("fork").Pool(cores)
+            utils.pool = mypool
         print(utils.pool)
         
         for state in self.states:
@@ -180,8 +183,9 @@ class Pair:
                 for pkg in pkgs:
                     self._set_anaclass(state, pkg, metrics, filterby, normalize)
         
-        mypool.close()
-        mypool.join()
+        if cores>1:
+            mypool.close()
+            mypool.join()
         
         
         
@@ -407,14 +411,16 @@ class State:#(Entity):
         if any([re.search("(carma|grinn)", pkg.lower()) for pkg in pkgs]):
             self._make_dcds()
         
-        mypool = multiprocess.get_context("fork").Pool(cores)
-        utils.pool = mypool
+        if cores>1:
+            mypool = multiprocess.get_context("fork").Pool(cores)
+            utils.pool = mypool
         print(utils.pool)
         
         for pkg in pkgs: self._set_pkgclass(self, pkg, **kwargs)
         
-        mypool.close()
-        mypool.join()
+        if cores>1:
+            mypool.close()
+            mypool.join()
         
         
     def _set_pkgclass(self, state, pkg, **kwargs):
@@ -430,17 +436,18 @@ class State:#(Entity):
         metrics = metricsl if metrics=="all" else metrics if isinstance(metrics, list) else [metrics]
         filterbys = filterbyl if filterby=="all" else filterby if isinstance(filterby, list) else [filterby]
         
-        mypool = multiprocess.get_context("fork").Pool(cores)
-        utils.pool = mypool
-        # utils.pool = utils.dummypool()
+        if cores>1:
+            mypool = multiprocess.get_context("fork").Pool(cores)
+            utils.pool = mypool
         print(utils.pool)
         
         for filterby in filterbys:
             for pkg in pkgs:
                 self._set_anaclass(self, pkg, metrics, filterby, normalize)
         
-        mypool.close()
-        mypool.join()
+        if cores>1:
+            mypool.close()
+            mypool.join()
     
     
     def _set_anaclass(self, state, pkg, metrics, filterby, normalize):
