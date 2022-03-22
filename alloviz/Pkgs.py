@@ -17,8 +17,10 @@ imports = {
 "_grinn_corr": ".Packages.gRINN_Bitbucket.source.corr"
 }
 
+_extra_arg = lambda val: "package='AlloViz'" if 'Packages' in val else ''
+
 for key, val in imports.items():
-    exec(f"{key} = LazyObject(lambda: importlib.import_module('{val}', package='AlloViz'), globals(), '{key}')")
+    exec(f"{key} = LazyObject(lambda: importlib.import_module('{val}', {_extra_arg(val)}), globals(), '{key}')")
 # locals().update( {key: LazyObject(lambda: importlib.import_module(val, package="AlloViz"), globals(), key) for key, val in imports.items()} )
 
 
@@ -410,7 +412,7 @@ class CorrplusDihs(Corrplus):
     
     
 
-class MDTASK(Matrixoutput):
+class MDTASK(Matrixoutput, Multicorepkg):
     def __init__(self, state, **kwargs):
         super().__init__(state, **kwargs)
     
@@ -421,6 +423,8 @@ class MDTASK(Matrixoutput):
         pool.apply_async(self._send_and_log,
                          args=(pdb, traj, xtc, pq),
                          callback=self._save_pq)
+        
+        for _ in range(1): pool.apply_async(self._calculate_empty, args=(pq,)) # Just 1 empty job to use its memory
     
     
     def _computation(self, pdb, traj, xtc, pq):

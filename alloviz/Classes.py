@@ -1,9 +1,9 @@
 import sys, os, io, re, pandas, time, requests
 import MDAnalysis as mda
 import numpy as np
-#from multiprocess import Pool, set_start_method
+from multiprocess import Pool#, set_start_method
 #set_start_method("fork", force=True)
-import multiprocess
+# import multiprocess
 import matplotlib, nglview#, ipywidgets, matplotlib.cm
 from matplotlib import pyplot as pl
 
@@ -99,24 +99,25 @@ class Pair:
     
     
     
-    def calculate(self, pkg="all", cores=1): # , ow=False, filterby="incontact"
+    def calculate(self, pkg="all", cores=1, **kwargs): # , ow=False, filterby="incontact"
         pkgs = pkgsl if pkg=="all" else pkg if isinstance(pkg, list) else [pkg]
         
         if any(["COM" in pkg for pkg in pkgs]):
             for state in self.states: state._add_comtrajs()
         
         if cores>1:
-            mypool = multiprocess.get_context("fork").Pool(cores)
+            mypool = Pool(cores)
             utils.pool = mypool
         print(utils.pool)
         
         for state in self.states:
             for pkg in pkgs:
-                self._set_pkgclass(state, pkg)
+                self._set_pkgclass(state, pkg, **kwargs)
         
         if cores>1:
             mypool.close()
             mypool.join()
+            utils.pool = utils.dummypool()
         
         
         
@@ -174,7 +175,7 @@ class Pair:
         filterbys = filterbyl if filterby=="all" else filterby if isinstance(filterby, list) else [filterby]
         
         if cores>1:
-            mypool = multiprocess.get_context("fork").Pool(cores)
+            mypool = Pool(cores)
             utils.pool = mypool
         print(utils.pool)
         
@@ -186,6 +187,7 @@ class Pair:
         if cores>1:
             mypool.close()
             mypool.join()
+            utils.pool = utils.dummypool()
         
         
         
@@ -290,23 +292,33 @@ class State:#(Entity):
         html = requests.get(f"{web}/dynadb/dynamics/id/{self._gpcrmdid}/")
         soup = BeautifulSoup(html.text, features="html.parser").find_all('a')
         links = [link.get('href') for link in soup if re.search("(xtc|pdb|psf|prm)", link.get('href'))]
+        get_name = lambda link: f"{self._path}/{link.rsplit('/')[-1]}"
+        
+        
+        mypool = Pool()
+        utils.pool = mypool        
         
         for link in links:
-            fname = f"{self._path}/{link.rsplit('/')[-1]}"
+            fname = get_name(link)
             print(f"downloading {fname}")
-            pwget.urlretrieve(f"{web}{link}", fname)
+            utils.get_pool().apply_async(pwget.urlretrieve, args=(f"{web}{link}", fname))
             
-            if re.search("prm", fname):
-                with tarfile.open(fname) as tar:
-                    tar.extractall(self._path)
-                os.remove(fname)
-                
-                for line in fileinput.input(f"{self._path}/parameters", inplace=True):
-                    if line.strip().startswith('HBOND'):
-                        line = 'HBOND CUTHB 0.5\n'
-                    elif line.strip().startswith('END'):
-                        line = 'END\n'
-                    sys.stdout.write(line)
+        mypool.close()
+        mypool.join()
+        utils.pool = utils.dummypool()
+        
+        
+        fname = next(get_name(link) for link in links if "prm" in get_name(link))
+        with tarfile.open(fname) as tar:
+            tar.extractall(self._path)
+        os.remove(fname)
+
+        for line in fileinput.input(f"{self._path}/parameters", inplace=True):
+            if line.strip().startswith('HBOND'):
+                line = 'HBOND CUTHB 0.5\n'
+            elif line.strip().startswith('END'):
+                line = 'END\n'
+            sys.stdout.write(line)
                 
         return
     
@@ -412,15 +424,18 @@ class State:#(Entity):
             self._make_dcds()
         
         if cores>1:
-            mypool = multiprocess.get_context("fork").Pool(cores)
+            mypool = Pool(cores)
             utils.pool = mypool
         print(utils.pool)
+        taskcpus = kwargs["taskcpus"] if "taskcpus" in kwargs else cores
         
-        for pkg in pkgs: self._set_pkgclass(self, pkg, **kwargs)
+        for pkg in pkgs: self._set_pkgclass(self, pkg, taskcpus=taskcpus, **kwargs)
         
         if cores>1:
             mypool.close()
             mypool.join()
+            utils.pool = utils.dummypool()
+            
         
         
     def _set_pkgclass(self, state, pkg, **kwargs):
@@ -437,7 +452,7 @@ class State:#(Entity):
         filterbys = filterbyl if filterby=="all" else filterby if isinstance(filterby, list) else [filterby]
         
         if cores>1:
-            mypool = multiprocess.get_context("fork").Pool(cores)
+            mypool = Pool(cores)
             utils.pool = mypool
         print(utils.pool)
         
@@ -448,6 +463,7 @@ class State:#(Entity):
         if cores>1:
             mypool.close()
             mypool.join()
+            utils.pool = utils.dummypool()
     
     
     def _set_anaclass(self, state, pkg, metrics, filterby, normalize):
@@ -681,7 +697,7 @@ class Analysis:
     
     
     def _networkx_analysis(self, column, metric, normalize, pq):
-        weights = column.reset_index().rename(columns={f"{column.name}": "weight"}).dropna()
+        weights = column.reset_index().rename(columns={f"{column.name}": "weight"}).dropna() # this dropna is problematic; nonexistent should be 0?
         network = networkx_from_pandas(weights, "level_0", "level_1", "weight")
         nodes = {}
         
