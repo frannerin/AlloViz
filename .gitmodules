@@ -18,3 +18,11 @@
 	path = Packages/gRINN_Bitbucket
 	url = https://bitbucket.org/fnerin/grinn_bitbucket.git
 	shallow = true
+[submodule "Packages/correlationplus"]
+	path = Packages/correlationplus
+	url = https://github.com/frannerin/correlationplus
+	shallow = true
+[submodule "Packages/NPEET_LNC"]
+	path = Packages/NPEET_LNC
+	url = https://github.com/ViktorvdValk/NPEET_LNC
+	shallow = true
