@@ -22,7 +22,7 @@ norm = utils.norm
 
 # pkgsl = ["MDTASK", "getcontacts", "pyinteraph", "pyinteraphEne", "dynetan", "pytrajCA", "pytrajCB",
 #          "corrplus", "corrplusLMI", "corrplusCOM", "corrplusCOMLMI", "corrplusPsi", "corrplusPhi", "corrplusOmega"] #"dynetanCOM", 
-pkgsl = ["MDTASK", "getcontacts", "pyinteraph", "pyinteraphEne", "dynetan", #"pytrajCA", "pytrajCB",
+pkgsl = ["MDTASK", "getcontacts", "pyInteraph", "pyInteraphEne", "dynetan", #"pytrajCA", "pytrajCB",
          "corrplus", "corrplusLMI", "corrplusCOM", "corrplusCOMLMI", "corrplusPsi", "corrplusPhi", "corrplusOmega",
         "gRINN", "gRINNcorr", "g_correlationCA", "g_correlationCOM"] #"dynetanCOM", 
 # metricsl = ["cfb", "cfb_subset", "btw", "btw_subset"]
@@ -685,7 +685,7 @@ class Analysis:
                          callback=save_pq)
         
         
-        def _calculate_empty(self, pqf):
+        def _calculate_empty( pqf):
             print("sleeping", pqf, os.getpid())
             while not os.path.isfile(pqf):
                 time.sleep(5)

@@ -6,10 +6,6 @@
 	path = Packages/dynetan
 	url = https://github.com/frannerin/dynetan
 	shallow = true
-[submodule "Packages/correlationplus"]
-	path = Packages/correlationplus
-	url = https://github.com/frannerin/correlationplus
-	shallow = true
 [submodule "Packages/MD-TASK"]
 	path = Packages/MD-TASK
 	url = https://github.com/frannerin/MD-TASK

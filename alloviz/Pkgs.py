@@ -14,7 +14,9 @@ imports = {
 "_pyinteraph": "pyinteraph.main",
 "_grinn_args": ".Packages.gRINN_Bitbucket.source.grinn",
 "_grinn_calc": ".Packages.gRINN_Bitbucket.source.calc",
-"_grinn_corr": ".Packages.gRINN_Bitbucket.source.corr"
+"_grinn_corr": ".Packages.gRINN_Bitbucket.source.corr",
+"_npeet_lnc": ".Packages.NPEET_LNC.lnc",
+"_mda_dihedrals": "MDAnalysis.analysis.dihedrals"
 }
 
 _extra_arg = lambda val: "package='AlloViz'" if 'Packages' in val else ''
@@ -348,17 +350,30 @@ class CorrplusPsi(Corrplus):
         # dih = "psi"
         corr = _corrplus.calcMDsingleDihedralCC(pdb, traj, dihedralType = self._dih, saveMatrix = False)
         return corr, xtc, pq
+    
+    
+    def _save_pq(self, args):
+        corr, xtc, pq = args
+        
+        corr = corr[1:-1, 1:-1]
+        resl = [f"A:{aa.resname}:{aa.resid}" for aa in self.state.mdau.select_atoms(self._selection).residues[1:-1]]
+
+        df = pandas.DataFrame(corr, columns=resl, index=resl)
+        df = df.where( np.triu(np.ones(df.shape), k=1).astype(bool) )
+        df = pandas.DataFrame({f"{xtc}": df.stack()})
+        # if not len(df[f"{xtc}"].unique()) == 1:
+        df.to_parquet(pq)
 
     
     
-class CorrplusPhi(CorrplusPsi, Corrplus):        
+class CorrplusPhi(CorrplusPsi, Corrplus):
     def __init__(self, state, **kwargs):
         self._dih = "phi"
         Corrplus.__init__(self, state, **kwargs)
 
         
 
-class CorrplusOmega(Corrplus):        
+class CorrplusOmega(CorrplusPsi, Corrplus):        
     def __init__(self, state, **kwargs):
         self._dih = "omega"
         Corrplus.__init__(self, state, **kwargs)
@@ -401,12 +416,122 @@ class CorrplusDihs(Corrplus):
                     
             df = (final - final.min()) / (final.max() - final.min()) # This is done column-wise
             pandas.DataFrame(df).to_parquet(pq)
+            return
             
             
         pool.apply_async(wait_calculate,
                          args=(Dihl,),
                          callback=save_pq)
+
+        
+        
+        
+        
+class AlloVizPsi(Matrixoutput, Corrplus):        
+    def __init__(self, state, **kwargs):
+        self._dih = "psi"
+        super().__init__(state, **kwargs)
+        
     
+    def _computation(self, pdb, traj, xtc, pq):
+        select_dih = lambda res: eval(f"res.{self._dih.lower()}_selection()")
+    
+        prot = self.state.mdau.select_atoms("protein")
+        atomgroups = [select_dih(res) for res in prot.residues]
+        no_dihs = {idx for idx, group in enumerate(atomgroups) if group is None}
+
+        is_terminal = lambda idx: True if idx == 0 or idx == prot.n_residues-1 else False
+        if all([is_terminal(idx) for idx in no_dihs]):
+            print("All missing dihedrals belong to terminal residues")
+        if any([not is_terminal(idx) for idx in no_dihs]):
+            raise Exception("There is a missing dihedral that does not belong to either of the terminal residues.")
+
+        no_dihs = {0, prot.n_residues-1}
+        selected = atomgroups[1:-1]
+
+        offset = 0
+        get_frames = lambda numreader: self.state.mdau.trajectory.readers[numreader].n_frames
+        for numreader in range(xtc-1):
+            offset += get_frames(numreader)
+
+        values = dihs.Dihedral(selected).run(start=offset, stop=offset+get_frames(xtc)).results.angles.transpose()
+        for idx in no_dihs:
+            values = np.insert(values, idx, np.array([1]*values.shape[1]), axis=0)
+
+        corr = np.zeros((prot.n_residues, prot.n_residues))
+        print("prot.n_residues:", prot.n_residues, "dihedrals array shape:", values.shape, "empty corr matrix shape:", corr.shape)
+
+        iterator = set(range(prot.n_residues)) - no_dihs
+        for res1 in iterator:
+            for res2 in iterator - set(range(res1)) - {res1}:
+                corr[res1, res2] = _npeet_lnc.MI.mi_LNC([values[res1], values[res2]])
+    
+        return corr, xtc, pq
+    
+"_npeet_lnc": ".Packages.NPEET_LNC.lnc",
+"_mda_dihedrals"
+    
+    
+class AlloVizPhi(AlloVizPsi):
+    def __init__(self, state, **kwargs):
+        self._dih = "phi"
+        super().__init__(state, **kwargs)
+
+        
+
+class AlloVizOmega(AlloVizPsi):        
+    def __init__(self, state, **kwargs):
+        self._dih = "omega"
+        super().__init__(state, **kwargs)
+
+        
+        
+        
+    
+class CorrplusDihs(Corrplus):        
+    def __init__(self, state, **kwargs):
+        super().__init__(state, **kwargs)
+        
+        
+    def _calculate(self, xtc):
+        pool, pdb, traj, pq = super(Corrplus, self)._calculate(xtc)
+        
+        Dihl = ["Phi", "Psi", "Omega"]
+        no_exist = lambda Dihl: [not rhasattr(self, "state", f"Corrplus{Dih}") for Dih in Dihl]
+        
+        if any(no_exist(Dihl)):
+            for Dih in (Dih for Dih in Dihl if no_exist(Dihl)[Dihl.index(Dih)]):
+                self.state._set_pkgclass(self.state, f"Corrplus{Dih}")
+
+               
+        def wait_calculate(Dihl):
+            not_finished = lambda Dihl: [not rhasattr(self, "state", f"Corrplus{Dih}", "raw") for Dih in Dihl]
+            while any(not_finished(Dihl)):
+                time.sleep(5)
+            return Dihl
+                
+        def save_pq(Dihl):
+            dfs = [rgetattr(self, "state", f"Corrplus{Dih}", "raw")[f"{xtc}"].abs() for Dih in Dihl] #.iloc
+            
+            final = None
+            for df in dfs:
+                if final is None:
+                    final = df
+                else:
+                    final = final + df
+                    
+            df = (final - final.min()) / (final.max() - final.min()) # This is done column-wise
+            pandas.DataFrame(df).to_parquet(pq)
+            return
+            
+            
+        pool.apply_async(wait_calculate,
+                         args=(Dihl,),
+                         callback=save_pq)
+        
+        
+        
+        
     
     
     
@@ -424,7 +549,7 @@ class MDTASK(Matrixoutput, Multicorepkg):
                          args=(pdb, traj, xtc, pq),
                          callback=self._save_pq)
         
-        for _ in range(1): pool.apply_async(self._calculate_empty, args=(pq,)) # Just 1 empty job to use its memory
+        for _ in range(2): pool.apply_async(self._calculate_empty, args=(pq,)) # Just 1 empty job to use its memory
     
     
     def _computation(self, pdb, traj, xtc, pq):
@@ -482,7 +607,7 @@ class PytrajCB(PytrajCA):
         
         
         
-class Pyinteraph(Matrixoutput):
+class PyInteraph(Matrixoutput):
     def __init__(self, state, **kwargs):        
         super().__init__(state, **kwargs)
         
@@ -503,7 +628,7 @@ class Pyinteraph(Matrixoutput):
 
     
     
-class PyinteraphEne(Pyinteraph):
+class PyInteraphEne(PyInteraph):
     def __init__(self, state, **kwargs):        
         super().__init__(state, **kwargs)
         

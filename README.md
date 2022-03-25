@@ -54,12 +54,13 @@ activeMuOR.view("corrplusCOM", "btw_avg", filterby="whole")
 
 <!-- https://www.tablesgenerator.com/html_tables -->
 
-<table style="undefined;table-layout: fixed; width: 653px">
+<table style="undefined;table-layout: fixed; width: 1070px">
 <colgroup>
-<col style="width: 236px">
-<col style="width: 135px">
-<col style="width: 150px">
-<col style="width: 132px">
+<col style="width: 334px">
+<col style="width: 104px">
+<col style="width: 183px">
+<col style="width: 178px">
+<col style="width: 70px">
 </colgroup>
 <thead>
   <tr>
@@ -67,6 +68,7 @@ activeMuOR.view("corrplusCOM", "btw_avg", filterby="whole")
     <th>Package</th>
     <th>Correlation measurement</th>
     <th>Subset of atoms tracked</th>
+    <th>Name in AlloViz</th>
   </tr>
 </thead>
 <tbody>
@@ -75,87 +77,107 @@ activeMuOR.view("corrplusCOM", "btw_avg", filterby="whole")
     <td>getcontacts</td>
     <td>-</td>
     <td>Whole residue</td>
+    <td>Getcontacts</td>
   </tr>
   <tr>
     <td rowspan="2">PyInteraph2</td>
     <td>-</td>
     <td>Whole residue</td>
+    <td>PyInteraph</td>
   </tr>
   <tr>
     <td rowspan="3">Interaction energies</td>
     <td>-</td>
     <td>Whole residue</td>
+    <td>PyInteraphEne</td>
   </tr>
   <tr>
     <td rowspan="2">gRINN</td>
     <td>-</td>
     <td>Whole residue</td>
+    <td>GRINN</td>
   </tr>
   <tr>
     <td>Pearson's</td>
     <td>Whole residue</td>
+    <td>GRINNcorr</td>
   </tr>
   <tr>
     <td rowspan="13">Movement correlation</td>
     <td rowspan="2">dynetan</td>
     <td rowspan="2">Mutual Information (MI)</td>
     <td>Whole residue</td>
+    <td>Dynetan</td>
   </tr>
   <tr>
     <td>Residue COM</td>
+    <td>DynetanCOM</td>
   </tr>
   <tr>
     <td rowspan="4">g_correlation</td>
     <td rowspan="2">MI</td>
     <td>alpha-C</td>
+    <td>G_corrCAMI</td>
   </tr>
   <tr>
     <td>Residue COM</td>
+    <td>G_corrCOMMI</td>
   </tr>
   <tr>
     <td rowspan="2">Linear MI (LMI)</td>
     <td>alpha-C</td>
+    <td>G_corrCALMI</td>
   </tr>
   <tr>
     <td>Residue COM</td>
+    <td>G_corrCOMLMI</td>
   </tr>
   <tr>
     <td rowspan="2">pytraj</td>
     <td rowspan="2">Pearson's</td>
     <td>alpha-C</td>
+    <td>PytrajCA</td>
   </tr>
   <tr>
     <td>beta-C</td>
+    <td>PytrajCB</td>
   </tr>
   <tr>
     <td>MD-TASK</td>
     <td>Pearson's</td>
     <td>alpha-C</td>
+    <td>MDTASK</td>
   </tr>
   <tr>
     <td rowspan="5">correlationplus</td>
     <td rowspan="2">Pearson's</td>
     <td>alpha-C</td>
+    <td>Corrplus</td>
   </tr>
   <tr>
     <td>Residue COM</td>
+    <td>CorrplusCOM</td>
   </tr>
   <tr>
     <td rowspan="2">LMI</td>
     <td>alpha-C</td>
+    <td>CorrplusLMI</td>
   </tr>
   <tr>
     <td>Residue COM</td>
+    <td>CorrplusCOMLMI</td>
   </tr>
   <tr>
     <td rowspan="2">Dihedral correlation</td>
     <td>Pearson's</td>
     <td>phi, psi and omega</td>
+    <td>CorrplusDihs (Corrplus[Psi, Phi, Omega])</td>
   </tr>
   <tr>
     <td>Adrián's script</td>
     <td>MI</td>
     <td>-</td>
+    <td></td>
   </tr>
 </tbody>
 </table>
@@ -165,3 +187,4 @@ activeMuOR.view("corrplusCOM", "btw_avg", filterby="whole")
 
 ## Licensing
 :upside_down_face:
+
