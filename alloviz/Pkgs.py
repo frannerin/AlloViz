@@ -391,21 +391,22 @@ class CorrplusDihs(Corrplus):
         pool, pdb, traj, pq = super(Corrplus, self)._calculate(xtc)
         
         Dihl = ["Phi", "Psi", "Omega"]
+        get_rawpq = lambda Dih: rgetattr(self, "state", f"Corrplus{Dih}", "_rawpq")(xtc)
         no_exist = lambda Dihl: [not rhasattr(self, "state", f"Corrplus{Dih}") for Dih in Dihl]
         
         if any(no_exist(Dihl)):
             for Dih in (Dih for Dih in Dihl if no_exist(Dihl)[Dihl.index(Dih)]):
                 self.state._set_pkgclass(self.state, f"Corrplus{Dih}")
 
-               
+        
         def wait_calculate(Dihl):
-            not_finished = lambda Dihl: [not rhasattr(self, "state", f"Corrplus{Dih}", "raw") for Dih in Dihl]
+            not_finished = lambda Dihl: [not os.path.isfile(get_rawpq(Dih)) for Dih in Dihl]
             while any(not_finished(Dihl)):
                 time.sleep(5)
             return Dihl
                 
         def save_pq(Dihl):
-            dfs = [rgetattr(self, "state", f"Corrplus{Dih}", "raw")[f"{xtc}"].abs() for Dih in Dihl] #.iloc
+            dfs = [pandas.read_parquet(get_rawpq(Dih))[f"{xtc}"].abs() for Dih in Dihl]
             
             final = None
             for df in dfs:
@@ -413,8 +414,9 @@ class CorrplusDihs(Corrplus):
                     final = df
                 else:
                     final = final + df
-                    
-            df = (final - final.min()) / (final.max() - final.min()) # This is done column-wise
+            df = final / len(Dihl) # average of the absolute number
+
+            # df = (final - final.min()) / (final.max() - final.min()) # This is done column-wise # This would be needed for absolute number sum; we are doing averaging
             pandas.DataFrame(df).to_parquet(pq)
             return
             
@@ -427,10 +429,18 @@ class CorrplusDihs(Corrplus):
         
         
         
-class AlloVizPsi(Matrixoutput, Corrplus):        
+class AlloVizPsi(Matrixoutput):        
     def __init__(self, state, **kwargs):
         self._dih = "psi"
         super().__init__(state, **kwargs)
+        
+        
+    def _calculate(self, xtc):
+        pool, pdb, traj, pq = super()._calculate(xtc)
+        
+        pool.apply_async(self._send_and_log,
+                         args=(pdb, traj, xtc, pq),
+                         callback=self._save_pq)
         
     
     def _computation(self, pdb, traj, xtc, pq):
@@ -454,7 +464,7 @@ class AlloVizPsi(Matrixoutput, Corrplus):
         for numreader in range(xtc-1):
             offset += get_frames(numreader)
 
-        values = dihs.Dihedral(selected).run(start=offset, stop=offset+get_frames(xtc)).results.angles.transpose()
+        values = _mda_dihedrals.Dihedral(selected).run(start=offset, stop=offset+get_frames(xtc)).results.angles.transpose()
         for idx in no_dihs:
             values = np.insert(values, idx, np.array([1]*values.shape[1]), axis=0)
 
@@ -467,6 +477,10 @@ class AlloVizPsi(Matrixoutput, Corrplus):
                 corr[res1, res2] = _npeet_lnc.MI.mi_LNC([values[res1], values[res2]])
     
         return corr, xtc, pq
+    
+    
+    def _save_pq(self, args):
+        CorrplusPsi._save_pq(args)
     
 
     
@@ -496,21 +510,22 @@ class AlloVizDihs(AlloVizPsi):
         pool, pdb, traj, pq = super(AlloVizPsi, self)._calculate(xtc)
         
         Dihl = ["Phi", "Psi", "Omega"]
+        get_rawpq = lambda Dih: rgetattr(self, "state", f"AlloViz{Dih}", "_rawpq")(xtc)
         no_exist = lambda Dihl: [not rhasattr(self, "state", f"AlloViz{Dih}") for Dih in Dihl]
         
         if any(no_exist(Dihl)):
             for Dih in (Dih for Dih in Dihl if no_exist(Dihl)[Dihl.index(Dih)]):
                 self.state._set_pkgclass(self.state, f"AlloViz{Dih}")
 
-               
+        
         def wait_calculate(Dihl):
-            not_finished = lambda Dihl: [not rhasattr(self, "state", f"AlloViz{Dih}", "raw") for Dih in Dihl]
+            not_finished = lambda Dihl: [not os.path.isfile(get_rawpq(Dih)) for Dih in Dihl]
             while any(not_finished(Dihl)):
                 time.sleep(5)
             return Dihl
                 
         def save_pq(Dihl):
-            dfs = [rgetattr(self, "state", f"AlloViz{Dih}", "raw")[f"{xtc}"].abs() for Dih in Dihl] #.iloc
+            dfs = [pandas.read_parquet(get_rawpq(Dih))[f"{xtc}"].abs() for Dih in Dihl]
             
             final = None
             for df in dfs:
@@ -518,8 +533,9 @@ class AlloVizDihs(AlloVizPsi):
                     final = df
                 else:
                     final = final + df
-                    
-            df = (final - final.min()) / (final.max() - final.min()) # This is done column-wise
+            df = final / len(Dihl) # average of the absolute number
+
+            # df = (final - final.min()) / (final.max() - final.min()) # This is done column-wise # This would be needed for absolute number sum; we are doing averaging
             pandas.DataFrame(df).to_parquet(pq)
             return
             

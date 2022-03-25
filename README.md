@@ -170,14 +170,14 @@ activeMuOR.view("corrplusCOM", "btw_avg", filterby="whole")
   <tr>
     <td rowspan="2">Dihedral correlation</td>
     <td>Pearson's</td>
-    <td>phi, psi and omega</td>
+    <td>Individual backbone dihedrals (Phi, psi and omega) and their combination</td>
     <td>CorrplusDihs (Corrplus[Psi, Phi, Omega])</td>
   </tr>
   <tr>
-    <td>Adrián's script</td>
+    <td>AlloViz</td>
     <td>MI</td>
-    <td>-</td>
-    <td></td>
+    <td>Individual backbone dihedrals (Phi, psi and omega) and their combination</td>
+    <td>AlloVizDihs (Corrplus[Psi, Phi, Omega])</td>
   </tr>
 </tbody>
 </table>
