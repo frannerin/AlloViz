@@ -16,29 +16,17 @@ imports = {
 "_grinn_calc": ".Packages.gRINN_Bitbucket.source.calc",
 "_grinn_corr": ".Packages.gRINN_Bitbucket.source.corr",
 "_npeet_lnc": ".Packages.NPEET_LNC.lnc",
-"_mda_dihedrals": "MDAnalysis.analysis.dihedrals"
+"_mda_dihedrals": "MDAnalysis.analysis.dihedrals",
+"_mdentropy": ".Packages.mdentropy.mdentropy.metrics",
 }
 
 _extra_arg = lambda val: "package='AlloViz'" if 'Packages' in val else ''
 
 for key, val in imports.items():
     exec(f"{key} = LazyObject(lambda: importlib.import_module('{val}', {_extra_arg(val)}), globals(), '{key}')")
-# locals().update( {key: LazyObject(lambda: importlib.import_module(val, package="AlloViz"), globals(), key) for key, val in imports.items()} )
-
-
-# print(locals(), globals())
-
-
-
-# get_dynamic_contacts = LazyObject(lambda: importlib.import_module(".Packages.getcontacts.get_dynamic_contacts", package="AlloViz"), globals(), "get_dynamic_contacts")
-# get_contact_frequencies = LazyObject(lambda: importlib.import_module(".Packages.getcontacts.get_contact_frequencies", package="AlloViz"), globals(), "get_contact_frequencies")
-# dynetanf = LazyObject(lambda: importlib.import_module(".Packages.dynetan.dynetan.proctraj", package="AlloViz").DNAproc, globals(), "dynetanf")
-# corrplusf = LazyObject(lambda: importlib.import_module(".Packages.correlationplus.correlationplus.calculate", package="AlloViz"), globals(), "corrplusf")
-# mdtaskf = LazyObject(lambda: importlib.import_module(".Packages.MD-TASK.mdtask.calc_correlation", package="AlloViz"), globals(), "mdtaskf")
-# pytrajf = LazyObject(lambda: importlib.import_module("pytraj"), globals(), "pytrajf")
-# pyinteraphf = LazyObject(lambda: importlib.import_module("pyinteraph.main"), globals(), "pyinteraphf")
-# grinnf = LazyObject(lambda: importlib.import_module(".Packages.gRINN_Bitbucket.source.grinn", package="AlloViz"), globals(), "grinnf")
-# calcf = LazyObject(lambda: importlib.import_module(".Packages.gRINN_Bitbucket.source.calc", package="AlloViz"), globals(), "calcf")
+    
+    
+    
 
 
 
@@ -464,7 +452,7 @@ class AlloVizPsi(Matrixoutput):
         for numreader in range(xtc-1):
             offset += get_frames(numreader)
 
-        values = _mda_dihedrals.Dihedral(selected).run(start=offset, stop=offset+get_frames(xtc)).results.angles.transpose()
+        values = _mda_dihedrals.Dihedral(selected).run(start=offset, stop=offset+get_frames(xtc-1)).results.angles.transpose()
         for idx in no_dihs:
             values = np.insert(values, idx, np.array([1]*values.shape[1]), axis=0)
 
@@ -544,7 +532,83 @@ class AlloVizDihs(AlloVizPsi):
                          args=(Dihl,),
                          callback=save_pq)
         
+
         
+        
+        
+        
+        
+class MDEntropyDihs(Matrixoutput, Multicorepkg):        
+    def __init__(self, state, **kwargs):
+        super().__init__(state, **kwargs)
+        
+        
+    def _calculate(self, xtc):
+        pool, pdb, traj, pq = super()._calculate(xtc)
+        
+        pool.apply_async(self._send_and_log,
+                         args=(pdb, traj, xtc, pq, self.taskcpus),
+                         callback=self._save_pq)
+        
+    
+    def _computation(self, pdb, traj, xtc, pq, taskcpus):
+        mytraj = mdtraj.load(traj, top=pdb) # hopefully mdtraj is loaded from the Classes module
+        mi = _mdentropy.DihedralMutualInformation(types=['phi', 'psi', 'omega'], threads=taskcpus) # n_bins=3, method='knn', normed=True
+        corr = mi.partial_transform(traj=mytraj, shuffle=0, verbose=True)
+        return corr, xtc, pq
+    
+    
+    def _save_pq(self, args):
+        CorrplusPsi._save_pq(self, args)
+
+        
+        
+        
+        
+        
+class MDEntropyContacts(Matrixoutput, Multicorepkg):        
+    def __init__(self, state, **kwargs):
+        super().__init__(state, **kwargs)
+        
+        
+    def _calculate(self, xtc):
+        pool, pdb, traj, pq = super()._calculate(xtc)
+        
+        pool.apply_async(self._send_and_log,
+                         args=(pdb, traj, xtc, pq, self.taskcpus),
+                         callback=self._save_pq)
+        
+    
+    def _computation(self, pdb, traj, xtc, pq, taskcpus):
+        mytraj = mdtraj.load(traj, top=pdb) # hopefully mdtraj is loaded from the Classes module
+        mi = _mdentropy.ContactMutualInformation(threads=taskcpus) # n_bins=3, method='knn', normed=True
+        corr = mi.partial_transform(traj=mytraj, shuffle=0, verbose=True)
+        return corr, xtc, pq
+    
+    
+
+class MDEntropyAlphaAngle(Matrixoutput, Multicorepkg):        
+    def __init__(self, state, **kwargs):
+        """
+        The alpha angle of residue `i` is the dihedral formed by the four CA atoms
+        of residues `i-1`, `i`, `i+1` and `i+2`.
+        """
+        super().__init__(state, **kwargs)
+        
+        
+    def _calculate(self, xtc):
+        pool, pdb, traj, pq = super()._calculate(xtc)
+        
+        pool.apply_async(self._send_and_log,
+                         args=(pdb, traj, xtc, pq, self.taskcpus),
+                         callback=self._save_pq)
+        
+    
+    def _computation(self, pdb, traj, xtc, pq, taskcpus):
+        mytraj = mdtraj.load(traj, top=pdb) # hopefully mdtraj is loaded from the Classes module
+        mi = _mdentropy.AlphaAngleMutualInformation(threads=taskcpus) # n_bins=3, method='knn', normed=True
+        corr = mi.partial_transform(traj=mytraj, shuffle=0, verbose=True)
+        return corr, xtc, pq
         
         
     

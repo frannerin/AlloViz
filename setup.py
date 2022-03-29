@@ -104,6 +104,30 @@ libinteract = \
 
 
 
+# Apparently the only needed Extension of msmbuilder to make mdentropy work; this block is mostly copied from msmbuilder's setup.py
+from basesetup import CompilerDetection
+if '--disable-openmp' in sys.argv:
+    sys.argv.remove('--disable-openmp')
+    DISABLE_OPENMP = True
+else:
+    DISABLE_OPENMP = False
+compiler = CompilerDetection(DISABLE_OPENMP)
+
+from distutils.sysconfig import get_python_lib
+mdtrajdir = get_python_lib() + "/mdtraj/core/lib"
+mdtraj_capi = {'include_dir': mdtrajdir, 'lib_dir': mdtrajdir}
+
+libdistance = \
+    Extension('msmbuilder.libdistance',
+              language='c++',
+              sources=['Packages/msmbuilder/msmbuilder/libdistance/libdistance.pyx'],
+              # msvc needs to be told "libtheobald", gcc wants just "theobald"
+              libraries=['%stheobald' % ('lib' if compiler.msvc else '')],
+              include_dirs=["Packages/msmbuilder/msmbuilder/libdistance/src",
+                            mdtraj_capi['include_dir'], numpy.get_include()],
+              library_dirs=[mdtraj_capi['lib_dir']],
+              )
+
 
 
 
@@ -118,8 +142,10 @@ setup(
     author_email=EMAIL,
     python_requires=REQUIRES_PYTHON,
     url=URL,
-    package_dir={"AlloViz": "AlloViz", "AlloViz.Packages": "Packages", "pyinteraph": "Packages/pyinteraph2/pyinteraph", "libinteract": "Packages/pyinteraph2/libinteract"},
-    packages=["pyinteraph", "libinteract", "AlloViz", "AlloViz.Packages"],#find_packages(exclude=["tests", "*.tests", "*.tests.*", "tests.*"])
+    package_dir={"AlloViz": "AlloViz", "msmbuilder": "Packages/msmbuilder/msmbuilder"}, # let's test this: "pyinteraph": "Packages/pyinteraph2/pyinteraph", "AlloViz.Packages": "Packages"
+    # , "libdistance": "Packages/msmbuilder/msmbuilder/libdistance", "libinteract": "Packages/pyinteraph2/libinteract"
+    packages=["msmbuilder", "AlloViz"], # "libinteract", "libdistance"
+    #find_packages(exclude=["tests", "*.tests", "*.tests.*", "tests.*"])
     #data_files={"AlloViz/Forks": glob("AlloViz/Forks/*", recursive=True)},
     #data_files=[ ("Forks", glob("AlloViz/Forks/*", recursive=True)) ],
     #data_files=[ ("Forks", list(os.walk("AlloViz/Forks"))) ],
@@ -129,7 +155,7 @@ setup(
     # entry_points={
     #     'console_scripts': ['mycli=mymodule:cli'],
     # },
-    ext_modules = [libinteract],
+    ext_modules = [libinteract, libdistance],
     #install_requires=REQUIRED,
     #extras_require=EXTRAS,
     include_package_data=True,

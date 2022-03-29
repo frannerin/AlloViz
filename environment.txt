@@ -53,6 +53,10 @@ click # probably for gRINN too
 parmed # for dcd generation
 #mdtraj and parmed are needed for dcd generation and thus for gRINN; they might be installed for other reasons (mdtraj is needed for MD-TASK and parmed comes with ambertools)
 
+# These two may be needed to succesfuly install msmbuilder
+#gxx_linux-64 
+#fastcluster is also missing
+
 
 
 

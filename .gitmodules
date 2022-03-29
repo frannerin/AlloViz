@@ -26,3 +26,11 @@
 	path = Packages/NPEET_LNC
 	url = https://github.com/ViktorvdValk/NPEET_LNC
 	shallow = true
+[submodule "Packages/mdentropy"]
+	path = Packages/mdentropy
+	url = https://github.com/msmbuilder/mdentropy
+	shallow = true
+[submodule "Packages/msmbuilder"]
+	path = Packages/msmbuilder
+	url = https://github.com/frannerin/msmbuilder
+	shallow = true
