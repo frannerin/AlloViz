@@ -118,7 +118,7 @@ setup(
     author_email=EMAIL,
     python_requires=REQUIRES_PYTHON,
     url=URL,
-    package_dir={"AlloViz": "alloviz", "AlloViz.Packages": "Packages", "pyinteraph": "Packages/pyinteraph2/pyinteraph", "libinteract": "Packages/pyinteraph2/libinteract"},
+    package_dir={"AlloViz": "AlloViz", "AlloViz.Packages": "Packages", "pyinteraph": "Packages/pyinteraph2/pyinteraph", "libinteract": "Packages/pyinteraph2/libinteract"},
     packages=["pyinteraph", "libinteract", "AlloViz", "AlloViz.Packages"],#find_packages(exclude=["tests", "*.tests", "*.tests.*", "tests.*"])
     #data_files={"AlloViz/Forks": glob("AlloViz/Forks/*", recursive=True)},
     #data_files=[ ("Forks", glob("AlloViz/Forks/*", recursive=True)) ],

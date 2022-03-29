@@ -17,7 +17,7 @@ from . import utils
 rgetattr = utils.rgetattr
 rhasattr = utils.rhasattr
 capitalize = utils.capitalize
-norm = utils.norm
+# norm = utils.norm
 
 
 # pkgsl = ["MDTASK", "getcontacts", "pyinteraph", "pyinteraphEne", "dynetan", "pytrajCA", "pytrajCB",
@@ -217,8 +217,8 @@ class Pair:
         # norm = self.state1._get_norm_str(normalize)
         # self.state1.pkg.filterby._norm
         if not hasattr(self, "delta"): self.get_delta()
-        if not rhasattr(self.delta, capitalize(pkg), capitalize(filterby), norm(normalize)): self.analyze(pkg, filterby=filterby, normalize=normalize)
-        return rgetattr(self.delta, capitalize(pkg), capitalize(filterby), norm(normalize)).view(metric, num)
+        if not rhasattr(self.delta, capitalize(pkg), capitalize(filterby)): self.analyze(pkg, filterby=filterby, normalize=normalize)
+        return rgetattr(self.delta, capitalize(pkg), capitalize(filterby)).view(metric, num)
 
 
 
@@ -271,10 +271,12 @@ class State:#(Entity):
         for pkg in (key for key in self.__dict__ if key.lower() in [x.lower() for x in pkgsl] and key in other.__dict__):
             setattr(delta, pkg, Store())
             for filterby in (key for key in getattr(self, pkg).__dict__ if key.lower() in filterbyl and key in getattr(other, pkg).__dict__): #if not re.search("(^_|raw)", key)
-                setattr(getattr(delta, pkg), filterby, Store())
-                for norm in (key for key in rgetattr(self, pkg, filterby).__dict__ if key in ["norm", "no_norm"] and key in rgetattr(self, pkg, filterby).__dict__):
-                    dif = rgetattr(self, pkg, filterby, norm) - rgetattr(other, pkg, filterby, norm)
-                    setattr(rgetattr(delta, pkg, filterby), norm, Edges(self._pair, dif))
+                # setattr(getattr(delta, pkg), filterby, Store())
+                # for norm in (key for key in rgetattr(self, pkg, filterby).__dict__ if key in ["norm", "no_norm"] and key in rgetattr(self, pkg, filterby).__dict__):
+                    # dif = rgetattr(self, pkg, filterby, norm) - rgetattr(other, pkg, filterby, norm)
+                    # setattr(rgetattr(delta, pkg, filterby), norm, Edges(self._pair, dif))
+                dif = rgetattr(self, pkg, filterby) - rgetattr(other, pkg, filterby)
+                setattr(rgetattr(delta, pkg), filterby, _Edges(self._pair, dif))
                     
         return delta
         
@@ -483,14 +485,14 @@ class State:#(Entity):
         # if not rhasattr(self.data, filterby, norm, pkg):
         #     self.analyze(pkg, normalize=normalize, filterby=filterby)
             
-        return rgetattr(self, capitalize(pkg), capitalize(filterby), norm(normalize)).view(metric, num)
+        return rgetattr(self, capitalize(pkg), capitalize(filterby)).view(metric, num)
 
 
 
 
 
 
-class Edges:
+class _Edges:
     def __init__(self, parent, df):
         self._parent = parent
         self.df = df
@@ -599,15 +601,16 @@ class Edges:
     
     
     
-class Analysis:
+class Analysis(_Edges):
     def __init__(self, pkg, metrics, normalize = True):
         self.pkg = pkg
+        self._parent = self.pkg.state
         self.metrics = metrics
         self.normalize = normalize
         self._name = self.__class__.__name__
         
-        self._path = lambda norm: f"{self.pkg.state._datadir}/{self.pkg._name}/{self._name}/{norm}" # lambda norm might not be needed
-        self._datapq = lambda norm, metric: f"{self._path(norm)}/{metric}.pq"
+        self._path = f"{self.pkg.state._datadir}/{self.pkg._name}/{self._name}" # lambda norm might not be needed
+        self._datapq = lambda metric: f"{self._path}/{metric}.pq"
         
         self._filtdata = self._get_filt_data()
         
@@ -622,22 +625,22 @@ class Analysis:
         
     
     def add_metrics(self, metrics, normalize=True):
-        norm = utils.norm(normalize)
-        os.makedirs(self._path(norm), exist_ok=True)
+        # norm = utils.norm(normalize)
+        os.makedirs(self._path, exist_ok=True)
         
-        if not hasattr(self, norm):
+        if not hasattr(self, "df"):
             data = self._filtdata[["weight_avg", "weight_std"]]
         else:
-            data = getattr(self, norm).df
+            data = getattr(self, "df")
         
         metrics = metricsl if metrics=="all" else metrics if isinstance(metrics, list) else [metrics]
-        pqs = [self._datapq(norm, metric) for metric in metrics]
+        pqs = [self._datapq(metric) for metric in metrics]
         no_exist = lambda pqs: [not os.path.isfile(pq) for pq in pqs]
         
         if any([f"{metric}_avg" not in data.columns for metric in metrics]): # or ow
             if any(no_exist(pqs)):
-                for metric in (metric for metric in self.metrics if no_exist(pqs)[pqs.index(self._datapq(norm, metric))]):
-                    self._analyze(metric, normalize, self._datapq(norm, metric))
+                for metric in (metric for metric in self.metrics if no_exist(pqs)[pqs.index(self._datapq(metric))]):
+                    self._analyze(metric, normalize, self._datapq(metric))
                 
         
         def wait_analyze(pqs, data):
@@ -647,7 +650,7 @@ class Analysis:
 
         def get_data(args):
             pqs, data = args
-            print(f"adding analyzed {norm} data of {self._name} for {self.pkg.state._pdbf}")
+            print(f"adding analyzed {self.pkg} {self._name} data of for {self.pkg.state._pdbf}")
             
             for pq in pqs:
                 metric = pq.rsplit("/", 1)[-1].split(".")[0]
@@ -660,7 +663,7 @@ class Analysis:
                 data = data.join(out) if data is not None else out
             return data
         
-        add_data = lambda args: setattr(self, norm, Edges(self.pkg.state, get_data(args)))
+        add_data = lambda args: setattr(self, "df", get_data(args)) #Edges(self.pkg.state, get_data(args))
         utils.get_pool().apply_async(wait_analyze,
                                args=(pqs, data),
                                callback=add_data)

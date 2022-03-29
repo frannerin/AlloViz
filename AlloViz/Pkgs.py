@@ -480,7 +480,7 @@ class AlloVizPsi(Matrixoutput):
     
     
     def _save_pq(self, args):
-        CorrplusPsi._save_pq(args)
+        CorrplusPsi._save_pq(self, args)
     
 
     

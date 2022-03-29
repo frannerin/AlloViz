@@ -177,7 +177,7 @@ activeMuOR.view("corrplusCOM", "btw_avg", filterby="whole")
     <td>AlloViz</td>
     <td>MI</td>
     <td>Individual backbone dihedrals (Phi, psi and omega) and their combination</td>
-    <td>AlloVizDihs (Corrplus[Psi, Phi, Omega])</td>
+    <td>AlloVizDihs (AlloViz[Psi, Phi, Omega])</td>
   </tr>
 </tbody>
 </table>
