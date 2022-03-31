@@ -70,7 +70,7 @@ https://github.com/msmbuilder/msmbuilder/blob/515fd5c27836c797692d600216b5eb224d
 </thead>
 <tbody>
   <tr>
-    <td rowspan="13">Movement correlation</td>
+    <td rowspan="9">Movement correlation</td>
     <td rowspan="2">dynetan</td>
     <td rowspan="2">Mutual Information (MI)</td>
     <td>Whole residue</td>
@@ -79,25 +79,6 @@ https://github.com/msmbuilder/msmbuilder/blob/515fd5c27836c797692d600216b5eb224d
   <tr>
     <td>Residue COM</td>
     <td>DynetanCOM</td>
-  </tr>
-  <tr>
-    <td rowspan="4">g_correlation</td>
-    <td rowspan="2">MI</td>
-    <td>alpha-C</td>
-    <td>G_corrCAMI</td>
-  </tr>
-  <tr>
-    <td>Residue COM</td>
-    <td>G_corrCOMMI</td>
-  </tr>
-  <tr>
-    <td rowspan="2">Linear MI (LMI)</td>
-    <td>alpha-C</td>
-    <td>G_corrCALMI</td>
-  </tr>
-  <tr>
-    <td>Residue COM</td>
-    <td>G_corrCOMLMI</td>
   </tr>
   <tr>
     <td rowspan="2">pytraj</td>
@@ -153,7 +134,7 @@ https://github.com/msmbuilder/msmbuilder/blob/515fd5c27836c797692d600216b5eb224d
     <td>MDEntropyDihs</td>
   </tr>
   <tr>
-    <td>Alpha angle (dihedral between i-1, i, i+1 and i+2's alpha-Cs)</td>
+    <td><a href="https://github.com/msmbuilder/msmbuilder/blob/515fd5c27836c797692d600216b5eb224dfc1c5d/msmbuilder/featurizer/featurizer.py#L802">Alpha angle</a> (dihedral between i-1, i, i+1 and i+2's alpha-Cs)</td>
     <td>MDEntropyAlphaAngle</td>
   </tr>
   <tr>
@@ -180,12 +161,13 @@ https://github.com/msmbuilder/msmbuilder/blob/515fd5c27836c797692d600216b5eb224d
   </tr>
   <tr>
     <td rowspan="2">gRINN</td>
-    <td rowspan="2">-</td>
+    <td>-</td>
     <td>Whole residue</td>
     <td>GRINN</td>
   </tr>
   <tr>
     <td>Pearson's</td>
+    <td>Whole residue</td>
     <td>GRINNcorr</td>
   </tr>
 </tbody>
