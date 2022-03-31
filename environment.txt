@@ -24,7 +24,8 @@ requests>=2.0
 
 # jupyter and viz
 nglview>=3.0
-jupyterlab
+notebook # might be faster than installing the more complex jupyterlab
+#jupyterlab
 #jupyter-lsp
 #jupyterlab-lsp
 #python-lsp-server

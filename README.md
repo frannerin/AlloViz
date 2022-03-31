@@ -11,18 +11,20 @@
 
 A Python package to interactively compute, analyze and visualize protein allosteric communication (residue interaction) networks and delta-networks.
 
-AlloViz binds together some newly written modules with 8 Python packages that provide different ways of calculating residue interactions: [getcontacts](https://github.com/getcontacts/getcontacts), [correlationplus](https://github.com/tekpinar/correlationplus), [dynetan](https://github.com/melomcr/dynetan), [PyInteraph2](https://github.com/ELELAB/pyinteraph2), [pytraj](https://github.com/Amber-MD/pytraj), [MD-TASK](https://github.com/RUBi-ZA/MD-TASK), [gRINN](https://bitbucket.org/onursercinoglu/grinn) and [g_correlation](https://www.mpinat.mpg.de/grubmueller/g_correlation).
+AlloViz binds together some newly written modules with 8 Python packages that provide different ways of calculating residue interactions: [getcontacts](https://github.com/getcontacts/getcontacts), [correlationplus](https://github.com/tekpinar/correlationplus), [dynetan](https://github.com/melomcr/dynetan), [PyInteraph2](https://github.com/ELELAB/pyinteraph2), [pytraj](https://github.com/Amber-MD/pytraj), [MD-TASK](https://github.com/RUBi-ZA/MD-TASK), [gRINN](https://bitbucket.org/onursercinoglu/grinn) (needs [namd](https://www.ks.uiuc.edu/Research/namd/)) and [MDEntropy](https://github.com/msmbuilder/mdentropy).
 
-For the same topology and molecular dynamics (MD) trajectory, the network can be constructed based on residue contacts, movement correlation or interaction energies, depending on the package selected. Moreover, for movement correlation, the movement tracked can be that of the whole residue, its center of mass, its alpha-C or its beta-C; and it can be calculated as the Pearson's correlation coefficient, Mutual Information (MI) or Linear MI (LMI). See [below](#available-information-sources-for-network-generation).
+<!-- [g_correlation](https://www.mpinat.mpg.de/grubmueller/g_correlation), [GSAtools](https://github.com/AllosterIt/GSAtools) -->
 
-The network can be analyzed with edge centrality metrics algorithms provided by the Python package [networkx](https://github.com/networkx/networkx), and they can be visualized in a Notebook using [nglview](https://github.com/nglviewer/nglview).
+For the same topology and molecular dynamics (MD) trajectory, the network can be constructed based on residue contact frequency, correlation of atom movement or dihedrals, or interaction energies, depending on the package selected. Moreover, for example for movement correlation, the movement tracked can be that of the whole residue, its center of mass, its alpha-C or its beta-C; and it can be calculated as the Pearson's correlation coefficient, Mutual Information (MI) or Linear MI (LMI). See [below](#available-information-sources-for-network-generation).
+
+The resulting network can be analyzed with edge centrality metrics algorithms provided by the Python package [networkx](https://github.com/networkx/networkx), and they can be visualized in an interactive Python Notebook (i.e., [Jupyter](https://jupyter.org/)) using [nglview](https://github.com/nglviewer/nglview).
 
 ## Installation
 
-It is recommended to use a virtual environment. This repository includes submodules that need to be appropriately cloned alongside the main repository using the `--recursive` flag. At present, virtual environment dependencies can only be installed with conda due to vmd-python not being available in PyPi.
+It is recommended to use a virtual environment ([Miniconda](https://docs.conda.io/en/latest/miniconda.html)). This repository includes submodules that need to be appropriately cloned alongside the main repository using the `--recursive` flag. At present, virtual environment dependencies file can only be installed with conda due to vmd-python not being available in PyPi.
 
 ```bash
-git clone --recursive --shallow-submodules -j 6 https://github.com/frannerin/AlloViz
+git clone --recursive --shallow-submodules -j 9 https://github.com/frannerin/AlloViz
 cd AlloViz
 conda create AlloViz -c conda-forge --file environment.txt
 ```
@@ -31,11 +33,11 @@ Then activate the environment with `conda activate AlloViz` and install the pack
 
 ## Quickstart
 
-The package is designed for use in interactive notebooks (i.e., [Jupyter](https://jupyter.org/)). The main class to be used is `State`; `Pair` allows to bind two States for delta-network analysis.
+The package is designed for use in interactive notebooks. The main class to be used is `State`; `Pair` allows to bind two States for delta-network analysis.
 
 ### for GPCRmd files
 
-A State is simply defined with the GPCRmd dynamics ID number, with which files are automatically retrieved. For example:
+A State is simply defined with the GPCRmd dynamics ID number, with which files are automatically retrieved from the database. For example:
 
 ```python
 import AlloViz
@@ -54,14 +56,7 @@ activeMuOR.view("corrplusCOM", "btw_avg", filterby="whole")
 
 <!-- https://www.tablesgenerator.com/html_tables -->
 
-<table style="undefined;table-layout: fixed; width: 1070px">
-<colgroup>
-<col style="width: 334px">
-<col style="width: 104px">
-<col style="width: 183px">
-<col style="width: 178px">
-<col style="width: 70px">
-</colgroup>
+<table>
 <thead>
   <tr>
     <th>Residue information extracted from trajectories</th>
@@ -72,36 +67,6 @@ activeMuOR.view("corrplusCOM", "btw_avg", filterby="whole")
   </tr>
 </thead>
 <tbody>
-  <tr>
-    <td rowspan="2">Contact frequency</td>
-    <td>getcontacts</td>
-    <td>-</td>
-    <td>Whole residue</td>
-    <td>Getcontacts</td>
-  </tr>
-  <tr>
-    <td rowspan="2">PyInteraph2</td>
-    <td>-</td>
-    <td>Whole residue</td>
-    <td>PyInteraph</td>
-  </tr>
-  <tr>
-    <td rowspan="3">Interaction energies</td>
-    <td>-</td>
-    <td>Whole residue</td>
-    <td>PyInteraphEne</td>
-  </tr>
-  <tr>
-    <td rowspan="2">gRINN</td>
-    <td>-</td>
-    <td>Whole residue</td>
-    <td>GRINN</td>
-  </tr>
-  <tr>
-    <td>Pearson's</td>
-    <td>Whole residue</td>
-    <td>GRINNcorr</td>
-  </tr>
   <tr>
     <td rowspan="13">Movement correlation</td>
     <td rowspan="2">dynetan</td>
@@ -168,7 +133,7 @@ activeMuOR.view("corrplusCOM", "btw_avg", filterby="whole")
     <td>CorrplusCOMLMI</td>
   </tr>
   <tr>
-    <td rowspan="2">Dihedral correlation</td>
+    <td rowspan="4">Dihedral correlation</td>
     <td>Pearson's</td>
     <td>Individual backbone dihedrals (Phi, psi and omega) and their combination</td>
     <td>CorrplusDihs (Corrplus[Psi, Phi, Omega])</td>
@@ -178,6 +143,48 @@ activeMuOR.view("corrplusCOM", "btw_avg", filterby="whole")
     <td>MI</td>
     <td>Individual backbone dihedrals (Phi, psi and omega) and their combination</td>
     <td>AlloVizDihs (AlloViz[Psi, Phi, Omega])</td>
+  </tr>
+  <tr>
+    <td rowspan="3">MDEntropy</td>
+    <td rowspan="3">MI</td>
+    <td>Combination of the backbone dihedrals (Phi, psi and omega)</td>
+    <td>MDEntropyDihs</td>
+  </tr>
+  <tr>
+    <td>[Alpha angle](https://github.com/msmbuilder/msmbuilder/blob/515fd5c27836c797692d600216b5eb224dfc1c5d/msmbuilder/featurizer/featurizer.py#L802) (dihedral between i-1, i, i+1 and i+2's alpha-Cs)</td>
+    <td>MDEntropyAlphaAngle</td>
+  </tr>
+  <tr>
+    <td rowspan="3">Contact frequency<br></td>
+    <td>Whole residue</td>
+    <td>MDEntropyContacts</td>
+  </tr>
+  <tr>
+    <td>getcontacts</td>
+    <td>-</td>
+    <td>Whole residue</td>
+    <td>Getcontacts</td>
+  </tr>
+  <tr>
+    <td rowspan="2">PyInteraph2</td>
+    <td rowspan="2">-</td>
+    <td>Whole residue</td>
+    <td>PyInteraph</td>
+  </tr>
+  <tr>
+    <td rowspan="3">Interaction energies</td>
+    <td>Whole residue</td>
+    <td>PyInteraphEne</td>
+  </tr>
+  <tr>
+    <td rowspan="2">gRINN</td>
+    <td rowspan="2">-</td>
+    <td>Whole residue</td>
+    <td>GRINN</td>
+  </tr>
+  <tr>
+    <td>Pearson's</td>
+    <td>GRINNcorr</td>
   </tr>
 </tbody>
 </table>
