@@ -94,6 +94,16 @@ class UploadCommand(Command):
         sys.exit()
 
 
+# Necessary to create the version.py file for mdentropy to be able to use the original repo directly as a submodule
+from Packages.mdentropy.basesetup import write_version_py
+VERSION = "0.4.0dev0"
+ISRELEASED = False
+write_version_py(VERSION, ISRELEASED, 'Packages/mdentropy/mdentropy/version.py')
+
+
+
+
+
 import numpy
 #libinteract/innerloops
 libinteract = \
@@ -105,13 +115,13 @@ libinteract = \
 
 
 # Apparently the only needed Extension of msmbuilder to make mdentropy work; this block is mostly copied from msmbuilder's setup.py
-from basesetup import CompilerDetection
-if '--disable-openmp' in sys.argv:
-    sys.argv.remove('--disable-openmp')
-    DISABLE_OPENMP = True
-else:
-    DISABLE_OPENMP = False
-compiler = CompilerDetection(DISABLE_OPENMP)
+#from basesetup import CompilerDetection
+#if '--disable-openmp' in sys.argv:
+#    sys.argv.remove('--disable-openmp')
+#    DISABLE_OPENMP = True
+#else:
+#    DISABLE_OPENMP = False
+#compiler = CompilerDetection(DISABLE_OPENMP)
 
 from distutils.sysconfig import get_python_lib
 mdtrajdir = get_python_lib() + "/mdtraj/core/lib"
@@ -122,13 +132,11 @@ libdistance = \
               language='c++',
               sources=['Packages/msmbuilder/msmbuilder/libdistance/libdistance.pyx'],
               # msvc needs to be told "libtheobald", gcc wants just "theobald"
-              libraries=['%stheobald' % ('lib' if compiler.msvc else '')],
+              libraries=['theobald'],#'%stheobald' % ('lib' if compiler.msvc else '')],
               include_dirs=["Packages/msmbuilder/msmbuilder/libdistance/src",
                             mdtraj_capi['include_dir'], numpy.get_include()],
               library_dirs=[mdtraj_capi['lib_dir']],
               )
-
-
 
 
 # Where the magic happens:
@@ -142,9 +150,9 @@ setup(
     author_email=EMAIL,
     python_requires=REQUIRES_PYTHON,
     url=URL,
-    package_dir={"AlloViz": "AlloViz", "msmbuilder": "Packages/msmbuilder/msmbuilder"}, # let's test this: "pyinteraph": "Packages/pyinteraph2/pyinteraph", "AlloViz.Packages": "Packages"
+    package_dir={"AlloViz": "AlloViz", "AlloViz.Packages": "Packages", "msmbuilder": "Packages/msmbuilder/msmbuilder"}, # let's test this: "pyinteraph": "Packages/pyinteraph2/pyinteraph", "AlloViz.Packages": "Packages"
     # , "libdistance": "Packages/msmbuilder/msmbuilder/libdistance", "libinteract": "Packages/pyinteraph2/libinteract"
-    packages=["msmbuilder", "AlloViz"], # "libinteract", "libdistance"
+    packages=["msmbuilder", "AlloViz", "AlloViz.Packages"], # "libinteract", "libdistance"
     #find_packages(exclude=["tests", "*.tests", "*.tests.*", "tests.*"])
     #data_files={"AlloViz/Forks": glob("AlloViz/Forks/*", recursive=True)},
     #data_files=[ ("Forks", glob("AlloViz/Forks/*", recursive=True)) ],
@@ -156,6 +164,9 @@ setup(
     #     'console_scripts': ['mycli=mymodule:cli'],
     # },
     ext_modules = [libinteract, libdistance],
+    #install_requires=[f"pytraj @ file://{os.getcwd()}/Packages/pytraj"],
+    #install_requires = ["pytraj @ git+https://github.com/Amber-MD/pytraj/archive/refs/tags/v.2.0.5.zip"],
+    #install_requires = ["pytraj @ git+https://github.com/Amber-MD/pytraj --depth 1"], #@2.0.5
     #install_requires=REQUIRED,
     #extras_require=EXTRAS,
     include_package_data=True,

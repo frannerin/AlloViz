@@ -3,9 +3,10 @@
 # platform: linux-64
 
 # main pkgs
+pip
 multiprocess
 lazyasd
-mdanalysis>=2.0
+mdanalysis>=2.0,<2.1 # 2.1.0 gives out a numpy-related error when importing
 
 numpy>=1.21.5,<1.21.6 # pyinteraph might need 1.22; 1.21.0 exact maximum version needed for numba; ¡¡¡1.21.5 should work!!!
 pandas>=1.3.5 # pyinteraph might need 1.4
@@ -42,7 +43,7 @@ numba>=0.55 # for dynetan
 h5py # for dynetan
 python-louvain # for dynetan; imported as community
 
-#ambertools>=21.0 # for pytraj
+ambertools>=21.0 # for pytraj and parmed
 
 prody>=2.0.1 # for correlationplus; prob 2.0.2 needed for a gRINN dep
 pyprind # for gRINN
@@ -50,11 +51,11 @@ panedr # for gRINN
 natsort # for gRINN
 click # probably for gRINN too
 
-parmed # for dcd generation
+#parmed # for dcd generation; ambertools is going to be a dependency so :D
 #mdtraj and parmed are needed for dcd generation and thus for gRINN; they might be installed for other reasons (mdtraj is needed for MD-TASK and parmed comes with ambertools)
 
 # These two may be needed to succesfuly install msmbuilder
-#gxx_linux-64 
+gxx_linux-64 # necessary for msmbuilder
 #fastcluster is also missing
 
 

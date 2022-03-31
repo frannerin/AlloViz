@@ -11,12 +11,13 @@ imports = {
 "_corrplus": ".Packages.correlationplus.correlationplus.calculate",
 "_mdtask": ".Packages.MD-TASK.mdtask.calc_correlation",
 "_pytraj": "pytraj",
-"_pyinteraph": "pyinteraph.main",
+"_pyinteraph": ".Packages.pyinteraph2.pyinteraph.main",
 "_grinn_args": ".Packages.gRINN_Bitbucket.source.grinn",
 "_grinn_calc": ".Packages.gRINN_Bitbucket.source.calc",
 "_grinn_corr": ".Packages.gRINN_Bitbucket.source.corr",
 "_npeet_lnc": ".Packages.NPEET_LNC.lnc",
 "_mda_dihedrals": "MDAnalysis.analysis.dihedrals",
+"_mdtraj": "mdtraj",
 "_mdentropy": ".Packages.mdentropy.mdentropy.metrics",
 }
 
@@ -534,35 +535,7 @@ class AlloVizDihs(AlloVizPsi):
         
 
         
-        
-        
-        
-        
-class MDEntropyDihs(Matrixoutput, Multicorepkg):        
-    def __init__(self, state, **kwargs):
-        super().__init__(state, **kwargs)
-        
-        
-    def _calculate(self, xtc):
-        pool, pdb, traj, pq = super()._calculate(xtc)
-        
-        pool.apply_async(self._send_and_log,
-                         args=(pdb, traj, xtc, pq, self.taskcpus),
-                         callback=self._save_pq)
-        
-    
-    def _computation(self, pdb, traj, xtc, pq, taskcpus):
-        mytraj = mdtraj.load(traj, top=pdb) # hopefully mdtraj is loaded from the Classes module
-        mi = _mdentropy.DihedralMutualInformation(types=['phi', 'psi', 'omega'], threads=taskcpus) # n_bins=3, method='knn', normed=True
-        corr = mi.partial_transform(traj=mytraj, shuffle=0, verbose=True)
-        return corr, xtc, pq
-    
-    
-    def _save_pq(self, args):
-        CorrplusPsi._save_pq(self, args)
 
-        
-        
         
         
         
@@ -578,16 +551,38 @@ class MDEntropyContacts(Matrixoutput, Multicorepkg):
                          args=(pdb, traj, xtc, pq, self.taskcpus),
                          callback=self._save_pq)
         
+        for _ in range(self.taskcpus-1): pool.apply_async(self._calculate_empty, args=(pq,))
+        
     
     def _computation(self, pdb, traj, xtc, pq, taskcpus):
-        mytraj = mdtraj.load(traj, top=pdb) # hopefully mdtraj is loaded from the Classes module
+        mytraj = _mdtraj.load(traj, top=pdb) # hopefully mdtraj is loaded from the Classes module
         mi = _mdentropy.ContactMutualInformation(threads=taskcpus) # n_bins=3, method='knn', normed=True
         corr = mi.partial_transform(traj=mytraj, shuffle=0, verbose=True)
         return corr, xtc, pq
     
+        
+        
+        
+class MDEntropyDihs(MDEntropyContacts):        
+    def __init__(self, state, **kwargs):
+        super().__init__(state, **kwargs)
+        
+    
+    def _computation(self, pdb, traj, xtc, pq, taskcpus):
+        mytraj = _mdtraj.load(traj, top=pdb) # hopefully mdtraj is loaded from the Classes module
+        mi = _mdentropy.DihedralMutualInformation(types=['phi', 'psi', 'omega'], threads=taskcpus) # n_bins=3, method='knn', normed=True
+        corr = mi.partial_transform(traj=mytraj, shuffle=0, verbose=True)
+        return corr, xtc, pq
+    
+    
+    def _save_pq(self, args):
+        CorrplusPsi._save_pq(self, args)
+
+        
+    
     
 
-class MDEntropyAlphaAngle(Matrixoutput, Multicorepkg):        
+class MDEntropyAlphaAngle(MDEntropyContacts):        
     def __init__(self, state, **kwargs):
         """
         The alpha angle of residue `i` is the dihedral formed by the four CA atoms
@@ -595,17 +590,9 @@ class MDEntropyAlphaAngle(Matrixoutput, Multicorepkg):
         """
         super().__init__(state, **kwargs)
         
-        
-    def _calculate(self, xtc):
-        pool, pdb, traj, pq = super()._calculate(xtc)
-        
-        pool.apply_async(self._send_and_log,
-                         args=(pdb, traj, xtc, pq, self.taskcpus),
-                         callback=self._save_pq)
-        
     
     def _computation(self, pdb, traj, xtc, pq, taskcpus):
-        mytraj = mdtraj.load(traj, top=pdb) # hopefully mdtraj is loaded from the Classes module
+        mytraj = _mdtraj.load(traj, top=pdb) # hopefully mdtraj is loaded from the Classes module
         mi = _mdentropy.AlphaAngleMutualInformation(threads=taskcpus) # n_bins=3, method='knn', normed=True
         corr = mi.partial_transform(traj=mytraj, shuffle=0, verbose=True)
         return corr, xtc, pq

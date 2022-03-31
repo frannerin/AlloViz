@@ -429,7 +429,7 @@ class State:#(Entity):
             mypool = Pool(cores)
             utils.pool = mypool
         print(utils.pool)
-        taskcpus = kwargs["taskcpus"] if "taskcpus" in kwargs else cores
+        taskcpus = kwargs.pop("taskcpus") if "taskcpus" in kwargs else cores
         
         for pkg in pkgs: self._set_pkgclass(self, pkg, taskcpus=taskcpus, **kwargs)
         
