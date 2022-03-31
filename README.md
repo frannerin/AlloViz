@@ -54,7 +54,9 @@ activeMuOR.view("corrplusCOM", "btw_avg", filterby="whole")
 
 ## Available information sources for network generation
 
-<!-- https://www.tablesgenerator.com/html_tables -->
+<!-- https://www.tablesgenerator.com/html_tables
+https://github.com/msmbuilder/msmbuilder/blob/515fd5c27836c797692d600216b5eb224dfc1c5d/msmbuilder/featurizer/featurizer.py#L802
+ -->
 
 <table>
 <thead>
@@ -151,7 +153,7 @@ activeMuOR.view("corrplusCOM", "btw_avg", filterby="whole")
     <td>MDEntropyDihs</td>
   </tr>
   <tr>
-    <td>[Alpha angle](https://github.com/msmbuilder/msmbuilder/blob/515fd5c27836c797692d600216b5eb224dfc1c5d/msmbuilder/featurizer/featurizer.py#L802) (dihedral between i-1, i, i+1 and i+2's alpha-Cs)</td>
+    <td>Alpha angle (dihedral between i-1, i, i+1 and i+2's alpha-Cs)</td>
     <td>MDEntropyAlphaAngle</td>
   </tr>
   <tr>
