@@ -134,7 +134,7 @@ https://github.com/msmbuilder/msmbuilder/blob/515fd5c27836c797692d600216b5eb224d
     <td>MDEntropyDihs</td>
   </tr>
   <tr>
-    <td><a href="https://github.com/msmbuilder/msmbuilder/blob/515fd5c27836c797692d600216b5eb224dfc1c5d/msmbuilder/featurizer/featurizer.py#L802">Alpha angle</a> (dihedral between i-1, i, i+1 and i+2's alpha-Cs)</td>
+    <td><a href="https://github.com/msmbuilder/msmbuilder/blob/515fd5c27836c797692d600216b5eb224dfc1c5d/msmbuilder/featurizer/featurizer.py#L802" target="_blank" rel="noopener noreferrer">Alpha angle</a> (dihedral between i-1, i, i+1 and i+2's alpha-Cs)</td>
     <td>MDEntropyAlphaAngle</td>
   </tr>
   <tr>

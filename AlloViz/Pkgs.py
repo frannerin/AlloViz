@@ -129,10 +129,19 @@ class Matrixoutput(Pkg):
     
     
     def _save_pq(self, args):
-        corr, xtc, pq = args
+        if len(args) == 3:
+            corr, xtc, pq = args
+            ids = [0, corr.shape[0]]
+        else:
+            corr, xtc, pq, ids = args
+        slicing = slice(*ids)
         
-        resl = [f"A:{aa.resname}:{aa.resid}" for aa in self.state.mdau.select_atoms(self._selection).residues]
-
+        length = len(list(range(*ids)))
+        if corr.shape != (length, length):
+            corr = corr[slicing, slicing]
+            
+        resl = [f"A:{aa.resname}:{aa.resid}" for aa in self.state.mdau.select_atoms(self._selection).residues[slicing]]
+        
         df = pandas.DataFrame(corr, columns=resl, index=resl)
         df = df.where( np.triu(np.ones(df.shape), k=1).astype(bool) )
         df = pandas.DataFrame({f"{xtc}": df.stack()})
@@ -338,20 +347,20 @@ class CorrplusPsi(Corrplus):
     def _computation(self, pdb, traj, xtc, pq):
         # dih = "psi"
         corr = _corrplus.calcMDsingleDihedralCC(pdb, traj, dihedralType = self._dih, saveMatrix = False)
-        return corr, xtc, pq
+        return corr, xtc, pq, [1, -1]
     
     
-    def _save_pq(self, args):
-        corr, xtc, pq = args
+#     def _save_pq(self, args):
+#         corr, xtc, pq = args
         
-        corr = corr[1:-1, 1:-1]
-        resl = [f"A:{aa.resname}:{aa.resid}" for aa in self.state.mdau.select_atoms(self._selection).residues[1:-1]]
+#         corr = corr[1:-1, 1:-1]
+#         resl = [f"A:{aa.resname}:{aa.resid}" for aa in self.state.mdau.select_atoms(self._selection).residues[1:-1]]
 
-        df = pandas.DataFrame(corr, columns=resl, index=resl)
-        df = df.where( np.triu(np.ones(df.shape), k=1).astype(bool) )
-        df = pandas.DataFrame({f"{xtc}": df.stack()})
-        # if not len(df[f"{xtc}"].unique()) == 1:
-        df.to_parquet(pq)
+#         df = pandas.DataFrame(corr, columns=resl, index=resl)
+#         df = df.where( np.triu(np.ones(df.shape), k=1).astype(bool) )
+#         df = pandas.DataFrame({f"{xtc}": df.stack()})
+#         # if not len(df[f"{xtc}"].unique()) == 1:
+#         df.to_parquet(pq)
 
     
     
@@ -465,11 +474,8 @@ class AlloVizPsi(Matrixoutput):
             for res2 in iterator - set(range(res1)) - {res1}:
                 corr[res1, res2] = _npeet_lnc.MI.mi_LNC([values[res1], values[res2]])
     
-        return corr, xtc, pq
+        return corr, xtc, pq, [1,-1]
     
-    
-    def _save_pq(self, args):
-        CorrplusPsi._save_pq(self, args)
     
 
     
@@ -572,11 +578,9 @@ class MDEntropyDihs(MDEntropyContacts):
         mytraj = _mdtraj.load(traj, top=pdb) # hopefully mdtraj is loaded from the Classes module
         mi = _mdentropy.DihedralMutualInformation(types=['phi', 'psi', 'omega'], threads=taskcpus) # n_bins=3, method='knn', normed=True
         corr = mi.partial_transform(traj=mytraj, shuffle=0, verbose=True)
-        return corr, xtc, pq
+        return corr, xtc, pq, [1, -1]
     
     
-    def _save_pq(self, args):
-        CorrplusPsi._save_pq(self, args)
 
         
     
@@ -595,7 +599,7 @@ class MDEntropyAlphaAngle(MDEntropyContacts):
         mytraj = _mdtraj.load(traj, top=pdb) # hopefully mdtraj is loaded from the Classes module
         mi = _mdentropy.AlphaAngleMutualInformation(threads=taskcpus) # n_bins=3, method='knn', normed=True
         corr = mi.partial_transform(traj=mytraj, shuffle=0, verbose=True)
-        return corr, xtc, pq
+        return corr, xtc, pq, [mi.labels[0], mi.labels[-1]+1]
         
         
     
