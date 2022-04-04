@@ -328,7 +328,7 @@ class _Edges:
     
     
     
-    def _get_cmap(self):
+    def _get_cmap(self): # could be a class attr; even an Analysis or even State/Pair attr
         if isinstance(self._parent, Pair): 
             # colors = {"inactive": "r", "active": "g",
             #          "Gprotein": "y", "Barr": "b"}

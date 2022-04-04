@@ -140,7 +140,7 @@ class Matrixoutput(Pkg):
         if corr.shape != (length, length):
             corr = corr[slicing, slicing]
             
-        resl = [f"A:{aa.resname}:{aa.resid}" for aa in self.state.mdau.select_atoms(self._selection).residues[slicing]]
+        resl = [f"{aa.resname}:{aa.resid}" for aa in self.state.mdau.select_atoms(self._selection).residues[slicing]]
         
         df = pandas.DataFrame(corr, columns=resl, index=resl)
         df = df.where( np.triu(np.ones(df.shape), k=1).astype(bool) )
@@ -204,7 +204,7 @@ class Getcontacts(Multicorepkg):
         
         df = pandas.read_csv(freqs, sep="\t", skiprows=2,
                              index_col = (0, 1), names = [f"{xtc}"])
-        df.index = df.index.map(lambda idx: tuple(sorted(idx, key = lambda res: int(res.split(":")[-1]))))
+        df.index = df.index.map(lambda idx: tuple(sorted([res.lsplit(":", 1)[-1] for res in idx], key = lambda res: int(res.split(":")[-1]))))
         df.to_parquet(pq)
         
     
