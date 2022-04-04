@@ -1,17 +1,23 @@
 import sys, os, io, re, pandas, time, requests
+
+from multiprocess import Pool
 import MDAnalysis as mda
 import numpy as np
-from multiprocess import Pool#, set_start_method
-#set_start_method("fork", force=True)
-# import multiprocess
-import matplotlib, nglview#, ipywidgets, matplotlib.cm
-from matplotlib import pyplot as pl
+
+import importlib.import_module
+from lazyasd import LazyObject
+matplotlib = LazyObject(lambda: importlib.import_module('matplotlib'), globals(), 'matplotlib')
+nglview = LazyObject(lambda: importlib.import_module('nglview'), globals(), 'nglview')
+pl = LazyObject(lambda: importlib.import_module('pyplot', package='matplotlib'), globals(), 'matplotlib')
+# import matplotlib, nglview#, ipywidgets, matplotlib.cm
+# from matplotlib import pyplot as pl
 
 from networkx import from_pandas_edgelist as networkx_from_pandas
 from networkx.algorithms.centrality import edge_betweenness_centrality, edge_betweenness_centrality_subset # edge_betweenness
 from networkx.algorithms.centrality import edge_current_flow_betweenness_centrality, edge_current_flow_betweenness_centrality_subset
 
 from . import Pkgs
+from . import trajutils
 
 from . import utils
 rgetattr = utils.rgetattr
@@ -40,8 +46,8 @@ class Pair:
         for state in self.states:
             state._pair = self
         
-        nodes_subset = self._add_nodes_subset()
-        self.sources_subset, self.targets_subset = nodes_subset.values()
+        # nodes_subset = self._add_nodes_subset()
+        # self.sources_subset, self.targets_subset = nodes_subset.values()
     
     
     
@@ -54,45 +60,45 @@ class Pair:
      
     
     
-    def _add_nodes_subset(self):
-        bfac = lambda atom: f"{atom.tempfactor:.2f}"
-        is_wb = lambda atom: atom.name == "N" and -8.1 <= atom.tempfactor <= 8.1 and (bfac(atom) != "1.00" and bfac(atom) != "0.00")
+#     def _add_nodes_subset(self):
+#         bfac = lambda atom: f"{atom.tempfactor:.2f}"
+#         is_wb = lambda atom: atom.name == "N" and -8.1 <= atom.tempfactor <= 8.1 and (bfac(atom) != "1.00" and bfac(atom) != "0.00")
         
         
-        targets = [3.50, 6.30, 7.49, 7.50, 7.51, 7.52, 7.53]
-        # In Ballesteros-Weinstein: Ionic lock 3.50 and 6.30; NPxxY 7.49-7.53
+#         targets = [3.50, 6.30, 7.49, 7.50, 7.51, 7.52, 7.53]
+#         # In Ballesteros-Weinstein: Ionic lock 3.50 and 6.30; NPxxY 7.49-7.53
     
     
-        def get_sources(states):
-            resnum_to_wb = lambda nums, state: (bfac(atom)
-                                                for residue in nums
-                                                for atom in state.mdau.select_atoms(f"resnum {residue}")
-                                                if is_wb(atom))
+#         def get_sources(states):
+#             resnum_to_wb = lambda nums, state: (bfac(atom)
+#                                                 for residue in nums
+#                                                 for atom in state.mdau.select_atoms(f"resnum {residue}")
+#                                                 if is_wb(atom))
             
-            has_lig = [state if ("LIG" in (seg.segid for seg in state.mdau.segments)) else False for state in self.states]
-            if any(has_lig):
-                state = next(item for item in has_lig if item != False)
-                aas = state.mdau.select_atoms("(same residue as around 4 segid LIG) and protein").residues
-                return list(resnum_to_wb(aas.resnums, state))
-            else:
-                return [3.32] # Conserved position
+#             has_lig = [state if ("LIG" in (seg.segid for seg in state.mdau.segments)) else False for state in self.states]
+#             if any(has_lig):
+#                 state = next(item for item in has_lig if item != False)
+#                 aas = state.mdau.select_atoms("(same residue as around 4 segid LIG) and protein").residues
+#                 return list(resnum_to_wb(aas.resnums, state))
+#             else:
+#                 return [3.32] # Conserved position
       
     
-        nodes_subset = {"sources": [val for val in get_sources(self.states) if val not in targets],
-                        "targets": list(map(lambda x: f"{x:.2f}", targets))}
+#         nodes_subset = {"sources": [val for val in get_sources(self.states) if val not in targets],
+#                         "targets": list(map(lambda x: f"{x:.2f}", targets))}
         
         
         
-        format_res = lambda aa: f"A:{aa.resname}:{aa.resnum}"
-        wb_to_aa = lambda wblist, state: list(map(format_res, (atom.residue
-                                                               for residue in state.mdau.select_atoms("protein").residues
-                                                               for atom in residue.atoms
-                                                               if is_wb(atom) and bfac(atom) in wblist)))
+#         format_res = lambda aa: f"A:{aa.resname}:{aa.resnum}"
+#         wb_to_aa = lambda wblist, state: list(map(format_res, (atom.residue
+#                                                                for residue in state.mdau.select_atoms("protein").residues
+#                                                                for atom in residue.atoms
+#                                                                if is_wb(atom) and bfac(atom) in wblist)))
         
-        for state in self.states:
-            state.sources_subset, state.targets_subset = wb_to_aa(nodes_subset["sources"], state), wb_to_aa(nodes_subset["targets"], state) 
+#         for state in self.states:
+#             state.sources_subset, state.targets_subset = wb_to_aa(nodes_subset["sources"], state), wb_to_aa(nodes_subset["targets"], state) 
         
-        return nodes_subset    
+#         return nodes_subset    
     
     
     
@@ -117,54 +123,7 @@ class Pair:
             mypool.close()
             mypool.join()
             utils.pool = utils.dummypool()
-        
-        
-        
-#         pkgs = pkgsl if pkg=="all" else pkg if isinstance(pkg, list) else [pkg]
-        
-#         if filterby == "incontact":
-#             if not hasattr(self, "_incontact"):
-#                 self.get_incontact(cores)
-#             if "getcontacts" in pkgs: pkgs.remove("getcontacts")
-#             # with Pool(cores) as pool:
-#             #     for state in self.states:
-#             #         if not hasattr(state.data, "raw") or not hasattr(state.data.raw, "getcontacts") or ow:
-#             #             state._send_calc("getcontacts", ow, filterby, pool)
-#             #     pool.close()
-#             #     pool.join()
-#             # [state._add_pkg("getcontacts") for state in self.states]
-#             # pkgs.remove("getcontacts")
-        
-#         with Pool(cores) as pool:
-#             for pkg in pkgs:
-#                 for state in self.states:
-#                     if not rhasattr(state.data, "raw", pkg) or ow:
-#                         #print(f"sending {state.name} {pkg}")
-#                         state._send_calc(pkg, ow, filterby, pool)
-#             pool.close()
-#             pool.join()
-        
-#         [state._add_pkg(pkg) for pkg in pkgs for state in self.states]
-        
-#         return
-    
-    
-    
-#     def get_incontact(self, cores=None, ow=False):
-#         with Pool(cores) as pool:
-#             for state in self.states:
-#                 if not rhasattr(state.data, "raw", "getcontacts") or ow:
-#                     #print(f"sending {state.name} {pkg}")
-#                     state._send_calc("getcontacts", ow, "incontact", pool)
-#             pool.close()
-#             pool.join()
-        
-#         [state._add_pkg("getcontacts") for state in self.states]
-        
-#         edges = set((idx for idx in state.data.raw.getcontacts.index for state in self.states))
-#         setattr(self, "_incontact", edges)
-#         return edges
-    
+
     
     
     
@@ -187,27 +146,6 @@ class Pair:
             mypool.close()
             mypool.join()
             utils.pool = utils.dummypool()
-        
-        
-        
-        
-#         pkgs = pkgsl if pkg=="all" else pkg if isinstance(pkg, list) else [pkg]
-#         metrics = metricsl if metrics=="all" else metrics if isinstance(metrics, list) else [metrics]
-        
-#         for state in self.states: state.data._check_raw(pkgs, normalize, filterby)
-        
-#         ps = []
-#         for state in self.states:
-#             p = Process(target=state._send_anal, args=(pkgs, metrics, normalize, ow, filterby))
-#             #print(f"sent analysis of {state.name} {filterby} data of {pkgs} packages for {metrics} metrics: {p.name}")
-#             ps.append(p)
-#             p.start()
-        
-#         [p.join() for p in ps]
-        
-#         [state.data._add_anal(pkg, metrics, normalize, ow, filterby) for pkg in pkgs for state in self.states]
-        
-#         return
 
 
     
@@ -225,7 +163,12 @@ class Pair:
 class Store:
     pass
 
-class State:#(Entity):    
+class State:
+    _download_files = trajutils._download_files
+    _get_mdau = trajutils._get_mdau
+    _add_comtrajs = trajutils._add_comtrajs
+    _make_dcds = trajutils._make_dcds
+    
     def __init__(self, pdb='', trajs:list=[], path='', psf=None, parameters=None, GPCRmdID=None):
         if GPCRmdID:
             self._gpcrmdid = GPCRmdID
@@ -279,138 +222,6 @@ class State:#(Entity):
                     
         return delta
         
-    
-    
-    
-    
-    def _download_files(self):
-        from bs4 import BeautifulSoup
-        import urllib.request as pwget
-        import tarfile, fileinput
-
-        web = "https://submission.gpcrmd.org"
-        
-        html = requests.get(f"{web}/dynadb/dynamics/id/{self._gpcrmdid}/")
-        soup = BeautifulSoup(html.text, features="html.parser").find_all('a')
-        links = [link.get('href') for link in soup if re.search("(xtc|pdb|psf|prm)", link.get('href'))]
-        get_name = lambda link: f"{self._path}/{link.rsplit('/')[-1]}"
-        
-        
-        mypool = Pool()
-        utils.pool = mypool        
-        
-        for link in links:
-            fname = get_name(link)
-            print(f"downloading {fname}")
-            utils.get_pool().apply_async(pwget.urlretrieve, args=(f"{web}{link}", fname))
-            
-        mypool.close()
-        mypool.join()
-        utils.pool = utils.dummypool()
-        
-        
-        fname = next(get_name(link) for link in links if "prm" in get_name(link))
-        with tarfile.open(fname) as tar:
-            tar.extractall(self._path)
-        os.remove(fname)
-
-        for line in fileinput.input(f"{self._path}/parameters", inplace=True):
-            if line.strip().startswith('HBOND'):
-                line = 'HBOND CUTHB 0.5\n'
-            elif line.strip().startswith('END'):
-                line = 'END\n'
-            sys.stdout.write(line)
-                
-        return
-    
-    
-    
-
-    def _get_mdau(self):
-        mdau = mda.Universe(self._pdbf, *self._trajs.values())
-        
-        if hasattr(self, "_gpcrmdid"):
-            prot = mdau.select_atoms("protein")
-
-            prot_numsf = f"{self._datadir}/gpcrdb_gennums.pdb"
-
-            if not os.path.isfile(prot_numsf):
-                print(f"retrieving {prot_numsf}")
-                with io.StringIO() as protf:
-                    with mda.lib.util.NamedStream(protf, "prot.pdb") as f:
-                        prot.write(f, file_format="pdb")
-                    response = requests.post('https://gpcrdb.org/services/structure/assign_generic_numbers', 
-                                             files = {'pdb_file': protf.getvalue()})
-                    with open(prot_numsf, "w") as prot_nums:
-                        prot_nums.write(response.text)
-
-            nums = mda.Universe(prot_numsf).select_atoms("protein").tempfactors
-            prot.tempfactors = nums.round(2)
-                    
-        return mdau
-    
-    
-    
-    
-    def _add_comtrajs(self):
-        compath = f"{self._datadir}/COMtrajs"
-        if not os.path.isdir(compath): os.makedirs(compath, exist_ok=True)
-
-        compdb = f"{compath}/ca.pdb"
-        if not os.path.isfile(compdb):
-            print(f"Making trajectories of residue COM for {self._pdbf}")
-            prot = self.mdau.select_atoms("protein and name CA")
-            prot.write(compdb)
-        setattr(self, "_compdbf", compdb)
-
-        comtrajs = [f"{compath}/{xtc}.xtc" for xtc in self._trajs]
-        setattr(self, "_comtrajs", {num: traj for num, traj in enumerate(comtrajs, 1)})
-
-        for xtc, comtraj in self._comtrajs.items():
-            if not os.path.isfile(comtraj):
-                prot = self.mdau.select_atoms("protein")
-                traj = next(traj for traj in self.mdau.trajectory.readers if traj.filename == self._trajs[xtc])
-                arr = np.empty((prot.n_residues, traj.n_frames, 3))
-                for ts in traj:
-                    arr[:, ts.frame] = prot.center_of_mass(compound='residues')
-
-                cau = mda.Universe(compdb, arr, format=mda.coordinates.memory.MemoryReader, order='afc')
-                with mda.Writer(comtraj, cau.atoms.n_atoms) as W:
-                    for ts in cau.trajectory:
-                        W.write(cau.atoms)
-        return
-    
-    
-    
-    
-    def _make_dcds(self):        
-        dcdpath = f"{self._datadir}/dcds"
-        if not os.path.isdir(dcdpath): os.makedirs(dcdpath, exist_ok=True)
-        setattr(self, "_protf", lambda ext: f"{dcdpath}/prot.{ext}")
-        
-        atoms = self.mdau.select_atoms("protein")
-        
-        dcdpdb = self._protf("pdb")
-        if not os.path.isfile(dcdpdb): atoms.write(dcdpdb) # could it be prot_nums? IT HAS THE LIGAND THOUGH
-        
-        dcdpsf = self._protf("psf")
-        if not os.path.isfile(dcdpsf):
-            import parmed
-            print(f"Making dcd trajectories for {self._pdbf}")
-            psf = parmed.load_file(self._psff)[atoms.indices]
-            psf.title = self._psff
-            psf.write_psf(dcdpsf)
-        
-        
-        dcds = [f"{dcdpath}/{xtc}.dcd" for xtc in self._trajs]
-        setattr(self, "_dcds", {num: traj for num, traj in enumerate(dcds, 1)})
-        
-        import mdtraj
-        for xtc, dcd in self._dcds.items():
-            if not os.path.isfile(dcd):
-                traj = mdtraj.load(self._trajs[xtc], top=self._pdbf, atom_indices=atoms.indices)
-                traj.save_dcd(dcd)
-        return
     
     
     
@@ -471,7 +282,6 @@ class State:#(Entity):
         pkgclass = eval(f"Pkgs.{capitalize(pkg)}") if isinstance(pkg, str) else pkg
         pkgobj = getattr(state, pkgclass.__name__)
 
-        # anaclass = eval(f"Analysis.{filterby[0].upper() + filterby[1:]}") if isinstance(filterby, str) else filterby
         anaclass = eval(f"{capitalize(filterby)}") if isinstance(filterby, str) else filterby
         if not hasattr(pkgobj, anaclass.__name__):
             setattr(pkgobj, anaclass.__name__, anaclass(pkgobj, metrics, normalize))
@@ -719,7 +529,7 @@ class Analysis(_Edges):
             analyzed = metricf(network, normalized=normalize, weight="weight", **nodes)
             edges = {tuple(sorted(k, key = lambda x: int(x.split(":")[-1]))): analyzed[k] for k in analyzed}
         except: # LinAlgError
-            print("Singular matrix!")
+            print("Singular matrix!", pq, metric)
             edges = {tuple(sorted(k, key = lambda x: int(x.split(":")[-1]))): 0 for k in network.edges()}
         
         return pandas.Series(edges)#, pq

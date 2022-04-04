@@ -35,8 +35,8 @@ def get_pool():
 def capitalize(string):
     return string[0].upper() + string[1:]
 
-def norm(normalize):
-    return "norm" if normalize else "no_norm"
+# def norm(normalize):
+#     return "norm" if normalize else "no_norm"
 
 
 
