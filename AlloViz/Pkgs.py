@@ -564,8 +564,9 @@ class MDEntropyContacts(Matrixoutput, Multicorepkg):
         # empties = 3 - extra_taskcpus if extra_taskcpus<=3 else 0
 
         # Opción de 1 empty por tasckpu, pasando las extras a empties; 1 taskcpu requiere 3,2G; hay una necesidad mayor de memoria al principio pero i pretend i do not see
-        taskcpus = int(np.floor(self.taskcpus/2)) if self.taskcpus > 1 else 1
-        empties = int(np.ceil(self.taskcpus/2))
+        half = int(np.floor(self.taskcpus/2))
+        taskcpus = half if self.taskcpus > 1 else 1
+        empties = half
         
         pool.apply_async(self._send_and_log,
                          args=(pdb, traj, xtc, pq, taskcpus),
