@@ -553,11 +553,25 @@ class MDEntropyContacts(Matrixoutput, Multicorepkg):
     def _calculate(self, xtc):
         pool, pdb, traj, pq = super()._calculate(xtc)
         
+        # # Opción si las necesidades de memoria incrementan con taskcpus
+        # extra_taskcpus = int((self.taskcpus/4 - 1) * 4) if self.taskcpus>=4 else 0
+        # taskcpus = 1 + extra_taskcpus # Minimum 4*2000 of memory (this taskcpus is like that to use 4 cpus-2000 mem in .sh files)
+        # empties = 3
+        
+        # # Opción si las necesidades altas de memoria sólo son con el inicio del cálculo
+        # extra_taskcpus = int((self.taskcpus/4 - 1) * 4) if self.taskcpus>=4 else 0
+        # taskcpus = 1 + extra_taskcpus # Minimum 4*2000 of memory (this taskcpus is like that to use 4 cpus-2000 mem in .sh files)
+        # empties = 3 - extra_taskcpus if extra_taskcpus<=3 else 0
+
+        # Opción de 1 empty por tasckpu, pasando las extras a empties; 1 taskcpu requiere 3,2G; hay una necesidad mayor de memoria al principio pero i pretend i do not see
+        taskcpus = int(np.floor(self.taskcpus/2)) if self.taskcpus > 1 else 1
+        empties = int(np.ceil(self.taskcpus/2))
+        
         pool.apply_async(self._send_and_log,
-                         args=(pdb, traj, xtc, pq, self.taskcpus),
+                         args=(pdb, traj, xtc, pq, taskcpus),
                          callback=self._save_pq)
         
-        for _ in range(self.taskcpus-1): pool.apply_async(self._calculate_empty, args=(pq,))
+        for _ in range(empties): pool.apply_async(self._calculate_empty, args=(pq,))
         
     
     def _computation(self, pdb, traj, xtc, pq, taskcpus):

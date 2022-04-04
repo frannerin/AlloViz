@@ -22,9 +22,11 @@ capitalize = utils.capitalize
 
 # pkgsl = ["MDTASK", "getcontacts", "pyinteraph", "pyinteraphEne", "dynetan", "pytrajCA", "pytrajCB",
 #          "corrplus", "corrplusLMI", "corrplusCOM", "corrplusCOMLMI", "corrplusPsi", "corrplusPhi", "corrplusOmega"] #"dynetanCOM", 
-pkgsl = ["MDTASK", "getcontacts", "pyInteraph", "pyInteraphEne", "dynetan", #"pytrajCA", "pytrajCB",
-         "corrplus", "corrplusLMI", "corrplusCOM", "corrplusCOMLMI", "corrplusPsi", "corrplusPhi", "corrplusOmega",
-        "gRINN", "gRINNcorr", "g_correlationCA", "g_correlationCOM"] #"dynetanCOM", 
+pkgsl = ["MDTASK", "getcontacts", "pyInteraph", "pyInteraphEne", "dynetan", "dynetanCOM", "pytrajCA", "pytrajCB",
+         "corrplus", "corrplusLMI", "corrplusCOM", "corrplusCOMLMI", "corrplusPsi", "corrplusPhi", "corrplusOmega", "corrplusDihs",
+        "gRINN", "gRINNcorr", "g_corrCAMI", "g_corrCOMMI", "g_corrCALMI", "g_corrCOMLMI",
+        "AlloVizPsi", "AlloVizPhi", "AlloVizOmega", "AlloVizDihs",
+        "MDEntropyContacts", "MDEntropyDihs", "MDEntropyAlphaAngle"]
 # metricsl = ["cfb", "cfb_subset", "btw", "btw_subset"]
 metricsl = ["cfb", "btw"]
 #filterbyl = ["whole", "incontact", "intercontact"]
