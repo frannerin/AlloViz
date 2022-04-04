@@ -151,9 +151,10 @@ setup(
     python_requires=REQUIRES_PYTHON,
     url=URL,
     package_dir={"AlloViz": "AlloViz", "AlloViz.Packages": "Packages",
-                 "libinteract": "Packages/pyinteraph2/libinteract", "msmbuilder": "Packages/msmbuilder/msmbuilder"}, # let's test this: "pyinteraph": "Packages/pyinteraph2/pyinteraph", "AlloViz.Packages": "Packages"
+                 "pyinteraph": "Packages/pyinteraph2/pyinteraph", "libinteract": "Packages/pyinteraph2/libinteract",
+                 "msmbuilder": "Packages/msmbuilder/msmbuilder"}, # let's test this: , "AlloViz.Packages": "Packages"
     # , "libdistance": "Packages/msmbuilder/msmbuilder/libdistance", 
-    packages=["AlloViz", "AlloViz.Packages", "libinteract", "msmbuilder"], # "libinteract", "libdistance"
+    packages=["AlloViz", "AlloViz.Packages", "pyinteraph", "libinteract", "msmbuilder"], # "libinteract", "libdistance"
     #find_packages(exclude=["tests", "*.tests", "*.tests.*", "tests.*"])
     #data_files={"AlloViz/Forks": glob("AlloViz/Forks/*", recursive=True)},
     #data_files=[ ("Forks", glob("AlloViz/Forks/*", recursive=True)) ],
