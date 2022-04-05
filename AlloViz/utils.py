@@ -15,7 +15,7 @@ def rhasattr(obj, *attrs):
 
 
 class dummypool:
-    def apply_async(self, function, args, callback=None):
+    def apply_async(self, function, args=[], callback=None):
         if callback is not None:
             return callback(function(*args))
         else:

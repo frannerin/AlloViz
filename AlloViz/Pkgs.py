@@ -1,7 +1,9 @@
-import sys, os, pandas, time, importlib
+import sys, os, pandas, time#, importlib
 import numpy as np
 from .utils import *
 from contextlib import redirect_stdout, redirect_stderr
+
+from importlib import import_module
 from lazyasd import LazyObject
 
 imports = {
@@ -24,7 +26,7 @@ imports = {
 _extra_arg = lambda val: "package='AlloViz'" if 'Packages' in val else ''
 
 for key, val in imports.items():
-    exec(f"{key} = LazyObject(lambda: importlib.import_module('{val}', {_extra_arg(val)}), globals(), '{key}')")
+    exec(f"{key} = LazyObject(lambda: import_module('{val}', {_extra_arg(val)}), globals(), '{key}')")
     
     
     
@@ -204,7 +206,7 @@ class Getcontacts(Multicorepkg):
         
         df = pandas.read_csv(freqs, sep="\t", skiprows=2,
                              index_col = (0, 1), names = [f"{xtc}"])
-        df.index = df.index.map(lambda idx: tuple(sorted([res.lsplit(":", 1)[-1] for res in idx], key = lambda res: int(res.split(":")[-1]))))
+        df.index = df.index.map(lambda idx: tuple(sorted([res.split(":", 1)[-1] for res in idx], key = lambda res: int(res.split(":")[-1]))))
         df.to_parquet(pq)
         
     

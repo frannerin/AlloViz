@@ -4,17 +4,20 @@ from multiprocess import Pool
 import MDAnalysis as mda
 import numpy as np
 
-import importlib.import_module
+from importlib import import_module
 from lazyasd import LazyObject
-matplotlib = LazyObject(lambda: importlib.import_module('matplotlib'), globals(), 'matplotlib')
-nglview = LazyObject(lambda: importlib.import_module('nglview'), globals(), 'nglview')
-pl = LazyObject(lambda: importlib.import_module('pyplot', package='matplotlib'), globals(), 'matplotlib')
+matplotlib = LazyObject(lambda: import_module('matplotlib'), globals(), 'matplotlib')
+nglview = LazyObject(lambda: import_module('nglview'), globals(), 'nglview')
+pl = LazyObject(lambda: import_module('pyplot', package='matplotlib'), globals(), 'matplotlib')
 # import matplotlib, nglview#, ipywidgets, matplotlib.cm
 # from matplotlib import pyplot as pl
 
-from networkx import from_pandas_edgelist as networkx_from_pandas
-from networkx.algorithms.centrality import edge_betweenness_centrality, edge_betweenness_centrality_subset # edge_betweenness
+from networkx import from_pandas_edgelist as nx_from_pandas
+# import networkx.algorithms.centrality as nx_centrality#import edge_betweenness_centrality, edge_betweenness_centrality_subset # edge_betweenness
+from networkx.algorithms.centrality import edge_betweenness_centrality, edge_betweenness_centrality_subset
 from networkx.algorithms.centrality import edge_current_flow_betweenness_centrality, edge_current_flow_betweenness_centrality_subset
+from networkx.algorithms.centrality import betweenness_centrality, betweenness_centrality_subset
+from networkx.algorithms.centrality import current_flow_betweenness_centrality, current_flow_betweenness_centrality_subset
 
 from . import Pkgs
 from . import trajutils
@@ -127,7 +130,7 @@ class Pair:
     
     
     
-    def analyze(self, pkg="all", metrics="all", filterby="incontact", normalize=True): # ow
+    def analyze(self, pkg="all", metrics="all", filterby="incontact", element:list=["edges"], normalize=True): # ow
         pkgs = pkgsl if pkg=="all" else pkg if isinstance(pkg, list) else [pkg]
         metrics = metricsl if metrics=="all" else metrics if isinstance(metrics, list) else [metrics]
         filterbys = filterbyl if filterby=="all" else filterby if isinstance(filterby, list) else [filterby]
@@ -140,7 +143,7 @@ class Pair:
         for state in self.states:
             for filterby in filterbys:
                 for pkg in pkgs:
-                    self._set_anaclass(state, pkg, metrics, filterby, normalize)
+                    self._set_anaclass(state, pkg, metrics, filterby, element, normalize)
         
         if cores>1:
             mypool.close()
@@ -258,7 +261,7 @@ class State:
     
     
     
-    def analyze(self, pkg="all", metrics="all", filterby="incontact", normalize=True, cores=1): # ow
+    def analyze(self, pkg="all", metrics="all", filterby="incontact", element:list=["edges"], normalize=True, cores=1): # ow
         pkgs = pkgsl if pkg=="all" else pkg if isinstance(pkg, list) else [pkg]
         metrics = metricsl if metrics=="all" else metrics if isinstance(metrics, list) else [metrics]
         filterbys = filterbyl if filterby=="all" else filterby if isinstance(filterby, list) else [filterby]
@@ -270,7 +273,7 @@ class State:
         
         for filterby in filterbys:
             for pkg in pkgs:
-                self._set_anaclass(self, pkg, metrics, filterby, normalize)
+                self._set_anaclass(self, pkg, metrics, filterby, element, normalize)
         
         if cores>1:
             mypool.close()
@@ -284,7 +287,7 @@ class State:
 
         anaclass = eval(f"{capitalize(filterby)}") if isinstance(filterby, str) else filterby
         if not hasattr(pkgobj, anaclass.__name__):
-            setattr(pkgobj, anaclass.__name__, anaclass(pkgobj, metrics, normalize))
+            setattr(pkgobj, anaclass.__name__, anaclass(pkgobj, metrics, element, normalize))
         
     
     
@@ -301,7 +304,7 @@ class State:
 
 
 
-class _Edges:
+class Element:
     def __init__(self, parent, df):
         self._parent = parent
         self.df = df
@@ -349,16 +352,6 @@ class _Edges:
         npdata = col.to_numpy()
         edges = np.nonzero(npdata)
         return cmap( normdata( npdata[edges] ).data )
-
-
-
-
-    def _add_edge(self, nv, prot, edge, color, radius):    
-        get_coords = lambda resnum: list( prot.select_atoms(f"resnum {resnum} and name CA").center_of_geometry() )
-        coords = [get_coords(res.split(':')[-1]) for res in edge]
-
-        return nv.shape.add_cylinder(coords[0], coords[1], list(color),
-                                     np.float64(radius), f"{edge[0]}_{edge[1]}")
     
     
     
@@ -373,6 +366,7 @@ class _Edges:
             cbar = pl.colorbar(orientation = "horizontal", ticks = [])
 
         return
+    
     
     
     
@@ -405,13 +399,37 @@ class _Edges:
             self._add_edge(nv, mdau, data.index[edges[0][i]], colors[i], radii[i])
 
         return nv
+    
+    
+    
 
     
+
+    
+class Edges(Element):
+     def __init__(self, *args):
+        super().__init__(*args)
+        
+        
+    
+    def _add_edge(self, nv, prot, edge, color, radius):    
+        get_coords = lambda resnum: list( prot.select_atoms(f"resnum {resnum} and name CA").center_of_geometry() )
+        coords = [get_coords(res.split(':')[-1]) for res in edge]
+
+        return nv.shape.add_cylinder(coords[0], coords[1], list(color),
+                                     np.float64(radius), f"{edge[0]}_{edge[1]}")
+    
+
+    
+class Nodes(Element):
+     def __init__(self, *args):
+        super().__init__(*args)
     
     
     
-class Analysis(_Edges):
-    def __init__(self, pkg, metrics, normalize = True):
+    
+class Analysis: #(_Edges)
+    def __init__(self, pkg, metrics, element, normalize = True):
         self.pkg = pkg
         self._parent = self.pkg.state
         self.metrics = metrics
@@ -419,11 +437,14 @@ class Analysis(_Edges):
         self._name = self.__class__.__name__
         
         self._path = f"{self.pkg.state._datadir}/{self.pkg._name}/{self._name}" # lambda norm might not be needed
-        self._datapq = lambda metric: f"{self._path}/{metric}.pq"
+        self._datapq = lambda element, metric: f"{self._path}/{element}_{metric}.pq"
         
         self._filtdata = self._get_filt_data()
+        # self._graph = nx_from_pandas(df=self._filtdata.reset_index(), 
+        #                                    source="level_0", target="level_1", 
+        #                                    edge_attr=list(self._filtdata.drop("weight_std", axis=1).columns))
         
-        self.add_metrics(metrics, normalize)
+        self.add_metrics(metrics, element, normalize)
     
     
     
@@ -433,71 +454,97 @@ class Analysis(_Edges):
     
         
     
-    def add_metrics(self, metrics, normalize=True):
+    def add_metrics(self, metrics, element, normalize=True):
         # norm = utils.norm(normalize)
         os.makedirs(self._path, exist_ok=True)
-        
-        if not hasattr(self, "df"):
-            data = self._filtdata[["weight_avg", "weight_std"]]
-        else:
-            data = getattr(self, "df")
-        
         metrics = metricsl if metrics=="all" else metrics if isinstance(metrics, list) else [metrics]
-        pqs = [self._datapq(metric) for metric in metrics]
-        no_exist = lambda pqs: [not os.path.isfile(pq) for pq in pqs]
         
-        if any([f"{metric}_avg" not in data.columns for metric in metrics]): # or ow
-            if any(no_exist(pqs)):
-                for metric in (metric for metric in self.metrics if no_exist(pqs)[pqs.index(self._datapq(metric))]):
-                    self._analyze(metric, normalize, self._datapq(metric))
-                
-        
-        def wait_analyze(pqs, data):
-            while any(no_exist(pqs)):
-                time.sleep(5)
-            return pqs, data
+        for elem in element:
+            if not rhasattr(self, ele, "df"):
+                if ele == "edges":
+                    data = self._filtdata[["weight_avg", "weight_std"]]
+                elif ele == "nodes":
+                    data = pandas.DataFrame()
+            else:
+                data = getattr(self, elem, "df")
 
-        def get_data(args):
-            pqs, data = args
-            print(f"adding analyzed {self.pkg} {self._name} data of for {self.pkg.state._pdbf}")
+
+            pqs = [self._datapq(elem, metric) for metric in metrics]
+            no_exist = lambda pqs: [not os.path.isfile(pq) for pq in pqs]
+
+            if any([f"{metric}_avg" not in data.columns for metric in metrics]): # or ow
+                if any(no_exist(pqs)):
+                    for metric in (metric for metric in self.metrics if no_exist(pqs)[pqs.index(self._datapq(elem, metric))]):
+                        self._analyze(metric, elem, normalize, self._datapq(elem, metric))
+
+
+            def wait_analyze(pqs, data):
+                while any(no_exist(pqs)):
+                    time.sleep(5)
+                return pqs, data
+
+            def get_data(args):
+                pqs, data = args
+                print(f"adding analyzed {elem} {self.pkg} {self._name} data of for {self.pkg.state._pdbf}")
+
+                for pq in pqs:
+                    metric = pq.rsplit("/", 1)[-1].split(".")[0]
+                    df = pandas.read_parquet(pq)
+
+                    cols = [f"{metric}_{num}" for num in self.pkg.state._trajs]
+                    df[f"{metric}_avg"] = df[cols].fillna(0).mean(axis=1)
+                    df[f"{metric}_std"] = df[cols].fillna(0).std(axis=1)
+                    out = df.drop(cols, axis=1)
+                    data = data.join(out) if data is not None else out
+                return data
             
-            for pq in pqs:
-                metric = pq.rsplit("/", 1)[-1].split(".")[0]
-                df = pandas.read_parquet(pq)
-
-                cols = [f"{metric}_{num}" for num in self.pkg.state._trajs]
-                df[f"{metric}_avg"] = df[cols].fillna(0).mean(axis=1)
-                df[f"{metric}_std"] = df[cols].fillna(0).std(axis=1)
-                out = df.drop(cols, axis=1)
-                data = data.join(out) if data is not None else out
-            return data
-        
-        add_data = lambda args: setattr(self, "df", get_data(args)) #Edges(self.pkg.state, get_data(args))
-        utils.get_pool().apply_async(wait_analyze,
-                               args=(pqs, data),
-                               callback=add_data)
+            elemclass = eval(elem.capitalize())
+            add_data = lambda args: setattr(self, elem, elemclass(self.pkg.state, get_data(args)))
+            utils.get_pool().apply_async(wait_analyze,
+                                   args=(pqs, data),
+                                   callback=add_data)
         return
     
 
     
     
-    def _analyze(self, metric, normalize, pq):
+    def _analyze(self, metric, elem, normalize, pq):
         pool = utils.get_pool()
         rawdata = self._filtdata.drop("weight_std", axis=1)
+        nodes = {}   
         
-        
+        if callable(metric):
+            metricf = metric
+        else:        
+            if "cfb" in metric:
+                metricf = current_flow_betweenness_centrality
+            elif "btw" in metric:
+                metricf = betweenness_centrality
+            
+            if elem == "edges":
+                metricf = eval(f"edge_{metricf.__name__}")
+            
+            if "subset" in metric:
+                metricf = eval(f"{metricf.__name__}_subset")
+                nodes = {"sources": self._state.sources_subset, "targets": self._state.targets_subset}  
+                
+                
+                
         def save_pq(df):
             newcolnames = {name: f"{metric}_{name}" for name in df.columns}
             df.rename(columns=newcolnames, inplace=True)
             df.to_parquet(pq)
             return
         
-        pool.apply_async(lambda args: rawdata.apply(self._networkx_analysis, args=args),
-                         args=((metric, normalize, pq),),
+        # pool.apply_async(lambda args: rawdata.apply(self._networkx_analysis, args=args),
+        #                  args=((metricf, elem, normalize, pq),),
+        #                  callback=save_pq)
+        pool.apply_async(lambda: rawdata.apply(self._networkx_analysis, args=(metricf, elem, normalize, nodes)), #pq
+                         #args=(,),
                          callback=save_pq)
         
         
-        def _calculate_empty( pqf):
+        def _calculate_empty(pqf):
             print("sleeping", pqf, os.getpid())
             while not os.path.isfile(pqf):
                 time.sleep(5)
@@ -508,31 +555,21 @@ class Analysis(_Edges):
     
     
     
-    def _networkx_analysis(self, column, metric, normalize, pq):
-        weights = column.reset_index().rename(columns={f"{column.name}": "weight"}).dropna() # this dropna is problematic; nonexistent should be 0?
-        network = networkx_from_pandas(weights, "level_0", "level_1", "weight")
-        nodes = {}
+    def _networkx_analysis(self, column, metricf, elem, normalize, nodes):#pq
+        weights = column.reset_index().fillna(0)#.dropna() # this dropna is problematic; nonexistent should be 0? # .rename(columns={f"{column.name}": "weight"})
+        network = nx_from_pandas(weights, "level_0", "level_1", column.name)#"weight")         
         
-        if callable(metric):
-            metricf = metric
-        else:        
-            if "cfb" in metric:
-                metricf = edge_current_flow_betweenness_centrality
-            elif "btw" in metric:
-                metricf = edge_betweenness_centrality
-
-            if "subset" in metric:
-                metricf = eval(f"{metricf.__name__}_subset")
-                nodes = {"sources": self._state.sources_subset, "targets": self._state.targets_subset}            
+        sort_index = lambda result: {tuple(sorted(k, key = lambda x: int(x.split(":")[-1]))): result[k] for k in result}
         
         try:
-            analyzed = metricf(network, normalized=normalize, weight="weight", **nodes)
-            edges = {tuple(sorted(k, key = lambda x: int(x.split(":")[-1]))): analyzed[k] for k in analyzed}
+            analyzed = metricf(network, normalized=normalize, weight=column.name, **nodes)
         except: # LinAlgError
-            print("Singular matrix!", pq, metric)
-            edges = {tuple(sorted(k, key = lambda x: int(x.split(":")[-1]))): 0 for k in network.edges()}
+            print("Singular matrix!", self._parent, self._name, self.pkg, metric, elem)
+            analyzed = {k: 0 for k in eval(f"network.{elem.lower()}")}#{tuple(sorted(k, key = lambda x: int(x.split(":")[-1]))): 0 for k in network.edges()}
+            
+        result = sort_index(analyzed) if elem == "edges" else analyzed if elem == "nodes"
         
-        return pandas.Series(edges)#, pq
+        return pandas.Series(result)#, pq
     
     
     
@@ -545,11 +582,28 @@ class Incontact(Analysis):
     def _get_filt_data(self):
         df = super()._get_filt_data()
         
-        try:
-            indexes = self.pkg.state.Getcontacts.raw.index
-        except:
-            print("Getcontacts calculation is needed first")
-            raise
+        if not rhasattr(self.pkg.state, "Getcontacts", "raw"):
+            print("Getcontacts results are needed; sending calculation first...")
+            
+            pool = utils.get_pool()
+            
+            self.pkg.state._set_pkgclass(self.pkg.state, "Getcontacts", taskcpus = int(np.ceil(pool._processes/2)))
+            
+            
+            gc = self.pkg.state.Getcontacts
+            pqs = [gc._rawpq(xtc) for xtc in gc.state._trajs]
+            no_exist = lambda pqs: [not os.path.isfile(pq) for pq in pqs]
+
+            while any(no_exist(pqs)):
+                print("Waiting for pq files to be created")
+                time.sleep(5)
+                
+            while not rhasattr(gc, "raw"):
+                print("Waiting for raw data to be added to object")
+                time.sleep(5)
+                
+                
+        indexes = self.pkg.state.Getcontacts.raw.index
             
         return df.filter(indexes, axis=0) # maybe pass indexes in class creation
         
@@ -562,8 +616,8 @@ class Intercontact(Incontact):
     def _get_filt_data(self):
 
         def get_intercontacts(indexl):
-            get_resnum = lambda res: int(res.rsplit(":")[-1])
-            return [idx for idx in indexl if abs(get_resnum(idx[0]) - get_resnum(idx[1]) ) >= 4]
+            resnum = lambda res: int(res.rsplit(":")[-1])
+            return [idx for idx in indexl if abs(resnum(idx[0]) - resnum(idx[1]) ) >= 4]
         
         df = super()._get_filt_data()
 
