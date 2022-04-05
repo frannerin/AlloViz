@@ -281,7 +281,7 @@ class State:
             utils.pool = utils.dummypool()
     
     
-    def _set_anaclass(self, state, pkg, metrics, filterby, normalize):
+    def _set_anaclass(self, state, pkg, metrics, filterby, element, normalize):
         pkgclass = eval(f"Pkgs.{capitalize(pkg)}") if isinstance(pkg, str) else pkg
         pkgobj = getattr(state, pkgclass.__name__)
 
@@ -407,12 +407,12 @@ class Element:
 
     
 class Edges(Element):
-     def __init__(self, *args):
+    def __init__(self, *args):
         super().__init__(*args)
         
         
-    
-    def _add_edge(self, nv, prot, edge, color, radius):    
+
+    def _add_edge(self, nv, prot, edge, color, radius):
         get_coords = lambda resnum: list( prot.select_atoms(f"resnum {resnum} and name CA").center_of_geometry() )
         coords = [get_coords(res.split(':')[-1]) for res in edge]
 
@@ -460,10 +460,10 @@ class Analysis: #(_Edges)
         metrics = metricsl if metrics=="all" else metrics if isinstance(metrics, list) else [metrics]
         
         for elem in element:
-            if not rhasattr(self, ele, "df"):
-                if ele == "edges":
+            if not rhasattr(self, elem, "df"):
+                if elem == "edges":
                     data = self._filtdata[["weight_avg", "weight_std"]]
-                elif ele == "nodes":
+                elif elem == "nodes":
                     data = pandas.DataFrame()
             else:
                 data = getattr(self, elem, "df")
@@ -488,7 +488,7 @@ class Analysis: #(_Edges)
                 print(f"adding analyzed {elem} {self.pkg} {self._name} data of for {self.pkg.state._pdbf}")
 
                 for pq in pqs:
-                    metric = pq.rsplit("/", 1)[-1].split(".")[0]
+                    metric = pq.rsplit("/", 1)[-1].split("_", 1)[-1].split(".")[0]
                     df = pandas.read_parquet(pq)
 
                     cols = [f"{metric}_{num}" for num in self.pkg.state._trajs]
@@ -567,16 +567,21 @@ class Analysis: #(_Edges)
             print("Singular matrix!", self._parent, self._name, self.pkg, metric, elem)
             analyzed = {k: 0 for k in eval(f"network.{elem.lower()}")}#{tuple(sorted(k, key = lambda x: int(x.split(":")[-1]))): 0 for k in network.edges()}
             
-        result = sort_index(analyzed) if elem == "edges" else analyzed if elem == "nodes"
+        result = sort_index(analyzed) if elem == "edges" else analyzed# if elem == "nodes"
         
         return pandas.Series(result)#, pq
     
     
     
     
+class Whole(Analysis):
+    pass    
+    
+    
+    
 class Incontact(Analysis):
-    def __init__(self, pkg, metrics, normalize = True):
-        super().__init__(pkg, metrics, normalize)
+    def __init__(self, *args):
+        super().__init__(*args)
     
     
     def _get_filt_data(self):
@@ -609,20 +614,18 @@ class Incontact(Analysis):
         
         
 class Intercontact(Incontact):
-    def __init__(self, pkg, metrics, normalize = True):
-        super().__init__(pkg, metrics, normalize)
+    def __init__(self, *args):
+        super().__init__(*args)
 
         
     def _get_filt_data(self):
-
+        df = super()._get_filt_data()
+        
+        
         def get_intercontacts(indexl):
             resnum = lambda res: int(res.rsplit(":")[-1])
             return [idx for idx in indexl if abs(resnum(idx[0]) - resnum(idx[1]) ) >= 4]
         
-        df = super()._get_filt_data()
-
         return df.filter(get_intercontacts(df.index), axis=0)
 
         
-class Whole(Analysis):
-    pass
