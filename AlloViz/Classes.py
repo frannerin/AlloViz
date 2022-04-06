@@ -464,7 +464,7 @@ class Analysis: #(_Edges)
                 if elem == "edges":
                     data = self._filtdata[["weight_avg", "weight_std"]]
                 elif elem == "nodes":
-                    data = pandas.DataFrame()
+                    data = None
             else:
                 data = getattr(self, elem, "df")
 
@@ -495,7 +495,7 @@ class Analysis: #(_Edges)
                     df[f"{metric}_avg"] = df[cols].fillna(0).mean(axis=1)
                     df[f"{metric}_std"] = df[cols].fillna(0).std(axis=1)
                     out = df.drop(cols, axis=1)
-                    data = data.join(out) if data is not None else out
+                    data = pandas.concat([data, out], axis=1)#data.join(out) if data is not None else out
                 return data
             
             elemclass = eval(elem.capitalize())
@@ -564,7 +564,7 @@ class Analysis: #(_Edges)
         try:
             analyzed = metricf(network, normalized=normalize, weight=column.name, **nodes)
         except: # LinAlgError
-            print("Singular matrix!", self._parent, self._name, self.pkg, metric, elem)
+            print("Singular matrix!", self.pkg._name, self._name, elem, metricf.__name__)
             analyzed = {k: 0 for k in eval(f"network.{elem.lower()}")}#{tuple(sorted(k, key = lambda x: int(x.split(":")[-1]))): 0 for k in network.edges()}
             
         result = sort_index(analyzed) if elem == "edges" else analyzed# if elem == "nodes"
