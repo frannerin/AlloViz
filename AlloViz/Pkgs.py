@@ -36,17 +36,15 @@ for key, val in imports.items():
 class Pkg:
     def __new__(cls, state, **kwargs):
         new = super().__new__(cls)
-        new.state = state        
         new._name = new.__class__.__name__
+        
+        new.state = state        
+        new._pdbf = new.state._pdbf
+        new._traj = lambda xtc: new.state._trajs[xtc]
         
         new._path = f"{new.state._datadir}/{new._name}/raw"
         os.makedirs(new._path, exist_ok=True)
         new._rawpq = lambda xtc: f"{new._path}/{xtc if isinstance(xtc, int) else xtc.rsplit('.', 1)[0]}.pq"
-        
-        # new._pool = get_pool()
-        new._pdbf = new.state._pdbf
-        new._traj = lambda xtc: new.state._trajs[xtc]
-        # new.pq = self._rawpq(xtc)
         
         return new
         
@@ -141,26 +139,64 @@ class Matrixoutput(Pkg):
     
     
     def _save_pq(self, args):
-        if len(args) == 2:
-            corr, xtc = args
-            ids = [0, corr.shape[0]]
-        else:
-            corr, xtc, ids = args
-        slicing = slice(*ids)
+        corr, xtc, *resl = args
         
-        length = len(list(range(*ids)))
-        if corr.shape != (length, length):
-            corr = corr[slicing, slicing]
+        if len(resl) != 0 and corr.shape != (len(resl), len(resl)):
+            corr = corr[np.ix_(resl, resl)]
+        elif len(resl) == 0:
+            resl = slice(0, corr.shape[0])
             
-        resl = [f"{aa.resname}:{aa.resid}" for aa in self.state.mdau.select_atoms(self._selection).residues[slicing]]
+        resnames = [f"{aa.resname}:{aa.resid}" for aa in self.state.mdau.select_atoms(self._selection).residues[resl]]
         
-        df = pandas.DataFrame(corr, columns=resl, index=resl)
+        df = pandas.DataFrame(corr, columns=resnames, index=resnames)
         df = df.where( np.triu(np.ones(df.shape), k=1).astype(bool) )
         df = pandas.DataFrame({f"{xtc}": df.stack()})
         # if not len(df[f"{xtc}"].unique()) == 1:
         df.to_parquet(self._rawpq(xtc))
+        
+                
+        
+        
+class CombinedDihs(Matrixoutput):
+    
+    def _calculate(self, xtc):
+        pkg = self._name.replace("Dihs", "")
+        Dihl = ["Phi", "Psi", "Omega"]
+        get_rawpq = lambda Dih: rgetattr(self, "state", f"{pkg}{Dih}", "_rawpq")(xtc)
+        no_exist = lambda Dihl: [not rhasattr(self, "state", f"{pkg}{Dih}") for Dih in Dihl]
+        
+        if any(no_exist(Dihl)):
+            for Dih in (Dih for Dih in Dihl if no_exist(Dihl)[Dihl.index(Dih)]):
+                self.state._set_pkgclass(self.state, f"{pkg}{Dih}")
 
+        
+        def wait_calculate(Dihl):
+            not_finished = lambda Dihl: [not os.path.isfile(get_rawpq(Dih)) for Dih in Dihl]
+            while any(not_finished(Dihl)):
+                time.sleep(5)
+            return Dihl
+                
+        def save_pq(Dihl):
+            dfs = [pandas.read_parquet(get_rawpq(Dih))[f"{xtc}"].abs() for Dih in Dihl]
+            
+            final = None
+            for df in dfs:
+                if final is None:
+                    final = df
+                else:
+                    final = final + df
+            df = final / len(Dihl) # average of the absolute number
 
+            # df = (final - final.min()) / (final.max() - final.min()) # This is done column-wise # This would be needed for absolute number sum; we are doing averaging
+            pandas.DataFrame(df).to_parquet(self._rawpq(xtc))
+            return
+            
+            
+        get_pool().apply_async(wait_calculate,
+                         args=(Dihl,),
+                         callback=save_pq)
+        
+        
 
 
 
@@ -293,8 +329,8 @@ class CorrplusPsi(Corrplus):
         return new
     
     def _computation(self, xtc):#pdb, traj, xtc, pq):
-        corr = _corrplus.calcMDsingleDihedralCC(self._pdbf, self._traj(xtc), dihedralType = self._dih, saveMatrix = False)
-        return corr, xtc, [1, -1]
+        corr = _corrplus.calcMDsingleDihedralCC(self._pdbf, self._traj(xtc), dihedralType = self._dih, saveMatrix = False) # outputs a n_res x n_res matrix nevertheless
+        return corr, xtc, self._dihedral_resl()#[1, -1]
     
     
     
@@ -312,54 +348,6 @@ class CorrplusOmega(CorrplusPsi, Corrplus):
         new._dih = "omega"
         return new
 
-        
-        
-        
-
-        
-        
-class CombinedDihs(Matrixoutput):
-    
-    def _calculate(self, xtc):
-        pkg = self._name.replace("Dihs", "")
-        Dihl = ["Phi", "Psi", "Omega"]
-        get_rawpq = lambda Dih: rgetattr(self, "state", f"{pkg}{Dih}", "_rawpq")(xtc)
-        no_exist = lambda Dihl: [not rhasattr(self, "state", f"{pkg}{Dih}") for Dih in Dihl]
-        
-        if any(no_exist(Dihl)):
-            for Dih in (Dih for Dih in Dihl if no_exist(Dihl)[Dihl.index(Dih)]):
-                self.state._set_pkgclass(self.state, f"{pkg}{Dih}")
-
-        
-        def wait_calculate(Dihl):
-            not_finished = lambda Dihl: [not os.path.isfile(get_rawpq(Dih)) for Dih in Dihl]
-            while any(not_finished(Dihl)):
-                time.sleep(5)
-            return Dihl
-                
-        def save_pq(Dihl):
-            dfs = [pandas.read_parquet(get_rawpq(Dih))[f"{xtc}"].abs() for Dih in Dihl]
-            
-            final = None
-            for df in dfs:
-                if final is None:
-                    final = df
-                else:
-                    final = final + df
-            df = final / len(Dihl) # average of the absolute number
-
-            # df = (final - final.min()) / (final.max() - final.min()) # This is done column-wise # This would be needed for absolute number sum; we are doing averaging
-            pandas.DataFrame(df).to_parquet(self._rawpq(xtc))
-            return
-            
-            
-        get_pool().apply_async(wait_calculate,
-                         args=(Dihl,),
-                         callback=save_pq)
-        
-        
-        
-        
         
         
 class CorrplusDihs(CombinedDihs, Corrplus):
@@ -382,17 +370,21 @@ class AlloVizPsi(Matrixoutput):
         select_dih = lambda res: eval(f"res.{self._dih.lower()}_selection()")
     
         prot = self.state.mdau.select_atoms("protein")
-        atomgroups = [select_dih(res) for res in prot.residues]
-        no_dihs = {idx for idx, group in enumerate(atomgroups) if group is None}
+#         atomgroups = [select_dih(res) for res in prot.residues]
+#         no_dihs = {idx for idx, group in enumerate(atomgroups) if group is None}
 
-        is_terminal = lambda idx: True if idx == 0 or idx == prot.n_residues-1 else False
-        if all([is_terminal(idx) for idx in no_dihs]):
-            print("All missing dihedrals belong to terminal residues")
-        if any([not is_terminal(idx) for idx in no_dihs]):
-            raise Exception("There is a missing dihedral that does not belong to either of the terminal residues.")
+#         is_terminal = lambda idx: True if idx == 0 or idx == prot.n_residues-1 else False
+#         if all([is_terminal(idx) for idx in no_dihs]):
+#             print("All missing dihedrals belong to terminal residues")
+#         if any([not is_terminal(idx) for idx in no_dihs]):
+#             raise Exception("There is a missing dihedral that does not belong to either of the terminal residues.")
 
-        no_dihs = {0, prot.n_residues-1}
-        selected = atomgroups[1:-1]
+#         no_dihs = {0, prot.n_residues-1}
+#         selected = atomgroups[1:-1]
+        # res_arrays = np.split(prot.residues.resindices, np.where(np.diff(prot.residues.resnums) != 1)[0]+1)
+        # selected_res = [elem for arr in selected_res for elem in arr[1:-1]]
+        selected_res = self._dihedral_resl()
+        selected = [select_dih(res) for res in prot.residues[selected_res]]
 
         offset = 0
         get_frames = lambda numreader: self.state.mdau.trajectory.readers[numreader].n_frames
@@ -400,18 +392,23 @@ class AlloVizPsi(Matrixoutput):
             offset += get_frames(numreader)
 
         values = _mda_dihedrals.Dihedral(selected).run(start=offset, stop=offset+get_frames(xtc-1)).results.angles.transpose()
-        for idx in no_dihs:
-            values = np.insert(values, idx, np.array([1]*values.shape[1]), axis=0)
+        # for idx in no_dihs:
+        #     values = np.insert(values, idx, np.array([1]*values.shape[1]), axis=0)
 
-        corr = np.zeros((prot.n_residues, prot.n_residues))
-        print("prot.n_residues:", prot.n_residues, "dihedrals array shape:", values.shape, "empty corr matrix shape:", corr.shape)
+        # corr = np.zeros((prot.n_residues, prot.n_residues))
+        corr = np.zeros((len(selected_res), len(selected_res)))
+        print("prot.n_residues:", prot.n_residues, "len(selected_res)", len(selected_res), "dihedrals array shape:", values.shape, "empty corr matrix shape:", corr.shape)
 
-        iterator = set(range(prot.n_residues)) - no_dihs
+        # iterator = set(range(prot.n_residues)) - no_dihs
+        # for res1 in iterator:
+        #     for res2 in iterator - set(range(res1)) - {res1}:
+        #         corr[res1, res2] = _npeet_lnc.MI.mi_LNC([values[res1], values[res2]])
+        iterator = set(selected_res)
         for res1 in iterator:
             for res2 in iterator - set(range(res1)) - {res1}:
                 corr[res1, res2] = _npeet_lnc.MI.mi_LNC([values[res1], values[res2]])
     
-        return corr, xtc, [1,-1]
+        return corr, xtc, selected_res#[1,-1] # AND FINALLY PASS ALL THE INDICES selected_res TO THE SAVE FUNCTION TO CORRECTLY SAVE THE PQ; PROBABLY CORR WILL ALREADY HAVE THE CORRECT SIZE? CHECK HOW CORR IS BUILT!
     
     
 
@@ -464,16 +461,17 @@ class MDEntropyContacts(Matrixoutput, Multicorepkg):
         new._empties = half
         
         new._function = _mdentropy.ContactMutualInformation
-        new._returnlist = lambda corr, xtc, mi: [corr, xtc]
+        new._types = {}
+        new._resl = lambda _: []
         return new
         
         
         
     def _computation(self, xtc):#pdb, traj, xtc, pq, taskcpus):
         mytraj = _mdtraj.load(self._traj(xtc), top=self._pdbf) # hopefully mdtraj is loaded from the Classes module
-        mi = self._function(types=['phi', 'psi', 'omega'], threads=self.taskcpus) # n_bins=3, method='knn', normed=True
+        mi = self._function(threads=self.taskcpus, **self._types) # n_bins=3, method='knn', normed=True
         corr = mi.partial_transform(traj=mytraj, shuffle=0, verbose=True)
-        return self._returnlist(corr, xtc, mi)#[corr, xtc, ids]
+        return corr, xtc, self._resl(mi)#[corr, xtc, ids]
     
         
         
@@ -482,7 +480,8 @@ class MDEntropyDihs(MDEntropyContacts):
     def __new__(cls, state, **kwargs):
         new = super().__new__(cls, state, **kwargs)        
         new._function = _mdentropy.DihedralMutualInformation
-        new._returnlist = lambda corr, xtc, mi: [corr, xtc, [1, -1]]
+        new._types = {"types": ["phi", "psi", "omega"]}
+        new._resl = lambda _: new.state._dihedral_resl()
         return new
     
     
@@ -495,8 +494,26 @@ class MDEntropyAlphaAngle(MDEntropyContacts):
     def __new__(cls, state, **kwargs):
         new = super().__new__(cls, state, **kwargs)        
         new._function = _mdentropy.AlphaAngleMutualInformation
-        new._returnlist = lambda corr, xtc, mi: [corr, xtc, [mi.labels[0], mi.labels[-1]+1]]
+        new._types = {"types": ["alpha"]}
+        new._resl = lambda mi: new.state._dihedral_resl(-2)
         return new
+    
+    
+    def _computation(self, xtc):
+        corr, xtc, dihedral_resl = super()._computation(xtc)
+        
+        length = corr.shape[0]
+        to_insert = {0, length+1, length+2}
+        new_length = length + len(to_insert)
+        new_indices = set(range(new_length))
+        
+        new_corr = np.zeros((new_length, new_length), dtype=corr.dtype)
+        corr_indices = np.array(list(new_indices - to_insert))
+        new_corr[corr_indices.reshape(-1,1), corr_indices] = corr
+        
+        return new_corr, xtc, dihedral_resl
+        
+        
         
         
     
@@ -634,7 +651,7 @@ class G_corrCALMI(G_corrCAMI):
     
 
     
-class G_corrCOMLMI(COMpkg, G_corrCAMI):
+class G_corrCOMLMI(COMpkg, G_corrCALMI):
     pass
         
 
@@ -779,5 +796,4 @@ class GRINNcorr(GRINN):
 
 # class Carma(): # needs the dcd
 # class Bio3D(): # R package; needs the dcd
-# class gRINN(): # needs the dcd; could be used with the dcd + pdb and psf + NAMD binaries (in the docs it's recommended to remove non-protein)
 # class wordom(): # doesn't have python bindings for croscorr and lmi but if it had it would've been great because it looks fast?

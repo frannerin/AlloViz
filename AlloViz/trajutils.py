@@ -53,10 +53,9 @@ def _download_files(self):
 
 def _get_mdau(self):
     mdau = mda.Universe(self._pdbf, *self._trajs.values())
+    prot = mdau.select_atoms("protein")
 
-    if hasattr(self, "_gpcrmdid"):
-        prot = mdau.select_atoms("protein")
-
+    if self.GPCR:#hasattr(self, "_gpcrmdid"):
         prot_numsf = f"{self._datadir}/gpcrdb_gennums.pdb"
 
         if not os.path.isfile(prot_numsf):
@@ -71,8 +70,11 @@ def _get_mdau(self):
 
         nums = mda.Universe(prot_numsf).select_atoms("protein").tempfactors
         prot.tempfactors = nums.round(2)
+    
+    res_arrays = np.split(prot.residues.resindices, np.where(np.diff(prot.residues.resnums) != 1)[0]+1)
+    dihedral_resl = lambda end=-1: [elem for arr in res_arrays for elem in arr[1:end]]
 
-    return mdau
+    return mdau, dihedral_resl
 
 
 

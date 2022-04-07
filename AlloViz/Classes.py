@@ -166,16 +166,13 @@ class Pair:
 class Store:
     pass
 
-class State:
-    _download_files = trajutils._download_files
-    _get_mdau = trajutils._get_mdau
-    _add_comtrajs = trajutils._add_comtrajs
-    _make_dcds = trajutils._make_dcds
-    
-    def __init__(self, pdb='', trajs:list=[], path='', psf=None, parameters=None, GPCRmdID=None):
-        if GPCRmdID:
-            self._gpcrmdid = GPCRmdID
-            self._path = f"{GPCRmdID}"
+class State:    
+    def __init__(self, pdb='', trajs:list=[], path='', psf=None, parameters=None, GPCR=False):
+        self.GPCR = GPCR
+        
+        if isinstance(GPCR, int):
+            self._gpcrmdid = GPCR
+            self._path = f"{GPCR}"
             os.makedirs(self._path, exist_ok=True)
             if not any([re.search("(pdb$|psf$|xtc$|parameters$)", file) for file in os.listdir(self._path)]):
                 self._download_files()
@@ -204,13 +201,17 @@ class State:
                 
         self._datadir = f"{self._path}/data"
         os.makedirs(self._datadir, exist_ok=True)
-        self.mdau = self._get_mdau()
+        self.mdau, self._dihedral_resl = self._get_mdau()
+        
+        
+    _download_files = trajutils._download_files
+    _get_mdau = trajutils._get_mdau
+    _add_comtrajs = trajutils._add_comtrajs
+    _make_dcds = trajutils._make_dcds
         
     
     
     def __sub__(self, other):
-        
-        
         delta = Store()
         
         for pkg in (key for key in self.__dict__ if key.lower() in [x.lower() for x in pkgsl] and key in other.__dict__):
