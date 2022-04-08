@@ -51,9 +51,9 @@ class Pkg:
         return new
     
     
-#     def __getnewargs__(self):
-#         #print("getnewargs", dir(self.state))
-#         return self.state,#self._name, self.state, self._pdbf, self._traj, self._path, self._rawpq
+    def __getnewargs__(self):
+        #print("getnewargs", dir(self.state))
+        return self.state,#self._name, self.state, self._pdbf, self._traj, self._path, self._rawpq
 
 #     def __getstate__(self):
 #         return self.__dict__.copy()
