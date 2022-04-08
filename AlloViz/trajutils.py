@@ -9,6 +9,7 @@ from . import utils
 
 
 def _download_files(self):
+    from multiprocess import Pool
     from bs4 import BeautifulSoup
     import urllib.request as pwget
     import tarfile, fileinput

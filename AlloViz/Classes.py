@@ -170,9 +170,9 @@ class State:
     def __init__(self, pdb='', trajs:list=[], path='', psf=None, parameters=None, GPCR=False):
         self.GPCR = GPCR
         
-        if isinstance(GPCR, int):
-            self._gpcrmdid = GPCR
-            self._path = f"{GPCR}"
+        if not isinstance(self.GPCR, bool) and isinstance(self.GPCR, int):
+            self._gpcrmdid = self.GPCR
+            self._path = f"{self.GPCR}"
             os.makedirs(self._path, exist_ok=True)
             if not any([re.search("(pdb$|psf$|xtc$|parameters$)", file) for file in os.listdir(self._path)]):
                 self._download_files()
@@ -208,6 +208,38 @@ class State:
     _get_mdau = trajutils._get_mdau
     _add_comtrajs = trajutils._add_comtrajs
     _make_dcds = trajutils._make_dcds
+    
+    
+    
+#     def __getnewargs_ex__(self):
+#         if not isinstance(self.GPCR, bool) and isinstance(self.GPCR, int):
+#             return ((), {"GPCR": self.GPCR})#self.state,
+        
+#         else:
+#             if hasattr(self, "_psff") and hasattr(self, "_paramf"):
+#                 extra = {"psf": self._psff,
+#                          "parameters": self._paramf}
+#             else:
+#                 extra = {}
+            
+#             return ((), {"pdb": self._pdbf,
+#                         "trajs": self._trajs.values(),
+#                         "path": self._path,
+#                         "GPCR": self.GPCR}.update(extra))
+        
+    
+#     def __getstate__(self):
+#         return self.__dict__
+
+#     def __setstate__(self, statedict):
+#         self.__dict__.update(statedict)
+        
+        
+#     def __copy__(self):
+#         return self
+
+#     def __deepcopy__(self, memo):
+#         return self
         
     
     
@@ -239,6 +271,7 @@ class State:
         if any([re.search("(carma|grinn)", pkg.lower()) for pkg in pkgs]):
             self._make_dcds()
         
+        utils.pool = utils.dummypool()
         if cores>1:
             mypool = Pool(cores)
             utils.pool = mypool
@@ -267,6 +300,7 @@ class State:
         metrics = metricsl if metrics=="all" else metrics if isinstance(metrics, list) else [metrics]
         filterbys = filterbyl if filterby=="all" else filterby if isinstance(filterby, list) else [filterby]
         
+        utils.pool = utils.dummypool()
         if cores>1:
             mypool = Pool(cores)
             utils.pool = mypool

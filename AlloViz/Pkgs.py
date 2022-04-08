@@ -35,10 +35,12 @@ for key, val in imports.items():
 
 class Pkg:
     def __new__(cls, state, **kwargs):
+        print(state)
         new = super().__new__(cls)
         new._name = new.__class__.__name__
         
-        new.state = state        
+        new.state = state
+        print(new.state)
         new._pdbf = new.state._pdbf
         new._traj = lambda xtc: new.state._trajs[xtc]
         
@@ -47,6 +49,17 @@ class Pkg:
         new._rawpq = lambda xtc: f"{new._path}/{xtc if isinstance(xtc, int) else xtc.rsplit('.', 1)[0]}.pq"
         
         return new
+    
+    
+#     def __getnewargs__(self):
+#         #print("getnewargs", dir(self.state))
+#         return self.state,#self._name, self.state, self._pdbf, self._traj, self._path, self._rawpq
+
+#     def __getstate__(self):
+#         return self.__dict__.copy()
+
+#     def __setstate__(self, statedic):
+#         self.__dict__.update(statedic)
         
         
     def __init__(self, *args, **kwargs):
@@ -81,6 +94,7 @@ class Pkg:
     
     def _calculate(self, xtc, *args):
         def send_and_log(xtc, *args):
+            print(f"sending {xtc}", os.getpid())
             with open(f"{self._path}/{self._name}.log", "a+") as f:
                 with redirect_stdout(f), redirect_stderr(f):
                     return self._computation(xtc, *args)
@@ -115,13 +129,13 @@ class Multicorepkg(Pkg):
         super()._calculate(xtc, *args)
         
         
-        def _calculate_empty(pq):
+        def calculate_empty(pq):
             print("sleeping", pq, os.getpid())
             while not os.path.isfile(pq):
                 time.sleep(5)
             return
         
-        for _ in range(self._empties): get_pool().apply_async(self._calculate_empty, args=(self._rawpq(xtc),))
+        for _ in range(self._empties): get_pool().apply_async(calculate_empty, args=(self._rawpq(xtc),))
     
     
     
@@ -136,6 +150,9 @@ class Matrixoutput(Pkg):
         new = super().__new__(cls, state, **kwargs)
         new._selection = "protein"
         return new
+    # def __init__(self, state, **kwargs):
+    #     self._selection = "protein"
+    #     super().__init__(state, **kwargs)
     
     
     def _save_pq(self, args):
@@ -487,10 +504,10 @@ class MDEntropyDihs(MDEntropyContacts):
     
 
 class MDEntropyAlphaAngle(MDEntropyContacts):
-        """
-        The alpha angle of residue `i` is the dihedral formed by the four CA atoms
-        of residues `i-1`, `i`, `i+1` and `i+2`.
-        """
+    """
+    The alpha angle of residue `i` is the dihedral formed by the four CA atoms
+    of residues `i-1`, `i`, `i+1` and `i+2`.
+    """
     def __new__(cls, state, **kwargs):
         new = super().__new__(cls, state, **kwargs)        
         new._function = _mdentropy.AlphaAngleMutualInformation
@@ -543,7 +560,7 @@ class MDTASK(Matrixoutput, Multicorepkg):
 class PytrajCA(Matrixoutput):
     def __new__(cls, state, **kwargs):
         new = super().__new__(cls, state, **kwargs)
-        new._mask = self._name[-2:]
+        new._mask = new._name[-2:]
         return new
     
     
