@@ -35,12 +35,11 @@ for key, val in imports.items():
 
 class Pkg:
     def __new__(cls, state, **kwargs):
-        print(state)
+        print("new", os.getpid(), state, dir(state), dir())
         new = super().__new__(cls)
         new._name = new.__class__.__name__
         
         new.state = state
-        print(new.state)
         new._pdbf = new.state._pdbf
         new._traj = lambda xtc: new.state._trajs[xtc]
         
@@ -69,6 +68,7 @@ class Pkg:
         if any(no_exist(pqs)):
             for xtc in (xtc for xtc in self.state._trajs if no_exist(pqs)[xtc-1]):
                 self._calculate(xtc)
+                time.sleep(5)
                 
         
         def wait_calculate(pqs):
