@@ -158,8 +158,10 @@ class Matrixoutput(Pkg):
     def _save_pq(self, args):
         corr, xtc, *resl = args
         
-        if len(resl) != 0 and corr.shape != (len(resl), len(resl)):
-            corr = corr[np.ix_(resl, resl)]
+        if len(resl) != 0:
+            resl = resl[0]
+            if corr.shape != (len(resl), len(resl)):
+                corr = corr[np.ix_(resl, resl)]
         elif len(resl) == 0:
             resl = slice(0, corr.shape[0])
             
@@ -296,7 +298,7 @@ class Dynetan(Matrixoutput, Multicorepkg):
         obj.prepareNetwork()
         obj.contactMatAll = np.triu(np.ones([obj.numWinds, obj.numNodes, obj.numNodes], dtype=int), k=1)
 
-        obj.calcCor(ncores=self._taskcpus)
+        obj.calcCor(ncores=self.taskcpus)
         
         return obj.corrMatAll[0], xtc
 
@@ -347,7 +349,7 @@ class CorrplusPsi(Corrplus):
     
     def _computation(self, xtc):#pdb, traj, xtc, pq):
         corr = _corrplus.calcMDsingleDihedralCC(self._pdbf, self._traj(xtc), dihedralType = self._dih, saveMatrix = False) # outputs a n_res x n_res matrix nevertheless
-        return corr, xtc, self._dihedral_resl()#[1, -1]
+        return corr, xtc, self.state_dihedral_resl()#[1, -1]
     
     
     
@@ -400,7 +402,7 @@ class AlloVizPsi(Matrixoutput):
 #         selected = atomgroups[1:-1]
         # res_arrays = np.split(prot.residues.resindices, np.where(np.diff(prot.residues.resnums) != 1)[0]+1)
         # selected_res = [elem for arr in selected_res for elem in arr[1:-1]]
-        selected_res = self._dihedral_resl()
+        selected_res = self.state._dihedral_resl()
         selected = [select_dih(res) for res in prot.residues[selected_res]]
 
         offset = 0
