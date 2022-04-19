@@ -72,10 +72,11 @@ def _get_mdau(self):
         nums = mda.Universe(prot_numsf).select_atoms("protein").tempfactors
         prot.tempfactors = nums.round(2)
     
+    
     res_arrays = np.split(prot.residues.resindices, np.where(np.diff(prot.residues.resnums) != 1)[0]+1)
-    dihedral_resl = lambda end=-1: [elem for arr in res_arrays for elem in arr[1:end]]
+    dihedral_residx = lambda end=-1: [elem for arr in res_arrays for elem in arr[1:end]]
 
-    return mdau, dihedral_resl
+    return mdau, dihedral_residx
 
 
 

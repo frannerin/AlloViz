@@ -349,7 +349,7 @@ class CorrplusPsi(Corrplus):
     
     def _computation(self, xtc):#pdb, traj, xtc, pq):
         corr = _corrplus.calcMDsingleDihedralCC(self._pdbf, self._traj(xtc), dihedralType = self._dih, saveMatrix = False) # outputs a n_res x n_res matrix nevertheless
-        return corr, xtc, self.state_dihedral_resl()#[1, -1]
+        return corr, xtc, self.state_dihedral_residx()#[1, -1]
     
     
     
@@ -402,7 +402,7 @@ class AlloVizPsi(Matrixoutput):
 #         selected = atomgroups[1:-1]
         # res_arrays = np.split(prot.residues.resindices, np.where(np.diff(prot.residues.resnums) != 1)[0]+1)
         # selected_res = [elem for arr in selected_res for elem in arr[1:-1]]
-        selected_res = self.state._dihedral_resl()
+        selected_res = self.state._dihedral_residx()
         selected = [select_dih(res) for res in prot.residues[selected_res]]
 
         offset = 0
@@ -422,7 +422,7 @@ class AlloVizPsi(Matrixoutput):
         # for res1 in iterator:
         #     for res2 in iterator - set(range(res1)) - {res1}:
         #         corr[res1, res2] = _npeet_lnc.MI.mi_LNC([values[res1], values[res2]])
-        iterator = set(selected_res)
+        iterator = set(range(len(selected_res)))
         for res1 in iterator:
             for res2 in iterator - set(range(res1)) - {res1}:
                 corr[res1, res2] = _npeet_lnc.MI.mi_LNC([values[res1], values[res2]])
@@ -500,7 +500,7 @@ class MDEntropyDihs(MDEntropyContacts):
         new = super().__new__(cls, state, **kwargs)        
         new._function = _mdentropy.DihedralMutualInformation
         new._types = {"types": ["phi", "psi", "omega"]}
-        new._resl = lambda _: new.state._dihedral_resl()
+        new._resl = lambda _: new.state._dihedral_residx()
         return new
     
     
@@ -514,7 +514,7 @@ class MDEntropyAlphaAngle(MDEntropyContacts):
         new = super().__new__(cls, state, **kwargs)        
         new._function = _mdentropy.AlphaAngleMutualInformation
         new._types = {"types": ["alpha"]}
-        new._resl = lambda mi: new.state._dihedral_resl(-2)
+        new._resl = lambda mi: new.state._dihedral_residx(-2)
         return new
     
     

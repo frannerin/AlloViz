@@ -201,7 +201,7 @@ class State:
                 
         self._datadir = f"{self._path}/data"
         os.makedirs(self._datadir, exist_ok=True)
-        self.mdau, self._dihedral_resl = self._get_mdau()
+        self.mdau, self._dihedral_residx = self._get_mdau()
         
         
     _download_files = trajutils._download_files
