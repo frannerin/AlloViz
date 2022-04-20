@@ -35,16 +35,16 @@ for key, val in imports.items():
 
 class Pkg:
     def __new__(cls, state, d):#**kwargs):
-        print("new", os.getpid(), state, dir(state), dir())
+        #print("new", os.getpid(), state, dir(state), dir())
         new = super().__new__(cls)
         new._name = new.__class__.__name__
         new.state = state
         new._d = d
         
         new._pdbf = d["_pdbf"]
-        new._trajs = d["_trajs"][xtc]
+        new._trajs = d["_trajs"]
         
-        new._path = f"{d["_datadir"]}/{new._name}/raw"
+        new._path = f"{d['_datadir']}/{new._name}/raw"
         os.makedirs(new._path, exist_ok=True)
         new._rawpq = lambda xtc: f"{new._path}/{xtc if isinstance(xtc, int) else xtc.rsplit('.', 1)[0]}.pq"
         
@@ -62,7 +62,7 @@ class Pkg:
         if any(no_exist(pqs)):
             for xtc in (xtc for xtc in self._trajs if no_exist(pqs)[xtc-1]):
                 self._calculate(xtc)
-                time.sleep(5)
+                # time.sleep(5)
                 
         
         def wait_calculate(pqs):
@@ -88,7 +88,7 @@ class Pkg:
     
     def _calculate(self, xtc, *args):
         def send_and_log(xtc, *args):
-            print(f"sending {xtc}", os.getpid())
+            #print(f"sending {xtc}", os.getpid())
             with open(f"{self._path}/{self._name}.log", "a+") as f:
                 with redirect_stdout(f), redirect_stderr(f):
                     return self._computation(xtc, *args)
@@ -215,9 +215,6 @@ class COMpkg(Pkg):
     def __new__(cls, state, d):
         new = super().__new__(cls, state, d)
         
-        if not hasattr(state, "_comtrajs"):
-            new.state._add_comtrajs()
-        
         new._pdbf = new._d["_compdbf"]
         new._trajs = new._d["_comtrajs"]
         
@@ -230,9 +227,6 @@ class COMpkg(Pkg):
 class dcdpkg(Matrixoutput):
     def __new__(cls, state, d):
         new = super().__new__(cls, state, d)
-        
-        if not hasattr(state, "_dcds"):
-            new.state._make_dcds()
         
         new._pdbf = new._d["_protf"]("pdb")
         new._trajs = new._d["dcds"]
