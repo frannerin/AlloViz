@@ -506,11 +506,11 @@ class Analysis: #(_Edges)
 
             pqs = [self._datapq(elem, metric) for metric in metrics]
             no_exist = lambda pqs: [not os.path.isfile(pq) for pq in pqs]
-
-            if any([f"{metric}_avg" not in data.columns for metric in metrics]): # or ow
-                if any(no_exist(pqs)):
-                    for metric in (metric for metric in self.metrics if no_exist(pqs)[pqs.index(self._datapq(elem, metric))]):
-                        self._analyze(metric, elem, normalize, self._datapq(elem, metric))
+            is_in_df = any([f"{metric}_avg" not in data.columns for metric in metrics]) if data != None else False
+            
+            if not is_in_df and any(no_exist(pqs)): # or ow
+                for metric in (metric for metric in self.metrics if no_exist(pqs)[pqs.index(self._datapq(elem, metric))]):
+                    self._analyze(metric, elem, normalize, self._datapq(elem, metric))
 
 
             def wait_analyze(pqs, data):
