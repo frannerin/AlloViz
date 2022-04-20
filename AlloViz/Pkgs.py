@@ -34,16 +34,17 @@ for key, val in imports.items():
 
 
 class Pkg:
-    def __new__(cls, state, **kwargs):
+    def __new__(cls, state, d):#**kwargs):
         print("new", os.getpid(), state, dir(state), dir())
         new = super().__new__(cls)
         new._name = new.__class__.__name__
-        
         new.state = state
-        new._pdbf = new.state._pdbf
-        new._traj = lambda xtc: new.state._trajs[xtc]
+        new._d = d
         
-        new._path = f"{new.state._datadir}/{new._name}/raw"
+        new._pdbf = d["_pdbf"]
+        new._trajs = d["_trajs"][xtc]
+        
+        new._path = f"{d["_datadir"]}/{new._name}/raw"
         os.makedirs(new._path, exist_ok=True)
         new._rawpq = lambda xtc: f"{new._path}/{xtc if isinstance(xtc, int) else xtc.rsplit('.', 1)[0]}.pq"
         
@@ -51,22 +52,15 @@ class Pkg:
     
     
     def __getnewargs__(self):
-        #print("getnewargs", dir(self.state))
-        return self.state,#self._name, self.state, self._pdbf, self._traj, self._path, self._rawpq
-
-#     def __getstate__(self):
-#         return self.__dict__.copy()
-
-#     def __setstate__(self, statedic):
-#         self.__dict__.update(statedic)
+        return self.state, self._d
         
         
-    def __init__(self, *args, **kwargs):
-        pqs = [self._rawpq(xtc) for xtc in self.state._trajs]
+    def __init__(self, *args):
+        pqs = [self._rawpq(xtc) for xtc in self._trajs]
         no_exist = lambda pqs: [not os.path.isfile(pq) for pq in pqs]
         
         if any(no_exist(pqs)):
-            for xtc in (xtc for xtc in self.state._trajs if no_exist(pqs)[xtc-1]):
+            for xtc in (xtc for xtc in self._trajs if no_exist(pqs)[xtc-1]):
                 self._calculate(xtc)
                 time.sleep(5)
                 
@@ -77,10 +71,10 @@ class Pkg:
             return pqs
                 
         def get_raw(pqs):
-            print(f"adding raw data of {self._name} for {self.state._pdbf}: ", pqs)
+            print(f"adding raw data of {self._name} for {self._pdbf}: ", pqs)
             flist = map(lambda pq: pandas.read_parquet(pq), pqs)
             df = pandas.concat(flist, axis=1)
-            cols = [f"{num}" for num in self.state._trajs]
+            cols = [f"{num}" for num in self._trajs]
             df["weight_avg"] = df[cols].fillna(0).mean(axis=1)
             df["weight_std"] = df[cols].fillna(0).std(axis=1)
             return df
@@ -111,13 +105,13 @@ class Pkg:
 
 
 class Multicorepkg(Pkg):
-    def __new__(cls, state, **kwargs):
-        new = super().__new__(cls, state, **kwargs)
+    def __new__(cls, state, d):
+        new = super().__new__(cls, state, d)
         
-        if "taskcpus" not in kwargs:
+        if "taskcpus" not in new._d:
             new.taskcpus = int(np.ceil(os.cpu_count()/2))
         else:
-            new.taskcpus = kwargs["taskcpus"]
+            new.taskcpus = new._d["taskcpus"]
         
         new._empties = new.taskcpus-1
             
@@ -146,13 +140,10 @@ class Multicorepkg(Pkg):
 
 
 class Matrixoutput(Pkg):
-    def __new__(cls, state, **kwargs):
-        new = super().__new__(cls, state, **kwargs)
+    def __new__(cls, state, d):
+        new = super().__new__(cls, state, d)
         new._selection = "protein"
         return new
-    # def __init__(self, state, **kwargs):
-    #     self._selection = "protein"
-    #     super().__init__(state, **kwargs)
     
     
     def _save_pq(self, args):
@@ -165,7 +156,7 @@ class Matrixoutput(Pkg):
         elif len(resl) == 0:
             resl = slice(0, corr.shape[0])
             
-        resnames = [f"{aa.resname}:{aa.resid}" for aa in self.state.mdau.select_atoms(self._selection).residues[resl]]
+        resnames = [f"{aa.resname}:{aa.resid}" for aa in self._d["mdau"].select_atoms(self._selection).residues[resl]]
         
         df = pandas.DataFrame(corr, columns=resnames, index=resnames)
         df = df.where( np.triu(np.ones(df.shape), k=1).astype(bool) )
@@ -186,7 +177,7 @@ class CombinedDihs(Matrixoutput):
         
         if any(no_exist(Dihl)):
             for Dih in (Dih for Dih in Dihl if no_exist(Dihl)[Dihl.index(Dih)]):
-                self.state._set_pkgclass(self.state, f"{pkg}{Dih}")
+                self.state._set_pkgclass(self.state, f"{pkg}{Dih}", self._d)
 
         
         def wait_calculate(Dihl):
@@ -221,14 +212,14 @@ class CombinedDihs(Matrixoutput):
 
 
 class COMpkg(Pkg):
-    def __new__(cls, state, **kwargs):
-        new = super().__new__(cls, state, **kwargs)
+    def __new__(cls, state, d):
+        new = super().__new__(cls, state, d)
         
         if not hasattr(state, "_comtrajs"):
             new.state._add_comtrajs()
         
-        new._pdbf = new.state._compdbf
-        new._traj = lambda xtc: new.state._comtrajs[xtc]
+        new._pdbf = new._d["_compdbf"]
+        new._trajs = new._d["_comtrajs"]
         
         return new
     
@@ -237,14 +228,14 @@ class COMpkg(Pkg):
     
     
 class dcdpkg(Matrixoutput):
-    def __new__(cls, state, **kwargs):
-        new = super().__new__(cls, state, **kwargs)
+    def __new__(cls, state, d):
+        new = super().__new__(cls, state, d)
         
         if not hasattr(state, "_dcds"):
             new.state._make_dcds()
         
-        new._pdbf = new.state._protf("pdb")
-        new._traj = lambda xtc: new.state._dcds[xtc]
+        new._pdbf = new._d["_protf"]("pdb")
+        new._trajs = new._d["dcds"]
         
         return new
 
@@ -259,7 +250,7 @@ class Getcontacts(Multicorepkg):
         freqs = f"{path}/{xtc}_freqs.tsv"
         
         if not os.path.isfile(freqs):# or ow:
-            _getcontacts_contacts.main(f"--topology {self._pdbf} --trajectory {self._traj(xtc)} --output {ctcs} --itypes all --cores {self.taskcpus}".split())
+            _getcontacts_contacts.main(f"--topology {self._pdbf} --trajectory {self._trajs[xtc]} --output {ctcs} --itypes all --cores {self.taskcpus}".split())
             _getcontacts_freqs.main(f"--input_files {ctcs} --output_file {freqs}".split())
         return freqs, xtc
         
@@ -283,7 +274,7 @@ class Dynetan(Matrixoutput, Multicorepkg):
     
     def _computation(self, xtc):# pdb, traj, xtc, pq, taskcpus):
         obj = _dynetan.DNAproc()
-        obj.loadSystem(self._pdbf, self._traj(xtc)) # pdb.replace("pdb", "psf")
+        obj.loadSystem(self._pdbf, self._trajs[xtc]) # pdb.replace("pdb", "psf")
         prot = obj.getU().select_atoms("protein")
 
         protseg = list(prot.segments.segids)
@@ -315,7 +306,7 @@ class DynetanCOM(COMpkg, Dynetan):
 class Corrplus(Matrixoutput):    
     
     def _computation(self, xtc):
-        corr = _corrplus.calcMDnDCC(self._pdbf, self._traj(xtc), saveMatrix = False)
+        corr = _corrplus.calcMDnDCC(self._pdbf, self._trajs[xtc], saveMatrix = False)
         return corr, xtc
 
         
@@ -324,7 +315,7 @@ class Corrplus(Matrixoutput):
 class CorrplusLMI(Corrplus):
     
     def _computation(self, xtc):#pdb, traj, xtc, pq):
-        corr = _corrplus.calcMD_LMI(self._pdbf, self._traj(xtc), saveMatrix = False)
+        corr = _corrplus.calcMD_LMI(self._pdbf, self._trajs[xtc], saveMatrix = False)
         return corr, xtc
         
         
@@ -342,28 +333,28 @@ class CorrplusCOMLMI(COMpkg, CorrplusLMI):
         
         
 class CorrplusPsi(Corrplus):
-    def __new__(cls, state, **kwargs):
-        new = super().__new__(cls, state, **kwargs)
+    def __new__(cls, state, d):
+        new = super().__new__(cls, state, d)
         new._dih = "psi"
         return new
     
     def _computation(self, xtc):#pdb, traj, xtc, pq):
-        corr = _corrplus.calcMDsingleDihedralCC(self._pdbf, self._traj(xtc), dihedralType = self._dih, saveMatrix = False) # outputs a n_res x n_res matrix nevertheless
-        return corr, xtc, self.state_dihedral_residx()#[1, -1]
+        corr = _corrplus.calcMDsingleDihedralCC(self._pdbf, self._trajs[xtc], dihedralType = self._dih, saveMatrix = False) # outputs a n_res x n_res matrix nevertheless
+        return corr, xtc, self._d["_dihedral_residx"]()#[1, -1]
     
     
     
 class CorrplusPhi(CorrplusPsi, Corrplus):
-    def __new__(cls, state, **kwargs):
-        new = super().__new__(cls, state, **kwargs)
+    def __new__(cls, state, d):
+        new = super().__new__(cls, state, d)
         new._dih = "phi"
         return new
 
         
 
 class CorrplusOmega(CorrplusPsi, Corrplus):
-    def __new__(cls, state, **kwargs):
-        new = super().__new__(cls, state, **kwargs)
+    def __new__(cls, state, d):
+        new = super().__new__(cls, state, d)
         new._dih = "omega"
         return new
 
@@ -379,71 +370,49 @@ class CorrplusDihs(CombinedDihs, Corrplus):
         
         
 class AlloVizPsi(Matrixoutput):
-    def __new__(cls, state, **kwargs):
-        new = super().__new__(cls, state, **kwargs)
+    def __new__(cls, state, d):
+        new = super().__new__(cls, state, d)
         new._dih = "psi"
         return new
             
     
     def _computation(self, xtc):#pdb, traj, xtc, pq):
+        prot = self._d["mdau"].select_atoms("protein")
+        selected_res = self._d["_dihedral_residx"]()
+        
         select_dih = lambda res: eval(f"res.{self._dih.lower()}_selection()")
-    
-        prot = self.state.mdau.select_atoms("protein")
-#         atomgroups = [select_dih(res) for res in prot.residues]
-#         no_dihs = {idx for idx, group in enumerate(atomgroups) if group is None}
-
-#         is_terminal = lambda idx: True if idx == 0 or idx == prot.n_residues-1 else False
-#         if all([is_terminal(idx) for idx in no_dihs]):
-#             print("All missing dihedrals belong to terminal residues")
-#         if any([not is_terminal(idx) for idx in no_dihs]):
-#             raise Exception("There is a missing dihedral that does not belong to either of the terminal residues.")
-
-#         no_dihs = {0, prot.n_residues-1}
-#         selected = atomgroups[1:-1]
-        # res_arrays = np.split(prot.residues.resindices, np.where(np.diff(prot.residues.resnums) != 1)[0]+1)
-        # selected_res = [elem for arr in selected_res for elem in arr[1:-1]]
-        selected_res = self.state._dihedral_residx()
         selected = [select_dih(res) for res in prot.residues[selected_res]]
 
         offset = 0
-        get_frames = lambda numreader: self.state.mdau.trajectory.readers[numreader].n_frames
+        get_frames = lambda numreader: self._d["mdau"].trajectory.readers[numreader].n_frames
         for numreader in range(xtc-1):
             offset += get_frames(numreader)
 
         values = _mda_dihedrals.Dihedral(selected).run(start=offset, stop=offset+get_frames(xtc-1)).results.angles.transpose()
-        # for idx in no_dihs:
-        #     values = np.insert(values, idx, np.array([1]*values.shape[1]), axis=0)
-
-        # corr = np.zeros((prot.n_residues, prot.n_residues))
+        
         corr = np.zeros((len(selected_res), len(selected_res)))
         print("prot.n_residues:", prot.n_residues, "len(selected_res)", len(selected_res), "dihedrals array shape:", values.shape, "empty corr matrix shape:", corr.shape)
 
-        # iterator = set(range(prot.n_residues)) - no_dihs
-        # for res1 in iterator:
-        #     for res2 in iterator - set(range(res1)) - {res1}:
-        #         corr[res1, res2] = _npeet_lnc.MI.mi_LNC([values[res1], values[res2]])
         iterator = set(range(len(selected_res)))
         for res1 in iterator:
             for res2 in iterator - set(range(res1)) - {res1}:
                 corr[res1, res2] = _npeet_lnc.MI.mi_LNC([values[res1], values[res2]])
     
-        return corr, xtc, selected_res#[1,-1] # AND FINALLY PASS ALL THE INDICES selected_res TO THE SAVE FUNCTION TO CORRECTLY SAVE THE PQ; PROBABLY CORR WILL ALREADY HAVE THE CORRECT SIZE? CHECK HOW CORR IS BUILT!
+        return corr, xtc, selected_res
     
-    
-
     
     
 class AlloVizPhi(AlloVizPsi):
-    def __new__(cls, state, **kwargs):
-        new = super().__new__(cls, state, **kwargs)
+    def __new__(cls, state, d):
+        new = super().__new__(cls, state, d)
         new._dih = "phi"
         return new
 
         
 
 class AlloVizOmega(AlloVizPsi):
-    def __new__(cls, state, **kwargs):
-        new = super().__new__(cls, state, **kwargs)
+    def __new__(cls, state, d):
+        new = super().__new__(cls, state, d)
         new._dih = "omega"
         return new
 
@@ -461,8 +430,8 @@ class AlloVizDihs(CombinedDihs, AlloVizPsi):
         
         
 class MDEntropyContacts(Matrixoutput, Multicorepkg):
-    def __new__(cls, state, **kwargs):
-        new = super().__new__(cls, state, **kwargs)
+    def __new__(cls, state, d):
+        new = super().__new__(cls, state, d)
         
         # # Opción si las necesidades de memoria incrementan con taskcpus
         # extra_taskcpus = int((self.taskcpus/4 - 1) * 4) if self.taskcpus>=4 else 0
@@ -481,26 +450,26 @@ class MDEntropyContacts(Matrixoutput, Multicorepkg):
         
         new._function = _mdentropy.ContactMutualInformation
         new._types = {}
-        new._resl = lambda _: []
+        new._resl = []
         return new
         
         
         
     def _computation(self, xtc):#pdb, traj, xtc, pq, taskcpus):
-        mytraj = _mdtraj.load(self._traj(xtc), top=self._pdbf) # hopefully mdtraj is loaded from the Classes module
+        mytraj = _mdtraj.load(self._trajs[xtc], top=self._pdbf) # hopefully mdtraj is loaded from the Classes module
         mi = self._function(threads=self.taskcpus, **self._types) # n_bins=3, method='knn', normed=True
         corr = mi.partial_transform(traj=mytraj, shuffle=0, verbose=True)
-        return corr, xtc, self._resl(mi)#[corr, xtc, ids]
+        return corr, xtc, self._resl
     
         
         
         
 class MDEntropyDihs(MDEntropyContacts):
-    def __new__(cls, state, **kwargs):
-        new = super().__new__(cls, state, **kwargs)        
+    def __new__(cls, state, d):
+        new = super().__new__(cls, state, d)        
         new._function = _mdentropy.DihedralMutualInformation
         new._types = {"types": ["phi", "psi", "omega"]}
-        new._resl = lambda _: new.state._dihedral_residx()
+        new._resl = new._d["_dihedral_residx"]()
         return new
     
     
@@ -510,11 +479,11 @@ class MDEntropyAlphaAngle(MDEntropyContacts):
     The alpha angle of residue `i` is the dihedral formed by the four CA atoms
     of residues `i-1`, `i`, `i+1` and `i+2`.
     """
-    def __new__(cls, state, **kwargs):
-        new = super().__new__(cls, state, **kwargs)        
+    def __new__(cls, state, d):
+        new = super().__new__(cls, state, d)        
         new._function = _mdentropy.AlphaAngleMutualInformation
         new._types = {"types": ["alpha"]}
-        new._resl = lambda mi: new.state._dihedral_residx(-2)
+        new._resl = new._d["_dihedral_residx"](-2)
         return new
     
     
@@ -541,14 +510,14 @@ class MDEntropyAlphaAngle(MDEntropyContacts):
     
 
 class MDTASK(Matrixoutput, Multicorepkg):
-    def __new__(cls, state, **kwargs):
-        new = super().__new__(cls, state, **kwargs)        
+    def __new__(cls, state, d):
+        new = super().__new__(cls, state, d)        
         new._empties = 2
         return new
     
     
     def _computation(self, xtc):#pdb, traj, xtc, pq):
-        corr = _mdtask.correlate(_mdtask.parse_traj(traj = self._traj(xtc), topology = self._pdbf))
+        corr = _mdtask.correlate(_mdtask.parse_traj(traj = self._trajs[xtc], topology = self._pdbf))
         return corr, xtc
 
 
@@ -560,23 +529,23 @@ class MDTASK(Matrixoutput, Multicorepkg):
 
 
 class PytrajCA(Matrixoutput):
-    def __new__(cls, state, **kwargs):
-        new = super().__new__(cls, state, **kwargs)
+    def __new__(cls, state, d):
+        new = super().__new__(cls, state, d)
         new._mask = new._name[-2:]
         return new
     
     
     def _computation(self, xtc):#pdb, traj, mask, xtc, pq):
         top = _pytraj.load_topology(self._pdbf)
-        traj = _pytraj.load(self._traj(xtc), top, mask = f'@{self._mask}')
+        traj = _pytraj.load(self._trajs[xtc], top, mask = f'@{self._mask}')
         corr = _pytraj.matrix.correl(traj, f'@{self._mask}')
         return corr, xtc
 
     
     
 class PytrajCB(PytrajCA):
-    def __new__(cls, state, **kwargs):
-        new = super().__new__(cls, state, **kwargs)
+    def __new__(cls, state, d):
+        new = super().__new__(cls, state, d)
         new._selection = "protein and not resname GLY"
         return new
 
@@ -587,21 +556,21 @@ class PytrajCB(PytrajCA):
         
         
 class PyInteraph(Matrixoutput):
-    def __new__(cls, state, **kwargs):
-        new = super().__new__(cls, state, **kwargs)
+    def __new__(cls, state, d):
+        new = super().__new__(cls, state, d)
         new._CLIargs = "-m --cmpsn-graph dummy"
         return new
                 
         
     def _computation(self, xtc):#pdb, traj, xtc, pq, CLIargs):
-        corr = _pyinteraph.main(f"-s {self._pdbf} -t {self._traj(xtc)} {self._CLIargs}".split()) / 100
+        corr = _pyinteraph.main(f"-s {self._pdbf} -t {self._trajs[xtc]} {self._CLIargs}".split()) / 100
         return corr, xtc
 
     
     
 class PyInteraphEne(PyInteraph):
-    def __new__(cls, state, **kwargs):
-        new = super().__new__(cls, state, **kwargs)
+    def __new__(cls, state, d):
+        new = super().__new__(cls, state, d)
         new._CLIargs = "-p --kbp-graph dummy"
         return new
 
@@ -611,8 +580,8 @@ class PyInteraphEne(PyInteraph):
 
 # only for local
 class G_corrCAMI(Matrixoutput):
-    def __new__(cls, state, **kwargs):
-        new = super().__new__(cls, state, **kwargs)
+    def __new__(cls, state, d):
+        new = super().__new__(cls, state, d)
         new._CLIargs = ""
         return new
                 
@@ -624,13 +593,13 @@ class G_corrCAMI(Matrixoutput):
             os.system(f"""
 module load g_correlation
 export GMXLIB=/soft/EB_repo/bio/sequence/programs/noarch/gromacs/3.3.1/share/gromacs/top/
-g_correlation -f {self._traj(xtc)} -s {self._pdbf} -o {pq}.dat {self._CLIargs} &> {self._path}/{xtc}.log <<EOF
+g_correlation -f {self._trajs[xtc]} -s {self._pdbf} -o {pq}.dat {self._CLIargs} &> {self._path}/{xtc}.log <<EOF
 1
 3
 EOF
 """)
         # Read output.dat
-        size = self.state.mdau.select_atoms("protein and name CA").n_atoms
+        size = self._d["mdau"].select_atoms("protein and name CA").n_atoms
         corr = np.empty([size, size])
         rown = 0
         row = []
@@ -654,8 +623,8 @@ EOF
     
     
 class G_corrCOMMI(COMpkg, G_corrCAMI):
-    def __new__(cls, state, **kwargs):
-        new = super().__new__(cls, state, **kwargs)
+    def __new__(cls, state, d):
+        new = super().__new__(cls, state, d)
         new._CLIargs = ""
         return new
         
@@ -663,8 +632,8 @@ class G_corrCOMMI(COMpkg, G_corrCAMI):
         
         
 class G_corrCALMI(G_corrCAMI):
-    def __new__(cls, state, **kwargs):
-        new = super().__new__(cls, state, **kwargs)
+    def __new__(cls, state, d):
+        new = super().__new__(cls, state, d)
         new._CLIargs = "-linear"
         return new
     
@@ -686,7 +655,7 @@ class GSAtools(Matrixoutput):
         if not os.path.isfile(f"{out}/lf_nMImat.out"):
             os.system(f"""
 module load GSAtools
-g_sa_encode -s {self._pdbf} -f {self._traj(xtc)} -rmsdlf {out}/lf_rmsd.xvg -strlf {out}/lf_str.out -log {out}/log.log 
+g_sa_encode -s {self._pdbf} -f {self._trajs[xtc]} -rmsdlf {out}/lf_rmsd.xvg -strlf {out}/lf_str.out -log {out}/log.log 
 g_sa_analyze -sa {out}/lf_str.out -MImatrix -MImat {out}/lf_MImat.out -eeMImat {out}/lf_eeMImat.out -jHmat {out}/lf_jHmat.out -nMImat {out}/lf_nMImat.out >>{out}/{xtc}.log 2>&1 
 """)
         # Read output
@@ -701,26 +670,28 @@ g_sa_analyze -sa {out}/lf_str.out -MImatrix -MImat {out}/lf_MImat.out -eeMImat {
         
         
 class GRINN(dcdpkg, Multicorepkg):
-    def __new__(cls, state, **kwargs):
-        new = super().__new__(cls, state, **kwargs)
+    def __new__(cls, state, d):
+        new = super().__new__(cls, state, d)
         
-        if "namd" in kwargs:
-            new.namd = kwargs["namd"]
+        if "namd" in new._d:
+            new.namd = new._d["namd"]
         else:
             from distutils.spawn import find_executable
             new.namd = find_executable('namd2')
             if new.namd is None:
                 raise Exception("namd executable for gRINN computation not found")
                 
-        if "auto_send" not in kwargs:
-            new.state._set_pkgclass(self.state, "gRINNcorr", namd = new.namd, auto_send=True)
+        if "auto_send" not in new._d:
+            d = new._d.copy()
+            d.update({"namd": new.namd, "auto_send": True})
+            new.state._set_pkgclass(self.state, "gRINNcorr", d)
         
         return new
         
         
     def _computation(self, xtc):# pdb, traj, out, xtc, pq, psf, params, taskcpus):
-        psf = self.state._protf("psf")
-        params = self.state._paramf
+        psf = self._d["_protf"]("psf")
+        params = self._d["_paramf"]
         out = f"{self._path}/{xtc}"
         outf = f"{out}/energies_intEnMeanTotal.dat"
         
@@ -729,7 +700,7 @@ class GRINN(dcdpkg, Multicorepkg):
                 from shutil import rmtree
                 rmtree(out)
             
-            _grinn_calc.getResIntEn(_grinn_args.arg_parser(f"-calc --pdb {self._pdbf} --top {psf} --traj {self._traj(xtc)} --exe {self.namd} --outfolder {out} --numcores {self.taskcpus} --parameterfile {params}".split()))
+            _grinn_calc.getResIntEn(_grinn_args.arg_parser(f"-calc --pdb {self._pdbf} --top {psf} --traj {self._trajs[xtc]} --exe {self.namd} --outfolder {out} --numcores {self.taskcpus} --parameterfile {params}".split()))
             
         corr = np.loadtxt(outf)
         return corr, xtc
@@ -740,11 +711,11 @@ class GRINN(dcdpkg, Multicorepkg):
     
     
 class GRINNcorr(GRINN):
-    def __new__(cls, state, **kwargs):
-        new = super().__new__(cls, state, **kwargs)
+    def __new__(cls, state, d):
+        new = super().__new__(cls, state, d)
         
-        if "auto_send" in kwargs:
-            new._auto_send = kwargs["auto_send"]
+        if "auto_send" in new._d:
+            new._auto_send = new._d["auto_send"]
         else:
             new._auto_send = False
         
@@ -757,10 +728,10 @@ class GRINNcorr(GRINN):
         
         no_exist = lambda files: [not os.path.isfile(file) for file in files]
         
-        pqs = [self._rawpq(xtc) for xtc in self.state._trajs]
+        pqs = [self._rawpq(xtc) for xtc in self._trajs]
         
         outf = lambda xtc: f"{self._path.replace('GRINNcorr', 'GRINN')}/{xtc}/energies_intEnTotal.csv"
-        outfs = [outf(xtc) for xtc in self.state._trajs]
+        outfs = [outf(xtc) for xtc in self._trajs]
         
         
         def wait_calculate(pqs):
@@ -775,10 +746,10 @@ class GRINNcorr(GRINN):
                 
             
         def get_raw(pqs):
-            print(f"adding raw data of {self._name} for {self.state._pdbf}: ", pqs)
+            print(f"adding raw data of {self._name} for {self._pdbf}: ", pqs)
             flist = map(lambda pq: pandas.read_parquet(pq), pqs)
             df = pandas.concat(flist, axis=1)
-            cols = [f"{num}" for num in self.state._trajs]
+            cols = [f"{num}" for num in self._trajs]
             df["weight_avg"] = df[cols].fillna(0).mean(axis=1)
             df["weight_std"] = df[cols].fillna(0).std(axis=1)
             return df
@@ -790,11 +761,11 @@ class GRINNcorr(GRINN):
             
         
     def _initialize_real(self):
-        pqs = [self._rawpq(xtc) for xtc in self.state._trajs]
+        pqs = [self._rawpq(xtc) for xtc in self._trajs]
         no_exist = lambda pqs: [not os.path.isfile(pq) for pq in pqs]
         
         if any(no_exist(pqs)):
-            for xtc in (xtc for xtc in self.state._trajs if no_exist(pqs)[xtc-1]):
+            for xtc in (xtc for xtc in self._trajs if no_exist(pqs)[xtc-1]):
                 self._calculate(xtc)
         
     

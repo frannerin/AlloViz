@@ -271,14 +271,17 @@ class State:
         if any([re.search("(carma|grinn)", pkg.lower()) for pkg in pkgs]):
             self._make_dcds()
         
+        d = self.__dict__.copy()
+        d.update(kwargs)
+        
         utils.pool = utils.dummypool()
         if cores>1:
             mypool = Pool(cores)
             utils.pool = mypool
         print(utils.pool)
-        taskcpus = kwargs.pop("taskcpus") if "taskcpus" in kwargs else cores
+        # taskcpus = kwargs.pop("taskcpus") if "taskcpus" in kwargs else cores
         
-        for pkg in pkgs: self._set_pkgclass(self, pkg, taskcpus=taskcpus, **kwargs)
+        for pkg in pkgs: self._set_pkgclass(self, pkg, d) #**kwargs)
         
         if cores>1:
             mypool.close()
@@ -287,10 +290,10 @@ class State:
             
         
         
-    def _set_pkgclass(self, state, pkg, **kwargs):
+    def _set_pkgclass(self, state, pkg, d): #**kwargs):
         pkgclass = eval(f"Pkgs.{capitalize(pkg)}") if isinstance(pkg, str) else pkg
         if not hasattr(state, pkgclass.__name__):
-            setattr(state, pkgclass.__name__, pkgclass(state, **kwargs))
+            setattr(state, pkgclass.__name__, pkgclass(state, d))#**kwargs))
     
     
     
