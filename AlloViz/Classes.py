@@ -107,48 +107,48 @@ class Pair:
     
     
     
-    def calculate(self, pkg="all", cores=1, **kwargs): # , ow=False, filterby="incontact"
-        pkgs = pkgsl if pkg=="all" else pkg if isinstance(pkg, list) else [pkg]
+#     def calculate(self, pkg="all", cores=1, **kwargs): # , ow=False, filterby="incontact"
+#         pkgs = pkgsl if pkg=="all" else pkg if isinstance(pkg, list) else [pkg]
         
-        if any(["COM" in pkg for pkg in pkgs]):
-            for state in self.states: state._add_comtrajs()
+#         if any(["COM" in pkg for pkg in pkgs]):
+#             for state in self.states: state._add_comtrajs()
         
-        if cores>1:
-            mypool = Pool(cores)
-            utils.pool = mypool
-        print(utils.pool)
+#         if cores>1:
+#             mypool = Pool(cores)
+#             utils.pool = mypool
+#         print(utils.pool)
         
-        for state in self.states:
-            for pkg in pkgs:
-                self._set_pkgclass(state, pkg, **kwargs)
+#         for state in self.states:
+#             for pkg in pkgs:
+#                 self._set_pkgclass(state, pkg, **kwargs)
         
-        if cores>1:
-            mypool.close()
-            mypool.join()
-            utils.pool = utils.dummypool()
+#         if cores>1:
+#             mypool.close()
+#             mypool.join()
+#             utils.pool = utils.dummypool()
 
     
     
     
-    def analyze(self, pkg="all", metrics="all", filterby="incontact", element:list=["edges"], normalize=True): # ow
-        pkgs = pkgsl if pkg=="all" else pkg if isinstance(pkg, list) else [pkg]
-        metrics = metricsl if metrics=="all" else metrics if isinstance(metrics, list) else [metrics]
-        filterbys = filterbyl if filterby=="all" else filterby if isinstance(filterby, list) else [filterby]
+#     def analyze(self, pkg="all", metrics="all", filterby="incontact", element:list=["edges"], normalize=True): # ow
+#         pkgs = pkgsl if pkg=="all" else pkg if isinstance(pkg, list) else [pkg]
+#         metrics = metricsl if metrics=="all" else metrics if isinstance(metrics, list) else [metrics]
+#         filterbys = filterbyl if filterby=="all" else filterby if isinstance(filterby, list) else [filterby]
         
-        if cores>1:
-            mypool = Pool(cores)
-            utils.pool = mypool
-        print(utils.pool)
+#         if cores>1:
+#             mypool = Pool(cores)
+#             utils.pool = mypool
+#         print(utils.pool)
         
-        for state in self.states:
-            for filterby in filterbys:
-                for pkg in pkgs:
-                    self._set_anaclass(state, pkg, metrics, filterby, element, normalize)
+#         for state in self.states:
+#             for filterby in filterbys:
+#                 for pkg in pkgs:
+#                     self._set_anaclass(state, pkg, metrics, filterby, element, normalize)
         
-        if cores>1:
-            mypool.close()
-            mypool.join()
-            utils.pool = utils.dummypool()
+#         if cores>1:
+#             mypool.close()
+#             mypool.join()
+#             utils.pool = utils.dummypool()
 
 
     
@@ -249,18 +249,20 @@ class State:
         for pkg in (key for key in self.__dict__ if key.lower() in [x.lower() for x in pkgsl] and key in other.__dict__):
             setattr(delta, pkg, Store())
             for filterby in (key for key in getattr(self, pkg).__dict__ if key.lower() in filterbyl and key in getattr(other, pkg).__dict__): #if not re.search("(^_|raw)", key)
+                setattr(getattr(delta, pkg), filterby, Store())
+                for elem in (key for key in rgetattr(self, pkg, filterby).__dict__ if key.lower() in ["nodes", "edges"] and key in rgetattr(other, pkg, filterby).__dict__): 
                 # setattr(getattr(delta, pkg), filterby, Store())
                 # for norm in (key for key in rgetattr(self, pkg, filterby).__dict__ if key in ["norm", "no_norm"] and key in rgetattr(self, pkg, filterby).__dict__):
                     # dif = rgetattr(self, pkg, filterby, norm) - rgetattr(other, pkg, filterby, norm)
                     # setattr(rgetattr(delta, pkg, filterby), norm, Edges(self._pair, dif))
-                dif = rgetattr(self, pkg, filterby) - rgetattr(other, pkg, filterby)
-                setattr(rgetattr(delta, pkg), filterby, _Edges(self._pair, dif))
+                    dif = rgetattr(self, pkg, filterby, elem) - rgetattr(other, pkg, filterby, elem)
+                    elemclass = eval(elem.capitalize())
+                    setattr(rgetattr(delta, pkg, filterby), elem, elemclass(self._pair, dif))
                     
         return delta
         
-    
-    
-    
+        
+        
     
     def calculate(self, pkg="all", cores=1, **kwargs): # ow
         pkgs = pkgsl if pkg=="all" else pkg if isinstance(pkg, list) else [pkg]
@@ -281,7 +283,10 @@ class State:
         print(utils.pool)
         # taskcpus = kwargs.pop("taskcpus") if "taskcpus" in kwargs else cores
         
-        for pkg in pkgs: self._set_pkgclass(self, pkg, d) #**kwargs)
+        for pkg in pkgs: #self._set_pkgclass(self, pkg, d) #**kwargs)
+            pkgclass = eval(f"Pkgs.{capitalize(pkg)}") if isinstance(pkg, str) else pkg
+            if not hasattr(self, pkgclass.__name__):
+                setattr(self, pkgclass.__name__, pkgclass(self, d))#**kwargs))
         
         if cores>1:
             mypool.close()
@@ -290,10 +295,10 @@ class State:
             
         
         
-    def _set_pkgclass(self, state, pkg, d): #**kwargs):
-        pkgclass = eval(f"Pkgs.{capitalize(pkg)}") if isinstance(pkg, str) else pkg
-        if not hasattr(state, pkgclass.__name__):
-            setattr(state, pkgclass.__name__, pkgclass(state, d))#**kwargs))
+    # def _set_pkgclass(self, state, pkg, d): #**kwargs):
+    #     pkgclass = eval(f"Pkgs.{capitalize(pkg)}") if isinstance(pkg, str) else pkg
+    #     if not hasattr(state, pkgclass.__name__):
+    #         setattr(state, pkgclass.__name__, pkgclass(state, d))#**kwargs))
     
     
     
@@ -311,7 +316,12 @@ class State:
         
         for filterby in filterbys:
             for pkg in pkgs:
-                self._set_anaclass(self, pkg, metrics, filterby, element, normalize)
+                # self._set_anaclass(self, pkg, metrics, filterby, element, normalize)
+                pkgclass = eval(f"Pkgs.{capitalize(pkg)}") if isinstance(pkg, str) else pkg
+                pkgobj = getattr(self, pkgclass.__name__)
+                anaclass = eval(f"{capitalize(filterby)}") if isinstance(filterby, str) else filterby
+                if not hasattr(pkgobj, anaclass.__name__):
+                    setattr(pkgobj, anaclass.__name__, anaclass(pkgobj, metrics, element, normalize))
         
         if cores>1:
             mypool.close()
@@ -319,13 +329,13 @@ class State:
             utils.pool = utils.dummypool()
     
     
-    def _set_anaclass(self, state, pkg, metrics, filterby, element, normalize):
-        pkgclass = eval(f"Pkgs.{capitalize(pkg)}") if isinstance(pkg, str) else pkg
-        pkgobj = getattr(state, pkgclass.__name__)
+#     def _set_anaclass(self, state, pkg, metrics, filterby, element, normalize):
+#         pkgclass = eval(f"Pkgs.{capitalize(pkg)}") if isinstance(pkg, str) else pkg
+#         pkgobj = getattr(state, pkgclass.__name__)
 
-        anaclass = eval(f"{capitalize(filterby)}") if isinstance(filterby, str) else filterby
-        if not hasattr(pkgobj, anaclass.__name__):
-            setattr(pkgobj, anaclass.__name__, anaclass(pkgobj, metrics, element, normalize))
+#         anaclass = eval(f"{capitalize(filterby)}") if isinstance(filterby, str) else filterby
+#         if not hasattr(pkgobj, anaclass.__name__):
+#             setattr(pkgobj, anaclass.__name__, anaclass(pkgobj, metrics, element, normalize))
         
     
     
@@ -521,8 +531,10 @@ class Analysis: #(_Edges)
                 while any(no_exist(pqs(elem))):
                     time.sleep(5)
                 return elem, data
-
-            def get_data(elem, data):
+                
+            
+            def add_data(args):
+                elem, data = args
                 print(f"adding analyzed {elem} {self.pkg} {self._name} data of for {self.pkg.state._pdbf}")
 
                 for pq in pqs(elem):
@@ -534,12 +546,10 @@ class Analysis: #(_Edges)
                     df[f"{metric}_std"] = df[cols].fillna(0).std(axis=1)
                     out = df.drop(cols, axis=1)
                     data = pandas.concat([data, out], axis=1)#data.join(out) if data is not None else out
-                return elem, data
-            
-            def add_data(args):
-                elem, data = args
+
                 elemclass = eval(elem.capitalize())
-                setattr(self, elem, elemclass(self.pkg.state, get_data(elem, data)))
+                setattr(self, elem, elemclass(self.pkg.state, data))
+
                 
             utils.get_pool().apply_async(wait_analyze,
                                    args=(elem, data),
