@@ -502,30 +502,30 @@ class Analysis: #(_Edges)
                 if elem == "edges":
                     data = self._filtdata[["weight_avg", "weight_std"]]
                 elif elem == "nodes":
-                    data = None
+                    data = pandas.DataFrame()
             else:
                 data = getattr(self, elem, "df")
 
 
-            pqs = [self._datapq(elem, metric) for metric in metrics]
+            pqs = lambda elem: [self._datapq(elem, metric) for metric in metrics]
             no_exist = lambda pqs: [not os.path.isfile(pq) for pq in pqs]
-            is_in_df = any([f"{metric}_avg" not in data.columns for metric in metrics]) if data != None else False
+            # is_in_df = any([f"{metric}_avg" not in data.columns for metric in metrics])
             
-            if not is_in_df and any(no_exist(pqs)): # or ow
-                for metric in (metric for metric in self.metrics if no_exist(pqs)[pqs.index(self._datapq(elem, metric))]):
+            # if not is_in_df and 
+            if any(no_exist(pqs(elem))): # or ow
+                for metric in (metric for metric in self.metrics if no_exist(pqs(elem))[pqs(elem).index(self._datapq(elem, metric))]):
                     self._analyze(metric, elem, normalize, self._datapq(elem, metric))
 
 
-            def wait_analyze(pqs, data):
-                while any(no_exist(pqs)):
+            def wait_analyze(elem, data):
+                while any(no_exist(pqs(elem))):
                     time.sleep(5)
-                return pqs, data
+                return elem, data
 
-            def get_data(args):
-                pqs, data = args
+            def get_data(elem, data):
                 print(f"adding analyzed {elem} {self.pkg} {self._name} data of for {self.pkg.state._pdbf}")
 
-                for pq in pqs:
+                for pq in pqs(elem):
                     metric = pq.rsplit("/", 1)[-1].split("_", 1)[-1].split(".")[0]
                     df = pandas.read_parquet(pq)
 
@@ -534,12 +534,15 @@ class Analysis: #(_Edges)
                     df[f"{metric}_std"] = df[cols].fillna(0).std(axis=1)
                     out = df.drop(cols, axis=1)
                     data = pandas.concat([data, out], axis=1)#data.join(out) if data is not None else out
-                return data
+                return elem, data
             
-            elemclass = eval(elem.capitalize())
-            add_data = lambda args: setattr(self, elem, elemclass(self.pkg.state, get_data(args)))
+            def add_data(args):
+                elem, data = args
+                elemclass = eval(elem.capitalize())
+                setattr(self, elem, elemclass(self.pkg.state, get_data(elem, data)))
+                
             utils.get_pool().apply_async(wait_analyze,
-                                   args=(pqs, data),
+                                   args=(elem, data),
                                    callback=add_data)
         return
     

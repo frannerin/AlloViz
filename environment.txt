@@ -55,11 +55,11 @@ click # probably for gRINN too
 #parmed # for dcd generation; ambertools is going to be a dependency so :D
 #mdtraj and parmed are needed for dcd generation and thus for gRINN; they might be installed for other reasons (mdtraj is needed for MD-TASK and parmed comes with ambertools)
 
-# These two may be needed to succesfuly install msmbuilder
+# These two may be needed to successfully install msmbuilder
 gxx_linux-64 # necessary for msmbuilder
 #fastcluster is also missing
 
-
+# pyyaml is needed for psntools
 
 
 
