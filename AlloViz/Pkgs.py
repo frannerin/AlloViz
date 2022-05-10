@@ -273,7 +273,7 @@ class Dynetan(Matrixoutput, Multicorepkg):
 
         protseg = list(prot.segments.segids)
         obj.setSegIDs(protseg)
-        obj.selectSystem(withSolvent=False, userSelStr=f"segid {protseg[0]}")
+        obj.selectSystem(withSolvent=False, userSelStr=f"protein")
 
         obj.setCustomResNodes({})
         obj.setUsrNodeGroups({})

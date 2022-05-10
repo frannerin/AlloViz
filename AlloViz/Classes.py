@@ -248,7 +248,7 @@ class State:
         
         for pkg in (key for key in self.__dict__ if key.lower() in [x.lower() for x in pkgsl] and key in other.__dict__):
             setattr(delta, pkg, Store())
-            for filterby in (key for key in getattr(self, pkg).__dict__ if key.lower() in filterbyl and key in getattr(other, pkg).__dict__): #if not re.search("(^_|raw)", key)
+            for filterby in (key for key in getattr(self, pkg).__dict__ if key.lower() in ["Whole", "Incontact", "Intercontact"] and key in getattr(other, pkg).__dict__): #if not re.search("(^_|raw)", key)
                 setattr(getattr(delta, pkg), filterby, Store())
                 for elem in (key for key in rgetattr(self, pkg, filterby).__dict__ if key.lower() in ["nodes", "edges"] and key in rgetattr(other, pkg, filterby).__dict__): 
                 # setattr(getattr(delta, pkg), filterby, Store())
