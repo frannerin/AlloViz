@@ -35,8 +35,8 @@ pkgsl = ["MDTASK", "getcontacts", "pyInteraph", "pyInteraphEne", "dynetan", "dyn
         "MDEntropyContacts", "MDEntropyDihs", "MDEntropyAlphaAngle"]
 # metricsl = ["cfb", "cfb_subset", "btw", "btw_subset"]
 metricsl = ["cfb", "btw"]
-#filterbyl = ["whole", "incontact", "intercontact"]
-filterbyl = ["whole"]
+filterbyl = ["whole", "incontact", "intercontact"]
+#filterbyl = ["whole"]
 
 
 
@@ -272,10 +272,11 @@ class State:
     
     
     
-    def analyze(self, pkg="all", metrics="all", filterby="incontact", element:list=["edges"], normalize=True, cores=1): # ow
-        pkgs = pkgsl if pkg=="all" else pkg if isinstance(pkg, list) else [pkg]
+    def analyze(self, pkg="all", filterby="incontact", element="edges", metrics="all", normalize=True, cores=1): # ow
+        pkgs = [pkg for pkg in self.__dict__ if pkg.lower() in (pkg.lower() for pkg in pkgl)] if pkg=="all" else pkg if isinstance(pkg, list) else [pkg]
         metrics = metricsl if metrics=="all" else metrics if isinstance(metrics, list) else [metrics]
         filterbys = filterbyl if filterby=="all" else filterby if isinstance(filterby, list) else [filterby]
+        elements = element if isinstance(element, list) else [element]
         
         utils.pool = utils.dummypool()
         if cores>1:
@@ -283,14 +284,30 @@ class State:
             utils.pool = mypool
         print(utils.pool)
         
-        for filterby in filterbys:
-            for pkg in pkgs:
-                # self._set_anaclass(self, pkg, metrics, filterby, element, normalize)
-                pkgclass = eval(f"Pkgs.{capitalize(pkg)}") if isinstance(pkg, str) else pkg
-                pkgobj = getattr(self, pkgclass.__name__)
+        for pkg in pkgs:
+            pkgclass = eval(f"Pkgs.{capitalize(pkg)}") if isinstance(pkg, str) else pkg
+            pkg = rgetattr(self, pkgclass.__name__)
+            if not pkg:
+                print(f"{pkgclass.__name__} calculation results are needed first")
+                continue
+                
+            for filterby in filterbys:
                 anaclass = eval(f"{capitalize(filterby)}") if isinstance(filterby, str) else filterby
-                if not hasattr(pkgobj, anaclass.__name__):
-                    setattr(pkgobj, anaclass.__name__, anaclass(pkgobj, metrics, element, normalize))
+                filterby = lambda: rgetattr(pkg, anaclass.__name__)
+                if not filterby():
+                     setattr(pkg, anaclass.__name__, anaclass(pkg))
+                filterby()._add_metrics(elements, metrics, normalize)
+                
+                
+        # for filterby in filterbys:
+        #     filterby = rgetattr(self, pkgclass.__name__)
+        #     for pkg in pkgs:
+        #         # self._set_anaclass(self, pkg, metrics, filterby, element, normalize)
+        #         pkgclass = eval(f"Pkgs.{capitalize(pkg)}") if isinstance(pkg, str) else pkg
+        #         pkgobj = getattr(self, pkgclass.__name__)
+        #         anaclass = eval(f"{capitalize(filterby)}") if isinstance(filterby, str) else filterby
+        #         if not hasattr(pkgobj, anaclass.__name__):
+        #             setattr(pkgobj, anaclass.__name__, anaclass(pkgobj, metrics, element, normalize))
         
         if cores>1:
             mypool.close()
@@ -469,14 +486,15 @@ class Nodes(Element):
     
     
 class Analysis: #(_Edges)
-    def __init__(self, pkg, metrics, element, normalize = True):
-        self.pkg = pkg
-        self._parent = self.pkg.state
-        self.metrics = metrics
-        self.normalize = normalize
+    def __init__(self, pkg):
+        self._pkg = pkg
+        # self._parent = self.pkg.state
+        # self.metrics = metrics
+        # self.normalize = normalize
         self._name = self.__class__.__name__
         
-        self._path = f"{self.pkg.state._datadir}/{self.pkg._name}/{self._name}" # lambda norm might not be needed
+        self._path = f"{self._pkg.state._datadir}/{self._pkg._name}/{self._name}" # lambda norm might not be needed
+        os.makedirs(self._path, exist_ok=True)
         self._datapq = lambda element, metric: f"{self._path}/{element}_{metric}.pq"
         
         self._filtdata = self._get_filt_data()
@@ -484,29 +502,28 @@ class Analysis: #(_Edges)
         #                                    source="level_0", target="level_1", 
         #                                    edge_attr=list(self._filtdata.drop("weight_std", axis=1).columns))
         
-        self.add_metrics(metrics, element, normalize)
+        # self.add_metrics(metrics, element, normalize)
     
     
     
     def _get_filt_data(self):
-        return self.pkg.raw#[["weight_avg", "weight_std"]]
+        return self._pkg.raw#[["weight_avg", "weight_std"]]
     
     
         
     
-    def add_metrics(self, metrics, element, normalize=True):
-        # norm = utils.norm(normalize)
-        os.makedirs(self._path, exist_ok=True)
+    def _add_metrics(self, element, metrics, normalize=True):
         metrics = metricsl if metrics=="all" else metrics if isinstance(metrics, list) else [metrics]
+        elements = element if isinstance(element, list) else [element]
         
-        for elem in element:
+        for elem in elements:
             if not rhasattr(self, elem, "df"):
                 if elem == "edges":
                     data = self._filtdata[["weight_avg", "weight_std"]]
                 elif elem == "nodes":
                     data = pandas.DataFrame()
             else:
-                data = getattr(self, elem, "df")
+                data = rgetattr(self, elem, "df")
 
 
             pqs = lambda elem: [self._datapq(elem, metric) for metric in metrics]
@@ -515,7 +532,7 @@ class Analysis: #(_Edges)
             
             # if not is_in_df and 
             if any(no_exist(pqs(elem))): # or ow
-                for metric in (metric for metric in self.metrics if no_exist(pqs(elem))[pqs(elem).index(self._datapq(elem, metric))]):
+                for metric in (metric for metric in metrics if no_exist(pqs(elem))[pqs(elem).index(self._datapq(elem, metric))]):
                     self._analyze(metric, elem, normalize, self._datapq(elem, metric))
 
 
@@ -527,20 +544,20 @@ class Analysis: #(_Edges)
             
             def add_data(args):
                 elem, data = args
-                print(f"adding analyzed {elem} {self.pkg} {self._name} data of for {self.pkg.state._pdbf}")
+                print(f"adding analyzed {elem} {self._pkg} {self._name} data of for {self._pkg.state._pdbf}")
 
                 for pq in pqs(elem):
                     metric = pq.rsplit("/", 1)[-1].split("_", 1)[-1].split(".")[0]
                     df = pandas.read_parquet(pq)
 
-                    cols = [f"{metric}_{num}" for num in self.pkg.state._trajs]
+                    cols = [f"{metric}_{num}" for num in self._pkg.state._trajs]
                     df[f"{metric}_avg"] = df[cols].fillna(0).mean(axis=1)
                     df[f"{metric}_std"] = df[cols].fillna(0).std(axis=1)
                     out = df.drop(cols, axis=1)
                     data = pandas.concat([data, out], axis=1)#data.join(out) if data is not None else out
 
                 elemclass = eval(elem.capitalize())
-                setattr(self, elem, elemclass(self.pkg.state, data))
+                setattr(self, elem, elemclass(self._pkg.state, data))
 
                 
             utils.get_pool().apply_async(wait_analyze,
@@ -569,7 +586,7 @@ class Analysis: #(_Edges)
             
             if "subset" in metric:
                 metricf = eval(f"{metricf.__name__}_subset")
-                nodes = {"sources": self._state.sources_subset, "targets": self._state.targets_subset}  
+                nodes = {"sources": self._pkg.state.sources_subset, "targets": self._pkg.state.targets_subset}  
                 
                 
                 
@@ -599,17 +616,19 @@ class Analysis: #(_Edges)
     
     
     def _networkx_analysis(self, column, metricf, elem, normalize, nodes):#pq
-        weights = column.reset_index().fillna(0)#.dropna() # this dropna is problematic; nonexistent should be 0? # .rename(columns={f"{column.name}": "weight"})
-        network = nx_from_pandas(weights, "level_0", "level_1", column.name)#"weight")         
-        
-        sort_index = lambda result: {tuple(sorted(k, key = lambda x: int(x.split(":")[-1]))): result[k] for k in result}
+        weights = column[column != 0].dropna().abs().rename("weight").reset_index() # btw calculations fail with 0 value weightsa and cfb prob with negative
+        #it doesn't make sense either to keep them for others# .rename(columns={f"{column.name}": "weight"})
+        print(column.name, type(column.name), sum(weights["weight"].isna()), weights["weight"].max())
+        network = nx_from_pandas(weights, "level_0", "level_1", "weight")
         
         try:
-            analyzed = metricf(network, normalized=normalize, weight=column.name, **nodes)
+            analyzed = metricf(network, normalized=normalize, weight="weight", **nodes)
+            print(column.name, pandas.Series(analyzed).max())
         except: # LinAlgError
-            print("Singular matrix!", self.pkg._name, self._name, elem, metricf.__name__)
+            print("Singular matrix!", self._pkg._name, self._name, elem, metricf.__name__)
             analyzed = {k: 0 for k in eval(f"network.{elem.lower()}")}#{tuple(sorted(k, key = lambda x: int(x.split(":")[-1]))): 0 for k in network.edges()}
-            
+        
+        sort_index = lambda result: {tuple(sorted(k, key = lambda x: int(x.split(":")[-1]))): result[k] for k in result}
         result = sort_index(analyzed) if elem == "edges" else analyzed# if elem == "nodes"
         
         return pandas.Series(result)#, pq
@@ -630,30 +649,34 @@ class Incontact(Analysis):
     def _get_filt_data(self):
         df = super()._get_filt_data()
         
-        if not rhasattr(self.pkg.state, "Getcontacts", "raw"):
-            print("Getcontacts results are needed; sending calculation first...")
+        try:
+            indices = self._pkg.state.Getcontacts.raw.index
+        except:
+            raise Exception("Getcontacts results are needed first")
+#         if not rhasattr(self._pkg.state, "Getcontacts", "raw"):
+#             print("Getcontacts results are needed; sending calculation first...")
             
-            pool = utils.get_pool()
+#             pool = utils.get_pool()
             
-            self.pkg.state._set_pkgclass(self.pkg.state, "Getcontacts", taskcpus = int(np.ceil(pool._processes/2)))
+#             self._pkg.state._set_pkgclass(self._pkg.state, "Getcontacts", taskcpus = int(np.ceil(pool._processes/2)))
             
             
-            gc = self.pkg.state.Getcontacts
-            pqs = [gc._rawpq(xtc) for xtc in gc.state._trajs]
-            no_exist = lambda pqs: [not os.path.isfile(pq) for pq in pqs]
+#             gc = self._pkg.state.Getcontacts
+#             pqs = [gc._rawpq(xtc) for xtc in gc.state._trajs]
+#             no_exist = lambda pqs: [not os.path.isfile(pq) for pq in pqs]
 
-            while any(no_exist(pqs)):
-                print("Waiting for pq files to be created")
-                time.sleep(5)
+#             while any(no_exist(pqs)):
+#                 print("Waiting for pq files to be created")
+#                 time.sleep(5)
                 
-            while not rhasattr(gc, "raw"):
-                print("Waiting for raw data to be added to object")
-                time.sleep(5)
+#             while not rhasattr(gc, "raw"):
+#                 print("Waiting for raw data to be added to object")
+#                 time.sleep(5)
                 
                 
-        indexes = self.pkg.state.Getcontacts.raw.index
+#         indexes = self._pkg.state.Getcontacts.raw.index
             
-        return df.filter(indexes, axis=0) # maybe pass indexes in class creation
+        return df.filter(indices, axis=0) # maybe pass indexes in class creation
         
         
 class Intercontact(Incontact):
@@ -667,7 +690,7 @@ class Intercontact(Incontact):
         
         def get_intercontacts(indexl):
             resnum = lambda res: int(res.rsplit(":")[-1])
-            return [idx for idx in indexl if abs(resnum(idx[0]) - resnum(idx[1]) ) >= 4]
+            return [idx for idx in indexl if abs(resnum(idx[0]) - resnum(idx[1]) ) > 5]
         
         return df.filter(get_intercontacts(df.index), axis=0)
 

@@ -177,7 +177,8 @@ class CombinedDihs(Matrixoutput):
         
         if any(no_exist(Dihl)):
             for Dih in (Dih for Dih in Dihl if no_exist(Dihl)[Dihl.index(Dih)]):
-                self.state._set_pkgclass(self.state, f"{pkg}{Dih}", self._d)
+                pkgclass = eval(capitalize(f"{pkg}{Dih}")) if isinstance(pkg, str) else pkg
+                setattr(self.state, pkgclass.__name__, pkgclass(self.state, self._d))
 
         
         def wait_calculate(Dihl):
