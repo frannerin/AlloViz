@@ -8,7 +8,7 @@ from importlib import import_module
 from lazyasd import LazyObject
 matplotlib = LazyObject(lambda: import_module('matplotlib'), globals(), 'matplotlib')
 nglview = LazyObject(lambda: import_module('nglview'), globals(), 'nglview')
-pl = LazyObject(lambda: import_module('pyplot', package='matplotlib'), globals(), 'matplotlib')
+pl = LazyObject(lambda: import_module('matplotlib.pyplot'), globals(), 'pl')
 # import matplotlib, nglview#, ipywidgets, matplotlib.cm
 # from matplotlib import pyplot as pl
 
@@ -209,37 +209,6 @@ class State:
     _add_comtrajs = trajutils._add_comtrajs
     _make_dcds = trajutils._make_dcds
     
-    
-    
-#     def __getnewargs_ex__(self):
-#         if not isinstance(self.GPCR, bool) and isinstance(self.GPCR, int):
-#             return ((), {"GPCR": self.GPCR})#self.state,
-        
-#         else:
-#             if hasattr(self, "_psff") and hasattr(self, "_paramf"):
-#                 extra = {"psf": self._psff,
-#                          "parameters": self._paramf}
-#             else:
-#                 extra = {}
-            
-#             return ((), {"pdb": self._pdbf,
-#                         "trajs": self._trajs.values(),
-#                         "path": self._path,
-#                         "GPCR": self.GPCR}.update(extra))
-        
-    
-#     def __getstate__(self):
-#         return self.__dict__
-
-#     def __setstate__(self, statedict):
-#         self.__dict__.update(statedict)
-        
-        
-#     def __copy__(self):
-#         return self
-
-#     def __deepcopy__(self, memo):
-#         return self
         
     
     
@@ -340,12 +309,19 @@ class State:
     
     
         
-    def view(self, pkg, metric, normalize=True, filterby="incontact", num=20):
+    def view(self, pkg, metric, filterby="incontact", element:list=["edges"], num=20, colors=["orange", "turquoise"]):
         # norm = self._get_norm_str(normalize)
         # if not rhasattr(self.data, filterby, norm, pkg):
         #     self.analyze(pkg, normalize=normalize, filterby=filterby)
+        
+        get_element = lambda element: rgetattr(self, capitalize(pkg), capitalize(filterby), element.lower())
+        
+        nv = get_element(element[0]).view(metric, num, colors)
+        
+        if len(element) == 2:
+            nv = get_element(element[1]).view(metric, num, colors, nv)
             
-        return rgetattr(self, capitalize(pkg), capitalize(filterby)).view(metric, num)
+        return nv
 
 
 
@@ -356,6 +332,7 @@ class Element:
     def __init__(self, parent, df):
         self._parent = parent
         self.df = df
+    
     
     
     def __repr__(self):
@@ -379,32 +356,28 @@ class Element:
     
     
     
-    def _get_cmap(self): # could be a class attr; even an Analysis or even State/Pair attr
-        if isinstance(self._parent, Pair): 
-            # colors = {"inactive": "r", "active": "g",
-            #          "Gprotein": "y", "Barr": "b"}
-            # color2, color1 = colors[self._parent.state1._pdbf], colors[self._parent.state2._pdbf]
-            color2, color1 = ["r", "g"]
-        else:
-            color1, color2 = "orange", "turquoise"
+#     def _get_cmap(self): # could be a class attr; even an Analysis or even State/Pair attr
+#         if isinstance(self._parent, Pair): 
+#             # colors = {"inactive": "r", "active": "g",
+#             #          "Gprotein": "y", "Barr": "b"}
+#             # color2, color1 = colors[self._parent.state1._pdbf], colors[self._parent.state2._pdbf]
+#             color2, color1 = ["r", "g"]
+#         else:
+#             color1, color2 = "orange", "turquoise"
         
-        return matplotlib.colors.LinearSegmentedColormap.from_list('bar', [color1, "w", color2], 2048)
+#         return matplotlib.colors.LinearSegmentedColormap.from_list('bar', [color1, "w", color2], 2048)
     
     
     
     
-    def _get_colors(self, col):
-        cmap = self._get_cmap()
+    def _get_colors(self, col, cmap):
         scale = [0, col.min(), col.max()] if isinstance(self._parent, Pair) else [col.mean(), col.min(), col.max()]
         normdata = matplotlib.colors.TwoSlopeNorm(*scale)
-        npdata = col.to_numpy()
-        edges = np.nonzero(npdata)
-        return cmap( normdata( npdata[edges] ).data )
+        return cmap( normdata( col.to_numpy() ).data )
     
     
     
-    def _show_cbar(self):
-        cmap = self._get_cmap()
+    def _show_cbar(self, cmap):
         pl.imshow([[0,1],], cmap = cmap)
         pl.gca().set_visible(False)
         if isinstance(self._parent, Pair):
@@ -416,9 +389,20 @@ class Element:
         return
     
     
+    def _get_nv(self, nv):
+        mdau = self._parent.state1.mdau if isinstance(self._parent, Pair) else self._parent.mdau
+        
+        if nv is None:
+            prot = mda.core.universe.Merge(mdau.select_atoms("protein or segid LIG"))
+            nv = nglview.show_mdanalysis(prot, default=False)
+            nv.add_cartoon('protein', color='white')
+        
+        return nv, mdau
     
     
-    def view(self, metric, num=20):
+    
+    
+    def view(self, metric, num=20, colors=["orange", "turquoise"], nv=None):
         metric = f"{metric}_avg" if not re.search("_avg$", metric) else metric
         # if metric not in df.columns etc
         get_data = lambda num: self.df.sort_values(metric, key = abs, ascending = False)[0:num]
@@ -429,22 +413,20 @@ class Element:
                 num += 1
                 data = get_data(num)
             print(num)
+            
+        color1, color2 = colors
+        cmap = matplotlib.colors.LinearSegmentedColormap.from_list('bar', [color1, "w", color2], 2048)
 
-        self._show_cbar()
-        
-        mdau = self._parent.state1.mdau if isinstance(self._parent, Pair) else self._parent.mdau
-        prot = mda.core.universe.Merge(mdau.select_atoms("protein or segid LIG"))
-        nv = nglview.show_mdanalysis(prot, default=False)
-        nv.add_cartoon('protein', color='white')
+        self._show_cbar(cmap)
+        colors = self._get_colors(data[metric], cmap)
 
-        edges = np.nonzero(data[metric].to_numpy())
-        colors = self._get_colors(data[metric])
-        
         error = "weight_std" if "weight_avg" in metric else metric.replace("avg", "std")
-        radii = np.interp(data[error], (data[error].min(), data[error].max()), (1, 0.1))
-
-        for i in range(len(edges[0])):
-            self._add_edge(nv, mdau, data.index[edges[0][i]], colors[i], radii[i])
+        sizes = np.interp(data[error], (data[error].min(), data[error].max()), (1, 0.1))
+        
+        nv, mdau = self._get_nv(nv)
+        
+        for i in range(len(data[metric])):
+            self._add_element(nv, mdau, data[metric].index[i], colors[i], sizes[i])
 
         return nv
     
@@ -460,18 +442,28 @@ class Edges(Element):
         
         
 
-    def _add_edge(self, nv, prot, edge, color, radius):
-        get_coords = lambda resnum: list( prot.select_atoms(f"resnum {resnum} and name CA").center_of_geometry() )
-        coords = [get_coords(res.split(':')[-1]) for res in edge]
+    def _add_element(self, nv, prot, edge, color, size):
+        get_coords = lambda res: list( prot.select_atoms(f"resnum {res.split(':')[-1]} and name CA").positions[0] )
+        coords = [get_coords(res) for res in edge]
 
         return nv.shape.add_cylinder(coords[0], coords[1], list(color),
-                                     np.float64(radius), f"{edge[0]}_{edge[1]}")
+                                     np.float64(size), f"{edge[0]}_{edge[1]}")
     
 
     
 class Nodes(Element):
-     def __init__(self, *args):
+    def __init__(self, *args):
         super().__init__(*args)
+        
+        
+       
+    def _add_element(self, nv, prot, node, color, size):
+        
+        get_coords = lambda res: list( prot.select_atoms(f"resnum {res.split(':')[-1]} and name CA").positions[0] )
+        coords = get_coords(node)
+
+        return nv.shape.add_sphere(coords, list(color),
+                                   np.float64(size)*2.5, f"{node}")
     
     
     
