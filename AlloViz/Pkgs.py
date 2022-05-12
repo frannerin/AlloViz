@@ -124,7 +124,7 @@ class Multicorepkg(Pkg):
         
         
         def calculate_empty(pq):
-            print("sleeping", pq, os.getpid())
+            # print("sleeping", pq, os.getpid())
             while not os.path.isfile(pq):
                 time.sleep(5)
             return

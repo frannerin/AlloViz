@@ -217,7 +217,7 @@ class State:
         
         for pkg in (key for key in self.__dict__ if key.lower() in [x.lower() for x in pkgsl] and key in other.__dict__):
             setattr(delta, pkg, Store())
-            for filterby in (key for key in getattr(self, pkg).__dict__ if key.lower() in ["Whole", "Incontact", "Intercontact"] and key in getattr(other, pkg).__dict__): #if not re.search("(^_|raw)", key)
+            for filterby in (key for key in getattr(self, pkg).__dict__ if key.lower() in ["whole", "incontact", "intercontact"] and key in getattr(other, pkg).__dict__): #if not re.search("(^_|raw)", key)
                 setattr(getattr(delta, pkg), filterby, Store())
                 for elem in (key for key in rgetattr(self, pkg, filterby).__dict__ if key.lower() in ["nodes", "edges"] and key in rgetattr(other, pkg, filterby).__dict__): 
                 # setattr(getattr(delta, pkg), filterby, Store())
@@ -363,10 +363,10 @@ class Element:
         cols = [col for col in self.df.columns if col in other.df.columns]
     
         subs = [col for col in cols if "avg" in col]
-        sub = pandas.DataFrame.sub(self.df[subs], other.df[subs], fill_value = 0)
+        sub = pandas.DataFrame.sub(self.df[subs].abs(), other.df[subs].abs(), fill_value = 0)
     
         adds = [col for col in cols if "std" in col]
-        add = pandas.DataFrame.add(self.df[adds], other.df[adds], fill_value = 0)
+        add = pandas.DataFrame.add(self.df[adds].abs(), other.df[adds].abs(), fill_value = 0)
         
         return pandas.concat([add, sub], axis=1)
     
@@ -618,12 +618,12 @@ class Analysis: #(_Edges)
     def _networkx_analysis(self, column, metricf, elem, normalize, nodes):#pq
         weights = column[column != 0].dropna().abs().rename("weight").reset_index() # btw calculations fail with 0 value weightsa and cfb prob with negative
         #it doesn't make sense either to keep them for others# .rename(columns={f"{column.name}": "weight"})
-        print(column.name, type(column.name), sum(weights["weight"].isna()), weights["weight"].max())
+        # print(column.name, type(column.name), sum(weights["weight"].isna()), weights["weight"].max())
         network = nx_from_pandas(weights, "level_0", "level_1", "weight")
         
         try:
             analyzed = metricf(network, normalized=normalize, weight="weight", **nodes)
-            print(column.name, pandas.Series(analyzed).max())
+            # print(column.name, pandas.Series(analyzed).max())
         except: # LinAlgError
             print("Singular matrix!", self._pkg._name, self._name, elem, metricf.__name__)
             analyzed = {k: 0 for k in eval(f"network.{elem.lower()}")}#{tuple(sorted(k, key = lambda x: int(x.split(":")[-1]))): 0 for k in network.edges()}
