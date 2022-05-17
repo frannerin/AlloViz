@@ -25,11 +25,12 @@ It is recommended to use a virtual environment ([Miniconda](https://docs.conda.i
 
 ```bash
 git clone --recursive --shallow-submodules -j 9 https://github.com/frannerin/AlloViz
-cd AlloViz
-conda create AlloViz -c conda-forge --file environment.txt
+conda create AlloViz --file AlloViz/conda_explicit.txt
+conda activate AlloViz
 ```
 
-Then activate the environment with `conda activate AlloViz` and install the package preferably with `pip install .`. Alternatively, use `python setup.py install`.
+Then go to the package folder (`cd AlloViz`) and install the package preferably with `python setup.py install`.
+<!--`pip install .`. Alternatively, use-->
 
 ## Quickstart
 
