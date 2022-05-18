@@ -1,0 +1,48 @@
+[build-system]
+requires = [
+    "setuptools >= 61",
+    "numpy"
+]
+build-backend = 'setuptools.build_meta'
+
+
+
+
+[project]
+name = "AlloViz"
+description = "A Python package to interactively computate, analyze and visualize protein allosteric communication (residue interaction) networks and delta-networks."
+authors = [{name = "Francho Nerín-Fonz", email = "francho.nerin01@estudiant.upf.edu"}]
+readme = "README.md"
+dynamic = ["version"]
+
+# license = {text = "BSD 3-Clause License"}
+classifiers = [
+	# "License :: OSI Approved :: MIT License",
+	"Programming Language :: Python",
+	"Programming Language :: Python :: 3",
+	"Framework :: IPython",
+	"Framework :: Jupyter",
+	"Framework :: Jupyter :: JupyterLab",
+	"Intended Audience :: Science/Research",
+	"Intended Audience :: Healthcare Industry",
+	"Topic :: Scientific/Engineering :: Bio-Informatics"
+]
+
+
+
+
+[tool.setuptools.package-dir]
+AlloViz = "AlloViz"
+"AlloViz.Packages" = "Packages"
+pyinteraph = "Packages/pyinteraph2/pyinteraph"
+libinteract = "Packages/pyinteraph2/libinteract"
+msmbuilder = "Packages/msmbuilder/msmbuilder"
+
+
+
+[tool.setuptools]
+packages = [
+	"AlloViz", "AlloViz.Packages", 
+	"pyinteraph", "libinteract", 
+	"msmbuilder"
+]
