@@ -222,10 +222,11 @@ class State:
         self.mdau, self._dihedral_residx = self._get_mdau()
         
         
-    _download_files = trajutils._download_files
-    _get_mdau = trajutils._get_mdau
-    _add_comtrajs = trajutils._add_comtrajs
-    _make_dcds = trajutils._make_dcds
+    _download_files = trajutils.download_files
+    _get_mdau = trajutils.get_mdau
+    _add_comtrajs = trajutils.add_comtrajs
+    _make_dcds = trajutils.make_dcds
+    _get_bonded_cys = trajutils.get_bonded_cys
     
         
     

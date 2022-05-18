@@ -548,31 +548,52 @@ class PytrajCB(PytrajCA):
         
         
         
-        
-        
-class PyInteraph(Matrixoutput):
+class PyInteraphBase(Matrixoutput):
+    
+    def _computation(self, xtc):#pdb, traj, xtc, pq, CLIargs):
+        corr = _pyinteraph.main(f"-s {self._pdbf} -t {self._trajs[xtc]} {self._CLIargs}".split())        
+        return corr, xtc
+    
+    
+    
+class PyInteraph(PyInteraphBase):
     def __new__(cls, state, d):
         new = super().__new__(cls, state, d)
-        new._CLIargs = "-m --cmpsn-graph dummy"
+        
+        reslist = set(new._d["mdau"].select_atoms("protein").residues.resnames)
+        new._CLIargs = f"-m --cmpsn-graph dummy --cmpsn-residues {','.join(reslist)}"
+        
+        new._bonded_cys_indices = self.state._get_bonded_cys()
+        
         return new
                 
         
     def _computation(self, xtc):#pdb, traj, xtc, pq, CLIargs):
-        corr = _pyinteraph.main(f"-s {self._pdbf} -t {self._trajs[xtc]} {self._CLIargs}".split()) / 100
+        corr, xtc = super()._computation(xtc)#corr = _pyinteraph.main(f"-s {self._pdbf} -t {self._trajs[xtc]} {self._CLIargs}".split()) / 100
+        corr = corr / 100
+        
+        bonded_cys_indices = self._bonded_cys_indices
+        
+        if len(bonded_cys_indices) > 1:
+            for res1 in bonded_cys_indices:
+                for res2 in bonded_cys_indices:
+                    if res1 != res2:
+                        corr[res1, res2] = 0
+        
         return corr, xtc
 
     
     
-class PyInteraphEne(PyInteraph):
+class PyInteraphEne(PyInteraphBase):
     def __new__(cls, state, d):
         new = super().__new__(cls, state, d)
         new._CLIargs = "-p --kbp-graph dummy"
         return new
-
         
         
 
 
+        
 # only for local
 class G_corrCAMI(Matrixoutput):
     def __new__(cls, state, d):
