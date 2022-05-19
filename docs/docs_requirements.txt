@@ -1,0 +1,8 @@
+re
+pandas
+requests
+multiprocess
+MDAnalysis
+numpy
+lazyasd
+networkx
