@@ -6,7 +6,7 @@ sphinx:
 
 
 conda:
-  environment: conda_explicit.txt
+  environment: conda.txt
 
 python:
   install:
