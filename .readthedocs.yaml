@@ -4,13 +4,9 @@ sphinx:
   fail_on_warning: true
 
 
-
-conda:
-  channels: conda-forge
-  environment: conda.txt
-
 python:
   install:
+    - requirements: docs/docs_requirements.txt
     - method: pip
       path: .
 
