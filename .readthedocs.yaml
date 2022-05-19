@@ -6,6 +6,7 @@ sphinx:
 
 
 conda:
+  channel: conda-forge
   environment: conda.txt
 
 python:
