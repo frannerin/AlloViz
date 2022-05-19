@@ -4,6 +4,10 @@ sphinx:
   fail_on_warning: true
 
 
+
+conda:
+  environment: conda_explicit.txt
+
 python:
   install:
     - method: pip
@@ -17,3 +21,7 @@ formats:
 submodules:
   include: all
   recursive: true
+
+
+
+
