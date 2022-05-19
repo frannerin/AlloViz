@@ -2,10 +2,6 @@ import os, numpy
 from distutils.sysconfig import get_python_lib
 from setuptools import setup, Extension
 
-on_rtd = os.environ.get('READTHEDOCS') == 'True'
-
-
-
 
 
 
@@ -46,8 +42,12 @@ libdistance = \
 
 
 
+
+on_rtd = os.environ.get('READTHEDOCS') == 'True'
 if on_rtd:
 	ext_modules = []
+else:
+	ext_modules = [libinteract, libdistance]
 
 
 
@@ -55,5 +55,5 @@ if on_rtd:
 
 # Where the magic happens:
 setup(
-    ext_modules = [libinteract, libdistance]
+    ext_modules = ext_modules
     )
