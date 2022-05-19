@@ -1,8 +1,8 @@
-import numpy
+import os, numpy
 from distutils.sysconfig import get_python_lib
 from setuptools import setup, Extension
 
-
+on_rtd = os.environ.get('READTHEDOCS') == 'True'
 
 
 
@@ -43,6 +43,12 @@ libdistance = \
                             mdtraj_capi['include_dir'], numpy.get_include()],
               library_dirs=[mdtraj_capi['lib_dir']],
               )
+
+
+
+if on_rtd:
+	ext_modules = []
+
 
 
 
