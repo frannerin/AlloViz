@@ -429,7 +429,7 @@ class Element:
         mdau = self._parent.state1.mdau if isinstance(self._parent, Pair) else self._parent.mdau
         
         if nv is None:
-            prot = mda.core.universe.Merge(mdau.select_atoms("protein or segid LIG"))
+            prot = mda.core.universe.Merge(mdau.select_atoms("(same segid as protein) or segid LIG"))
             nv = nglview.show_mdanalysis(prot, default=False)
             nv.add_cartoon('protein', color='white')
         

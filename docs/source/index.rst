@@ -1,4 +1,4 @@
-Welcome to Lumache's documentation!
+Welcome to AlloViz's documentation!
 ===================================
 
 **AlloViz** is a Python package to interactively compute, analyze and visualize protein allosteric communication (residue interaction) networks and delta-networks.

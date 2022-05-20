@@ -142,7 +142,7 @@ class Multicorepkg(Pkg):
 class Matrixoutput(Pkg):
     def __new__(cls, state, d):
         new = super().__new__(cls, state, d)
-        new._selection = "protein"
+        new._selection = "same segid as protein"
         return new
     
     
@@ -270,11 +270,11 @@ class Dynetan(Matrixoutput, Multicorepkg):
     def _computation(self, xtc):# pdb, traj, xtc, pq, taskcpus):
         obj = _dynetan.DNAproc()
         obj.loadSystem(self._pdbf, self._trajs[xtc]) # pdb.replace("pdb", "psf")
-        prot = obj.getU().select_atoms("protein")
+        prot = obj.getU().select_atoms("same segid as protein")
 
         protseg = list(prot.segments.segids)
         obj.setSegIDs(protseg)
-        obj.selectSystem(withSolvent=False, userSelStr=f"protein")
+        obj.selectSystem(withSolvent=False, userSelStr="same segid as protein")
 
         obj.setCustomResNodes({})
         obj.setUsrNodeGroups({})
@@ -372,7 +372,7 @@ class AlloVizPsi(Matrixoutput):
             
     
     def _computation(self, xtc):#pdb, traj, xtc, pq):
-        prot = self._d["mdau"].select_atoms("protein")
+        prot = self._d["mdau"].select_atoms("same segid as protein")
         selected_res = self._d["_dihedral_residx"]()
         
         select_dih = lambda res: eval(f"res.{self._dih.lower()}_selection()")
@@ -560,10 +560,10 @@ class PyInteraph(PyInteraphBase):
     def __new__(cls, state, d):
         new = super().__new__(cls, state, d)
         
-        reslist = set(new._d["mdau"].select_atoms("protein").residues.resnames)
+        reslist = set(new._d["mdau"].select_atoms("same segid as protein").residues.resnames)
         new._CLIargs = f"-m --cmpsn-graph dummy --cmpsn-residues {','.join(reslist)}"
         
-        new._bonded_cys_indices = self.state._get_bonded_cys()
+        new._bonded_cys_indices = new.state._get_bonded_cys(new._d["_pdbf"])
         
         return new
                 

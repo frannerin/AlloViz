@@ -54,7 +54,7 @@ def download_files(state):
 
 def get_mdau(state):
     mdau = mda.Universe(state._pdbf, *state._trajs.values())
-    prot = mdau.select_atoms("protein")
+    prot = mdau.select_atoms("same segid as protein")
 
     if state.GPCR:#hasattr(state, "_gpcrmdid"):
         prot_numsf = f"{state._datadir}/gpcrdb_gennums.pdb"
@@ -69,7 +69,7 @@ def get_mdau(state):
                 with open(prot_numsf, "w") as prot_nums:
                     prot_nums.write(response.text)
 
-        nums = mda.Universe(prot_numsf).select_atoms("protein").tempfactors
+        nums = mda.Universe(prot_numsf).select_atoms("same segid as protein").tempfactors
         prot.tempfactors = nums.round(2)
     
     
@@ -97,7 +97,7 @@ def add_comtrajs(state):
 
     for xtc, comtraj in state._comtrajs.items():
         if not os.path.isfile(comtraj):
-            prot = state.mdau.select_atoms("protein")
+            prot = state.mdau.select_atoms("same segid as protein")
             traj = next(traj for traj in state.mdau.trajectory.readers if traj.filename == state._trajs[xtc])
             arr = np.empty((prot.n_residues, traj.n_frames, 3))
             for ts in traj:
@@ -117,7 +117,7 @@ def make_dcds(state):
     if not os.path.isdir(dcdpath): os.makedirs(dcdpath, exist_ok=True)
     setattr(state, "_protf", lambda ext: f"{dcdpath}/prot.{ext}")
 
-    atoms = state.mdau.select_atoms("protein")
+    atoms = state.mdau.select_atoms("same segid as protein")
 
     dcdpdb = state._protf("pdb")
     if not os.path.isfile(dcdpdb): atoms.write(dcdpdb) # could it be prot_nums? IT HAS THE LIGAND THOUGH
@@ -146,12 +146,12 @@ def make_dcds(state):
 
 
 
-def get_bonded_cys(state):
+def get_bonded_cys(state, pdb):
     import parmed
     
     indices = []
 
-    pdb = parmed.read_pdb(state._pdbf)
+    pdb = parmed.read_pdb(pdb)
     mask = parmed.amber.mask.AmberMask(pdb, ':CY?@SG')
     for sel in mask.Selected():
         atom = pdb.atoms[sel]
