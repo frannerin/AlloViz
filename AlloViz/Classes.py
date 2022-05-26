@@ -3,6 +3,7 @@ import sys, os, io, re, pandas, time, requests
 from multiprocess import Pool
 import MDAnalysis as mda
 import numpy as np
+from Bio import AlignIO
 
 from importlib import import_module
 from lazyasd import LazyObject
@@ -43,11 +44,16 @@ filterbyl = ["whole", "incontact", "intercontact"]
 
 
 class Pair:
-    def __init__(self, refstate, state2):
+    def __init__(self, refstate, state2, **kwargs):
         self.state1, self.state2 = refstate, state2
         self.states = [self.state1, self.state2]
         for state in self.states:
-            state._pair = self
+            setattr(state, "_pair", self)
+            
+            # translate_ix = lambda ix: tuple(to_aln_pos[_] for _ in ix) if isinstance(ix, tuple) else to_aln_pos[ix]
+            
+            
+        self._aln = self._make_struct_aln(**kwargs)
         
         # nodes_subset = self._add_nodes_subset()
         # self.sources_subset, self.targets_subset = nodes_subset.values()
@@ -59,6 +65,45 @@ class Pair:
         setattr(self, "delta", delta)
         setattr(self.delta, "pair", self)
         return delta
+    
+    
+    
+    def _make_struct_aln(self, aln_method="TMalign_pair"):
+        # ****** Pairwise Structural Alignment Methods:
+        # --------------------------------------------
+        # align_pdbpair        built_in                                                   [pg:        t_coffee is  Installed][built_in]
+        # lalign_pdbpair       built_in                                                   [pg:        t_coffee is  Installed][built_in]
+        # extern_pdbpair       built_in                                                   [pg:        t_coffee is  Installed][built_in]
+        # thread_pair          built_in                                                   [pg:        t_coffee is  Installed][built_in]
+        # fugue_pair           http://mizuguchilab.org/fugue/                             [pg:        fugueali is NOT Installed][]
+        # pdb_pair             built_in                                                   [pg:        t_coffee is  Installed][built_in]
+        # sap_pair             https://mathbio.crick.ac.uk/wiki/Software#SAP              [pg:             sap is  Installed][/gpcr/users/frann/networks/tcoffee/bin/sap]
+        # sara_pair            built_in                                                   [pg:        t_coffee is  Installed][built_in]
+        # daliweb_pair         built_in                                                   [pg:     dalilite.pl is  Installed][built_in]
+        # dali_pair            built_in                                                   [pg:     dalilite.pl is  Installed][built_in]
+        # mustang_pair         http://lcb.infotech.monash.edu.au/mustang/                 [pg:         mustang is  Installed][/gpcr/users/frann/networks/tcoffee/bin/mustang]
+        # TMalign_pair         http://zhanglab.ccmb.med.umich.edu/TM-align/TMalign.f      [pg:         TMalign is  Installed][/gpcr/users/frann/networks/tcoffee/bin/TMalign]
+        
+        from subprocess import Popen, PIPE
+        from Bio.SeqUtils import seq1
+        
+        tcoffee = Popen(f"t_coffee -pdb={self.state1._protpdb},{self.state2._protpdb} -method {aln_method} -outfile no -template_file no -output clustalw -align".split(" "),
+                        stdout=PIPE, stderr=PIPE, encoding="utf-8")
+        
+        stderr = tcoffee.stderr.read()
+        if "error" not in stderr.lower():
+            alignment = AlignIO.read(io.StringIO(tcoffee.stdout.read()), "clustal")
+        else:
+            print(stderr)
+            raise Exception("Structural alignment of the structures couldn't be performed.")
+        
+        for state, aln in zip(self.states, alignment):
+            aas = [f"{res.resname}:{res.resid}" for res in state._prot.residues]
+            aln_mapper = dict( (aas.pop(0), pos) for pos, res in enumerate(aln.seq) if res != "-" and res == seq1(aas[0].split(":")[0], custom_map = state._res_dict) )
+            aln_mapper.update( dict(map(reversed, aln_mapper.items())) )
+            setattr(state, "_aln_mapper", aln_mapper)
+        
+        return alignment
         
      
     
@@ -185,7 +230,7 @@ class Store:
     pass
 
 class State:    
-    def __init__(self, pdb='', trajs:list=[], path='', psf=None, parameters=None, GPCR=False):
+    def __init__(self, pdb='', trajs:list=[], path='', psf=None, parameters=None, GPCR=False, **kwargs):
         self.GPCR = GPCR
         
         if not isinstance(self.GPCR, bool) and isinstance(self.GPCR, int):
@@ -219,7 +264,12 @@ class State:
                 
         self._datadir = f"{self._path}/data"
         os.makedirs(self._datadir, exist_ok=True)
-        self.mdau, self._dihedral_residx = self._get_mdau()
+        
+        self._res_dict = self._get_res_dict(**kwargs)
+        self.mdau, self._prot = self._get_mdau()
+        self._dihedral_residx = self._get_dihedral_residx(self._prot)
+        self._translate_ix = lambda mapper: lambda ix: tuple(mapper[_] for _ in ix) if isinstance(ix, tuple) else mapper[ix]
+        
         
         
     _download_files = trajutils.download_files
@@ -227,6 +277,8 @@ class State:
     _add_comtrajs = trajutils.add_comtrajs
     _make_dcds = trajutils.make_dcds
     _get_bonded_cys = trajutils.get_bonded_cys
+    _get_res_dict = trajutils.get_res_dict
+    _get_dihedral_residx = staticmethod(trajutils.get_dihedral_residx)
     
         
     
@@ -236,7 +288,7 @@ class State:
         
         for pkg in (key for key in self.__dict__ if key.lower() in [x.lower() for x in pkgsl] and key in other.__dict__):
             setattr(delta, pkg, Store())
-            for filterby in (key for key in getattr(self, pkg).__dict__ if key.lower() in ["whole", "incontact", "intercontact"] and key in getattr(other, pkg).__dict__): #if not re.search("(^_|raw)", key)
+            for filterby in (key for key in getattr(self, pkg).__dict__ if key.lower() in ["whole", "incontact", "intercontact", "raw"] and key in getattr(other, pkg).__dict__): #if not re.search("(^_|raw)", key)
                 setattr(getattr(delta, pkg), filterby, Store())
                 for elem in (key for key in rgetattr(self, pkg, filterby).__dict__ if key.lower() in ["nodes", "edges"] and key in rgetattr(other, pkg, filterby).__dict__): 
                 # setattr(getattr(delta, pkg), filterby, Store())
@@ -378,14 +430,21 @@ class Element:
     
     def __sub__(self, other):
 #         if any(col not in other.df.columns for col in data.df.columns):
+        
+        selfreindex = self.df.index.map(self._parent._translate_ix(self._parent._aln_mapper))
+        selfdf = self.df.abs().reset_index(drop=True).assign(aln_pos=selfreindex.to_numpy()).set_index("aln_pos")
+        
+        otherreindex = other.df.index.map(other._parent._translate_ix(other._parent._aln_mapper))
+        otherdf = other.df.abs().reset_index(drop=True).assign(aln_pos=otherreindex.to_numpy()).set_index("aln_pos")
+        
 
-        cols = [col for col in self.df.columns if col in other.df.columns]
+        cols = [col for col in selfdf.columns if col in otherdf.columns]
     
         subs = [col for col in cols if "avg" in col]
-        sub = pandas.DataFrame.sub(self.df[subs].abs(), other.df[subs].abs(), fill_value = 0)
+        sub = pandas.DataFrame.sub(selfdf[subs], otherdf[subs], axis=0, level="aln_pos").dropna() #fill_value = 0, level="aln_pos"
     
         adds = [col for col in cols if "std" in col]
-        add = pandas.DataFrame.add(self.df[adds].abs(), other.df[adds].abs(), fill_value = 0)
+        add = pandas.DataFrame.add(selfdf[adds], otherdf[adds], axis=0, level="aln_pos").dropna() #fill_value = 0, axis=0, level="aln_pos"
         
         return pandas.concat([add, sub], axis=1)
     
@@ -407,33 +466,34 @@ class Element:
     
     
     def _get_colors(self, col, cmap):
-        scale = [0, col.min(), col.max()] if isinstance(self._parent, Pair) else [col.mean(), col.min(), col.max()]
+        # scale = [0, col.min(), col.max()] if isinstance(self._parent, Pair) else [col.mean(), col.min(), col.max()]
+        scale = [0, col.min(), col.max()] if col.min() < 0 else [col.mean(), col.min(), col.max()]
         normdata = matplotlib.colors.TwoSlopeNorm(*scale)
         return cmap( normdata( col.to_numpy() ).data )
     
     
     
-    def _show_cbar(self, cmap):
-        pl.imshow([[0,1],], cmap = cmap)
+    def _show_cbar(self, cmap, minv, maxv):
+        pl.imshow([[minv,maxv],], cmap = cmap)
         pl.gca().set_visible(False)
         if isinstance(self._parent, Pair):
-            cbar = pl.colorbar(orientation = "horizontal", ticks = [0,1])
+            cbar = pl.colorbar(orientation = "horizontal", ticks = [minv,maxv])
             cbar.ax.set_xticklabels([self._parent.state2._pdbf.capitalize(), self._parent.state1._pdbf.capitalize()])
         else:
-            cbar = pl.colorbar(orientation = "horizontal", ticks = [])
+            cbar = pl.colorbar(orientation = "horizontal", ticks = [minv,maxv])
 
         return
     
     
     def _get_nv(self, nv):
-        mdau = self._parent.state1.mdau if isinstance(self._parent, Pair) else self._parent.mdau
+        mdau_parent = self._parent.state1 if isinstance(self._parent, Pair) else self._parent
         
         if nv is None:
-            prot = mda.core.universe.Merge(mdau.select_atoms("(same segid as protein) or segid LIG"))
+            prot = mda.core.universe.Merge(mdau_parent.mdau.select_atoms("(same segid as protein) or segid LIG"))
             nv = nglview.show_mdanalysis(prot, default=False)
             nv.add_cartoon('protein', color='white')
         
-        return nv, mdau
+        return nv, mdau_parent
     
     
     
@@ -441,28 +501,32 @@ class Element:
     def view(self, metric, num=20, colors=["orange", "turquoise"], nv=None):
         metric = f"{metric}_avg" if not re.search("_avg$", metric) else metric
         # if metric not in df.columns etc
-        get_data = lambda num: self.df.sort_values(metric, key = abs, ascending = False)[0:num]
-        data = get_data(num)
+        data = self.df.sort_values(metric, key = abs, ascending = False)
+        get_subset = lambda num: data[0:num]
+        subset = get_subset(num)
         
         if isinstance(self._parent, Pair):
-            while not any(0 < data[metric]) or not any(0 > data[metric]):
+            while not any(0 < subset[metric]) or not any(0 > subset[metric]):
                 num += 1
-                data = get_data(num)
+                subset = get_subset(num)
             print(num)
             
         color1, color2 = colors
         cmap = matplotlib.colors.LinearSegmentedColormap.from_list('bar', [color1, "w", color2], 2048)
 
-        self._show_cbar(cmap)
-        colors = self._get_colors(data[metric], cmap)
+        self._show_cbar(cmap, data[metric].min(), data[metric].max())
+        colors = self._get_colors(data[metric], cmap)[:num]
 
         error = "weight_std" if "weight_avg" in metric else metric.replace("avg", "std")
-        sizes = np.interp(data[error], (data[error].min(), data[error].max()), (1, 0.1))
+        sizes = np.interp(subset[error], (subset[error].min(), subset[error].max()), (1, 0.1))
         
-        nv, mdau = self._get_nv(nv)
+        nv, mdau_parent = self._get_nv(nv)
+        mdau = mdau_parent.mdau
         
-        for i in range(len(data[metric])):
-            self._add_element(nv, mdau, data[metric].index[i], colors[i], sizes[i])
+        indices = subset.index if isinstance(subset.index[0][0], str) else subset.index.map(mdau_parent._translate_ix(mdau_parent._aln_mapper))
+        
+        for i in range(len(subset[metric])):
+            self._add_element(nv, mdau, indices[i], colors[i], sizes[i])
 
         return nv
     

@@ -14,6 +14,10 @@ pyarrow>=6.0
 
 networkx>=2.6
 
+#pybind11 #probably for tmtools
+# redo # for opencadd git installation
+t-coffee>=13.45 # FROM BIOCONDA for structural alignment
+
 
 # for downloading files
 beautifulsoup4>=4.0

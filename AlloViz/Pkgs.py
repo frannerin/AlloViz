@@ -229,7 +229,7 @@ class dcdpkg(Matrixoutput):
     def __new__(cls, state, d):
         new = super().__new__(cls, state, d)
         
-        new._pdbf = new._d["_protf"]("pdb")
+        new._pdbf = new._d["_protpdb"]
         new._trajs = new._d["dcds"]
         
         return new
@@ -541,7 +541,7 @@ class PytrajCA(Matrixoutput):
 class PytrajCB(PytrajCA):
     def __new__(cls, state, d):
         new = super().__new__(cls, state, d)
-        new._selection = "protein and not resname GLY"
+        new._selection = "(same segid as protein) and not resname GLY"
         return new
 
         
@@ -615,7 +615,7 @@ g_correlation -f {self._trajs[xtc]} -s {self._pdbf} -o {pq}.dat {self._CLIargs} 
 EOF
 """)
         # Read output.dat
-        size = self._d["mdau"].select_atoms("protein and name CA").n_atoms
+        size = self._d["mdau"].select_atoms("(same segid as protein) and name CA").n_atoms
         corr = np.empty([size, size])
         rown = 0
         row = []
@@ -706,7 +706,7 @@ class GRINN(dcdpkg, Multicorepkg):
         
         
     def _computation(self, xtc):# pdb, traj, out, xtc, pq, psf, params, taskcpus):
-        psf = self._d["_protf"]("psf")
+        psf = self._d["_protpsf"]
         params = self._d["_paramf"]
         out = f"{self._path}/{xtc}"
         outf = f"{out}/energies_intEnMeanTotal.dat"

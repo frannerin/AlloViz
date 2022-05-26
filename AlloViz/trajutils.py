@@ -53,30 +53,71 @@ def download_files(state):
 
 
 def get_mdau(state):
-    mdau = mda.Universe(state._pdbf, *state._trajs.values())
+    mdau = mda.Universe(state._pdbf, *state._trajs.values())    
     prot = mdau.select_atoms("same segid as protein")
+    
+    protcopy = mda.core.universe.Merge(prot.copy()).atoms
+    # protfile = f"{state._datadir}/prot.pdb"
+    protfile = f"{state._datadir}/{state._pdbf.replace(f'{state._path}/', 'prot_')}"
+    setattr(state, "_protpdb", protfile)
+    
+    try:
+        from Bio.SeqUtils import seq1, seq3
+        for res in protcopy.residues:
+            res.resname = seq3(seq1(res.resname, custom_map = state._res_dict)).upper()
+    except:
+        print(f"""
+resname(s) {[res for res in set(protcopy.residues.resnames) if res not in state._res_dict]} could not be translated to a standard name.
+Please provide a mapping from 3/4-letter code to 1-letter code as a dictionary with keyword argument 'special_res' upon initialization.
+              """)
+        raise 
 
+    
     if state.GPCR:#hasattr(state, "_gpcrmdid"):
-        prot_numsf = f"{state._datadir}/gpcrdb_gennums.pdb"
+        # prot_numsf = f"{state._datadir}/{state._pdbf.replace(f'{state._path}/', 'gpcrdb_')}"
+        prot_numsf = state._protpdb
 
         if not os.path.isfile(prot_numsf):
             print(f"retrieving {prot_numsf}")
             with io.StringIO() as protf:
                 with mda.lib.util.NamedStream(protf, "prot.pdb") as f:
-                    prot.write(f, file_format="pdb")
+                    protcopy.write(f, file_format="pdb")
                 response = requests.post('https://gpcrdb.org/services/structure/assign_generic_numbers', 
                                          files = {'pdb_file': protf.getvalue()})
                 with open(prot_numsf, "w") as prot_nums:
                     prot_nums.write(response.text)
 
-        nums = mda.Universe(prot_numsf).select_atoms("same segid as protein").tempfactors
-        prot.tempfactors = nums.round(2)
+        nums = mda.Universe(prot_numsf).select_atoms("same segid as protein and name N").tempfactors
+        mdau.select_atoms("same segid as protein and name N").tempfactors = nums.round(2)
+    
+    else:
+        protcopy.write(state._protpdb)
     
     
+    return mdau, prot
+
+
+
+
+def get_dihedral_residx(prot):
     res_arrays = np.split(prot.residues.resindices, np.where(np.diff(prot.residues.resnums) != 1)[0]+1)
     dihedral_residx = lambda end=-1: [elem for arr in res_arrays for elem in arr[1:end]]
+    
+    return dihedral_residx
 
-    return mdau, dihedral_residx
+
+
+def get_res_dict(state, **kwargs):
+    from Bio.SeqUtils import IUPACData
+    from MDAnalysis.lib.util import inverse_aa_codes
+    
+    res_d = {}
+    res_d.update(IUPACData.protein_letters_3to1_extended)
+    res_d.update(inverse_aa_codes)
+    if "special_res" in kwargs and isinstance(kwargs["special_res"], dict):
+        res_d.update(kwargs["special_res"])
+        
+    return res_d
 
 
 
@@ -88,7 +129,7 @@ def add_comtrajs(state):
     compdb = f"{compath}/ca.pdb"
     if not os.path.isfile(compdb):
         print(f"Making trajectories of residue COM for {state._pdbf}")
-        prot = state.mdau.select_atoms("protein and name CA")
+        prot = state.mdau.select_atoms("(same segid as protein) and name CA")
         prot.write(compdb)
     setattr(state, "_compdbf", compdb)
 
@@ -115,14 +156,15 @@ def add_comtrajs(state):
 def make_dcds(state):        
     dcdpath = f"{state._datadir}/dcds"
     if not os.path.isdir(dcdpath): os.makedirs(dcdpath, exist_ok=True)
-    setattr(state, "_protf", lambda ext: f"{dcdpath}/prot.{ext}")
-
-    atoms = state.mdau.select_atoms("same segid as protein")
-
-    dcdpdb = state._protf("pdb")
-    if not os.path.isfile(dcdpdb): atoms.write(dcdpdb) # could it be prot_nums? IT HAS THE LIGAND THOUGH
-
-    dcdpsf = state._protf("psf")
+    # setattr(state, "_protf", lambda ext: f"{dcdpath}/prot.{ext}")
+    #
+    # atoms = state.mdau.select_atoms("same segid as protein")
+    #
+    # dcdpdb = state._protf("pdb")
+    # if not os.path.isfile(dcdpdb): atoms.write(dcdpdb) # could it be prot_nums? IT HAS THE LIGAND THOUGH
+    
+    setattr(state, "_protpsf", f"{dcdpath}/prot.psf")
+    dcdpsf = state._protpsf
     if not os.path.isfile(dcdpsf):
         import parmed
         print(f"Making dcd trajectories for {state._pdbf}")
