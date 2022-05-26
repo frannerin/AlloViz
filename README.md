@@ -21,7 +21,7 @@ The resulting network can be analyzed with edge centrality metrics algorithms pr
 
 ## Installation
 
-It is recommended to use a virtual environment ([Miniconda](https://docs.conda.io/en/latest/miniconda.html)). This repository includes submodules that need to be appropriately cloned alongside the main repository using the `--recursive` flag. At present, virtual environment dependencies file can only be installed with conda due to vmd-python not being available in PyPi.
+It is recommended to use a virtual environment ([Miniconda](https://docs.conda.io/en/latest/miniconda.html)). This repository includes submodules that need to be appropriately cloned alongside the main repository using the `--recursive` flag. At present, virtual environment dependencies can only be correctly installed with conda.
 
 ```bash
 git clone --recursive --shallow-submodules -j 9 https://github.com/frannerin/AlloViz
@@ -29,7 +29,7 @@ conda create AlloViz --file AlloViz/conda_explicit.txt
 conda activate AlloViz
 ```
 
-Then go to the package folder (`cd AlloViz`) and install the package preferably with `python setup.py install`.
+Then go to the package folder (`cd AlloViz`) and install the package, preferably with `pip install .`.
 <!--`pip install .`. Alternatively, use-->
 
 ## Quickstart

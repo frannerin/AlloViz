@@ -269,9 +269,40 @@ class Dynetan(Matrixoutput, Multicorepkg):
     
     def _computation(self, xtc):# pdb, traj, xtc, pq, taskcpus):
         obj = _dynetan.DNAproc()
-        obj.loadSystem(self._pdbf, self._trajs[xtc]) # pdb.replace("pdb", "psf")
+        obj.loadSystem(self._pdbf, self._trajs[xtc]) # pdb.replace("pdb", "psf")        
         prot = obj.getU().select_atoms("same segid as protein")
+        
+        
+        
+        ###### Changed by frannerin ######
+        #pdb = mda.Universe(ref)
+        #uni = mda.Universe(top, trj)
+        u = mda.Universe(top, trj)
+        prot = u.select_atoms("same segid as protein")
 
+
+        from Bio.SeqUtils import IUPACData, seq1, seq3
+        from MDAnalysis.lib.util import inverse_aa_codes
+        res_d = {}
+        res_d.update(IUPACData.protein_letters_3to1_extended)
+        res_d.update(inverse_aa_codes)
+        # if "special_res" in kwargs and isinstance(kwargs["special_res"], dict):
+        #     res_d.update(kwargs["special_res"])
+        for res in prot.residues:
+            res.resname = seq3(seq1(res.resname, custom_map = res_d)).upper()
+
+
+        pdb = mda.Merge(prot)
+        arr = np.empty((pdb.atoms.n_atoms, u.trajectory.n_frames, 3))
+        for ts in u.trajectory:
+            arr[:, ts.frame] = prot.atoms.positions
+
+        uni = mda.Merge(prot)
+        uni.load_new(arr, format=mda.coordinates.memory.MemoryReader, order='afc')
+        ##################################
+        
+        
+        
         protseg = list(prot.segments.segids)
         obj.setSegIDs(protseg)
         obj.selectSystem(withSolvent=False, userSelStr="same segid as protein")
@@ -561,7 +592,7 @@ class PyInteraph(PyInteraphBase):
         new = super().__new__(cls, state, d)
         
         reslist = set(new._d["mdau"].select_atoms("same segid as protein").residues.resnames)
-        new._CLIargs = f"-m --cmpsn-graph dummy --cmpsn-residues {','.join(reslist)}"
+        new._CLIargs = f"-m --cmpsn-graph dummy"# --cmpsn-residues {','.join(reslist)}"
         
         new._bonded_cys_indices = new.state._get_bonded_cys(new._d["_pdbf"])
         
