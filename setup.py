@@ -1,15 +1,16 @@
-import os, numpy
+import os, sys, numpy
 from distutils.sysconfig import get_python_lib
 from setuptools import setup, Extension
 
 
 
-
 # Necessary to create the version.py file for mdentropy to be able to use the original repo directly as a submodule
-#from .Packages.mdentropy.basesetup import write_version_py
-VERSION = "0.4.0dev0"
-ISRELEASED = False
-#write_version_py(VERSION, ISRELEASED, 'Packages/mdentropy/mdentropy/version.py')
+# from .Packages.mdentropy.basesetup import write_version_py
+sys.path.append(".")
+from Packages.mdentropy.basesetup import write_version_py
+sys.path.append("./Packages/mdentropy")
+from Packages.mdentropy.setup import VERSION, ISRELEASED
+write_version_py(VERSION, ISRELEASED, 'Packages/mdentropy/mdentropy/version.py')
 
 
 
