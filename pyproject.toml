@@ -55,7 +55,10 @@ packages = [
 
 [tool.poetry]
 name = "AlloViz"
-version = "0.1.0"
+version = "1.0"
 description = "A Python package to interactively computate, analyze and visualize protein allosteric communication (residue interaction) networks and delta-networks."
 authors = ["Francho Nerín-Fonz <[francho.nerin01@estudiant.upf.edu]>"]
 license = "-"
+
+[tool.poetry.build]
+script = "setup.py"
