@@ -7,10 +7,10 @@ from setuptools import setup, Extension
 # Necessary to create the version.py file for mdentropy to be able to use the original repo directly as a submodule
 # from .Packages.mdentropy.basesetup import write_version_py
 sys.path.append(".")
-from Packages.mdentropy.basesetup import write_version_py
+from src.Packages.mdentropy.basesetup import write_version_py
 sys.path.append("./Packages/mdentropy")
-from Packages.mdentropy.setup import VERSION, ISRELEASED
-write_version_py(VERSION, ISRELEASED, 'Packages/mdentropy/mdentropy/version.py')
+from src.Packages.mdentropy.setup import VERSION, ISRELEASED
+write_version_py(VERSION, ISRELEASED, 'src/Packages/mdentropy/mdentropy/version.py')
 
 
 
@@ -18,8 +18,8 @@ write_version_py(VERSION, ISRELEASED, 'Packages/mdentropy/mdentropy/version.py')
 
 libinteract = \
       Extension("libinteract.innerloops",
-                ["Packages/pyinteraph2/libinteract/innerloops.pyx",
-                 "Packages/pyinteraph2/libinteract/clibinteract.c"], \
+                ["src/Packages/pyinteraph2/libinteract/innerloops.pyx",
+                 "src/Packages/pyinteraph2/libinteract/clibinteract.c"], \
                 include_dirs = [numpy.get_include()])
 
 
@@ -33,10 +33,10 @@ mdtraj_capi = {'include_dir': mdtrajdir, 'lib_dir': mdtrajdir}
 libdistance = \
     Extension('msmbuilder.libdistance',
               language='c++',
-              sources=['Packages/msmbuilder/msmbuilder/libdistance/libdistance.pyx'],
+              sources=['src/Packages/msmbuilder/msmbuilder/libdistance/libdistance.pyx'],
               # msvc needs to be told "libtheobald", gcc wants just "theobald"
               libraries=['theobald'],#'%stheobald' % ('lib' if compiler.msvc else '')],
-              include_dirs=["Packages/msmbuilder/msmbuilder/libdistance/src",
+              include_dirs=["src/Packages/msmbuilder/msmbuilder/libdistance/src",
                             mdtraj_capi['include_dir'], numpy.get_include()],
               library_dirs=[mdtraj_capi['lib_dir']],
               )

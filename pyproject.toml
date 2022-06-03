@@ -34,11 +34,11 @@ classifiers = [
 
 
 [tool.setuptools.package-dir]
-AlloViz = "AlloViz"
-"AlloViz.Packages" = "Packages"
-pyinteraph = "Packages/pyinteraph2/pyinteraph"
-libinteract = "Packages/pyinteraph2/libinteract"
-msmbuilder = "Packages/msmbuilder/msmbuilder"
+AlloViz = "src/AlloViz"
+"AlloViz.Packages" = "src/Packages"
+pyinteraph = "src/Packages/pyinteraph2/pyinteraph"
+libinteract = "src/Packages/pyinteraph2/libinteract"
+msmbuilder = "src/Packages/msmbuilder/msmbuilder"
 
 
 
