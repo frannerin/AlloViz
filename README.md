@@ -34,15 +34,15 @@ Then go to the package folder (`cd AlloViz`) and install the package, preferably
 
 ## Quickstart
 
-The package is designed for use in interactive notebooks. The main class to be used is `State`; `Pair` allows to bind two States for delta-network analysis.
+The package is designed for use in interactive notebooks. The main class to be used is `Protein`; `Pair` allows to bind two States for delta-network analysis.
 
 ### for GPCRmd files
 
-A State is simply defined with the GPCRmd dynamics ID number, with which files are automatically retrieved from the database. For example:
+A Protein is simply defined with the GPCRmd dynamics ID number, with which files are automatically retrieved from the database. For example:
 
 ```python
 import AlloViz
-activeMuOR = AlloViz.State(GPCRmdID=169)
+activeMuOR = AlloViz.Protein(GPCR=169)
 ```
 
 And then network computations, analyses and visualizations are performed with associated class methods. For example:

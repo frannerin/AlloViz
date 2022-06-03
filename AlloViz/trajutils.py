@@ -52,13 +52,14 @@ def download_files(state):
 
 
 
-def get_mdau(state):
-    mdau = mda.Universe(state._pdbf, *state._trajs.values())    
-    prot = mdau.select_atoms("same segid as protein")
+def get_mdau(state, protein_sel):
+    pdb = mda.Universe(state._pdbf)#, *state._trajs.values())  
+    prot = pdb.select_atoms(protein_sel)
+    mdau = mda.Universe(state._pdbf, *state._trajs.values())
     
     protcopy = mda.core.universe.Merge(prot.copy()).atoms
     # protfile = f"{state._datadir}/prot.pdb"
-    protfile = f"{state._datadir}/{state._pdbf.replace(f'{state._path}/', 'prot_')}"
+    protfile = f"{state._datadir}/prot_{state._pdbf.rsplit('/', 1)[-1]}"
     setattr(state, "_protpdb", protfile)
     
     try:
@@ -87,14 +88,14 @@ Please provide a mapping from 3/4-letter code to 1-letter code as a dictionary w
                 with open(prot_numsf, "w") as prot_nums:
                     prot_nums.write(response.text)
 
-        nums = mda.Universe(prot_numsf).select_atoms("same segid as protein and name N").tempfactors
-        mdau.select_atoms("same segid as protein and name N").tempfactors = nums.round(2)
+        nums = mda.Universe(prot_numsf).select_atoms(f"{protein_sel} and name N").tempfactors
+        mdau.select_atoms(f"{protein_sel} and name N").tempfactors = nums.round(2)
     
     else:
         protcopy.write(state._protpdb)
     
     
-    return mdau, prot
+    return pdb, prot, mdau
 
 
 
@@ -122,14 +123,14 @@ def get_res_dict(state, **kwargs):
 
 
 
-def add_comtrajs(state):
+def add_comtrajs(state, protein_sel):
     compath = f"{state._datadir}/COMtrajs"
     if not os.path.isdir(compath): os.makedirs(compath, exist_ok=True)
 
     compdb = f"{compath}/ca.pdb"
     if not os.path.isfile(compdb):
         print(f"Making trajectories of residue COM for {state._pdbf}")
-        prot = state.mdau.select_atoms("(same segid as protein) and name CA")
+        prot = state.mdau.select_atoms(f"({protein_sel}) and name CA")
         prot.write(compdb)
     setattr(state, "_compdbf", compdb)
 
@@ -138,8 +139,9 @@ def add_comtrajs(state):
 
     for xtc, comtraj in state._comtrajs.items():
         if not os.path.isfile(comtraj):
-            prot = state.mdau.select_atoms("same segid as protein")
-            traj = next(traj for traj in state.mdau.trajectory.readers if traj.filename == state._trajs[xtc])
+            prot = state.mdau.select_atoms(protein_sel)
+            traj = state.mdau.trajectory.readers[xtc-1] if hasattr(state.mdau.trajectory, "readers") else state.mdau.trajectory
+            # traj = next(traj for traj in state.mdau.trajectory.readers if traj.filename == state._trajs[xtc])
             arr = np.empty((prot.n_residues, traj.n_frames, 3))
             for ts in traj:
                 arr[:, ts.frame] = prot.center_of_mass(compound='residues')

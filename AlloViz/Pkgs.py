@@ -17,8 +17,10 @@ imports = {
 "_grinn_args": ".Packages.gRINN_Bitbucket.source.grinn",
 "_grinn_calc": ".Packages.gRINN_Bitbucket.source.calc",
 "_grinn_corr": ".Packages.gRINN_Bitbucket.source.corr",
+
 "_npeet_lnc": ".Packages.NPEET_LNC.lnc",
 "_mda_dihedrals": "MDAnalysis.analysis.dihedrals",
+    
 "_mdtraj": "mdtraj",
 "_mdentropy": ".Packages.mdentropy.mdentropy.metrics",
 }
@@ -34,11 +36,11 @@ for key, val in imports.items():
 
 
 class Pkg:
-    def __new__(cls, state, d):#**kwargs):
-        #print("new", os.getpid(), state, dir(state), dir())
+    def __new__(cls, protein, d):#**kwargs):
+        #print("new", os.getpid(), protein, dir(protein), dir())
         new = super().__new__(cls)
         new._name = new.__class__.__name__
-        new.state = state
+        new.protein = protein
         new._d = d
         
         new._pdbf = d["_pdbf"]
@@ -52,7 +54,7 @@ class Pkg:
     
     
     def __getnewargs__(self):
-        return self.state, self._d
+        return self.protein, self._d
         
         
     def __init__(self, *args):
@@ -74,9 +76,14 @@ class Pkg:
             print(f"adding raw data of {self._name} for {self._pdbf}: ", pqs)
             flist = map(lambda pq: pandas.read_parquet(pq), pqs)
             df = pandas.concat(flist, axis=1)
-            cols = [f"{num}" for num in self._trajs]
-            df["weight_avg"] = df[cols].fillna(0).mean(axis=1)
-            df["weight_std"] = df[cols].fillna(0).std(axis=1)
+            
+            if len(self._trajs) > 1:
+                cols = [f"{num}" for num in self._trajs]
+                df["weight"] = df[cols].fillna(0).mean(axis=1)
+                df["weight_std"] = df[cols].fillna(0).std(axis=1)
+            else:
+                df.rename(columns={"1": "weight"}, inplace=True)
+                
             return df
         
         add_raw = lambda pqs: setattr(self, "raw", get_raw(pqs))
@@ -105,8 +112,8 @@ class Pkg:
 
 
 class Multicorepkg(Pkg):
-    def __new__(cls, state, d):
-        new = super().__new__(cls, state, d)
+    def __new__(cls, protein, d):
+        new = super().__new__(cls, protein, d)
         
         if "taskcpus" not in new._d:
             new.taskcpus = int(np.ceil(os.cpu_count()/2))
@@ -140,9 +147,9 @@ class Multicorepkg(Pkg):
 
 
 class Matrixoutput(Pkg):
-    def __new__(cls, state, d):
-        new = super().__new__(cls, state, d)
-        new._selection = "same segid as protein"
+    def __new__(cls, protein, d):
+        new = super().__new__(cls, protein, d)
+        new._selection = d["_protein_sel"]
         return new
     
     
@@ -172,13 +179,13 @@ class CombinedDihs(Matrixoutput):
     def _calculate(self, xtc):
         pkg = self._name.replace("Dihs", "")
         Dihl = ["Phi", "Psi", "Omega"]
-        get_rawpq = lambda Dih: rgetattr(self, "state", f"{pkg}{Dih}", "_rawpq")(xtc)
-        no_exist = lambda Dihl: [not rhasattr(self, "state", f"{pkg}{Dih}") for Dih in Dihl]
+        get_rawpq = lambda Dih: rgetattr(self, "protein", f"{pkg}{Dih}", "_rawpq")(xtc)
+        no_exist = lambda Dihl: [not rhasattr(self, "protein", f"{pkg}{Dih}") for Dih in Dihl]
         
         if any(no_exist(Dihl)):
             for Dih in (Dih for Dih in Dihl if no_exist(Dihl)[Dihl.index(Dih)]):
                 pkgclass = eval(capitalize(f"{pkg}{Dih}")) if isinstance(pkg, str) else pkg
-                setattr(self.state, pkgclass.__name__, pkgclass(self.state, self._d))
+                setattr(self.protein, pkgclass.__name__, pkgclass(self.protein, self._d))
 
         
         def wait_calculate(Dihl):
@@ -213,8 +220,8 @@ class CombinedDihs(Matrixoutput):
 
 
 class COMpkg(Pkg):
-    def __new__(cls, state, d):
-        new = super().__new__(cls, state, d)
+    def __new__(cls, protein, d):
+        new = super().__new__(cls, protein, d)
         
         new._pdbf = new._d["_compdbf"]
         new._trajs = new._d["_comtrajs"]
@@ -226,8 +233,8 @@ class COMpkg(Pkg):
     
     
 class dcdpkg(Matrixoutput):
-    def __new__(cls, state, d):
-        new = super().__new__(cls, state, d)
+    def __new__(cls, protein, d):
+        new = super().__new__(cls, protein, d)
         
         new._pdbf = new._d["_protpdb"]
         new._trajs = new._d["dcds"]
@@ -271,14 +278,14 @@ class Dynetan(Matrixoutput, Multicorepkg):
         obj = _dynetan.DNAproc()
         obj.loadSystem(self._pdbf, self._trajs[xtc]) # pdb.replace("pdb", "psf")
         
-        prot = obj.getU().select_atoms("same segid as protein")
+        prot = obj.getU().select_atoms(self._d["_protein_sel"])
         from Bio.SeqUtils import seq1, seq3
         for res in prot.residues:
             res.resname = seq3(seq1(res.resname, custom_map = self._d["_res_dict"])).upper()
         
         protseg = list(prot.segments.segids)
         obj.setSegIDs(protseg)
-        obj.selectSystem(withSolvent=False, userSelStr="same segid as protein")
+        obj.selectSystem(withSolvent=False, userSelStr=self._d["_protein_sel"])
 
         obj.setCustomResNodes({})
         obj.setUsrNodeGroups({})
@@ -332,8 +339,8 @@ class CorrplusCOMLMI(COMpkg, CorrplusLMI):
         
         
 class CorrplusPsi(Corrplus):
-    def __new__(cls, state, d):
-        new = super().__new__(cls, state, d)
+    def __new__(cls, protein, d):
+        new = super().__new__(cls, protein, d)
         new._dih = "psi"
         return new
     
@@ -344,16 +351,16 @@ class CorrplusPsi(Corrplus):
     
     
 class CorrplusPhi(CorrplusPsi, Corrplus):
-    def __new__(cls, state, d):
-        new = super().__new__(cls, state, d)
+    def __new__(cls, protein, d):
+        new = super().__new__(cls, protein, d)
         new._dih = "phi"
         return new
 
         
 
 class CorrplusOmega(CorrplusPsi, Corrplus):
-    def __new__(cls, state, d):
-        new = super().__new__(cls, state, d)
+    def __new__(cls, protein, d):
+        new = super().__new__(cls, protein, d)
         new._dih = "omega"
         return new
 
@@ -368,50 +375,96 @@ class CorrplusDihs(CombinedDihs, Corrplus):
         
         
         
-class AlloVizPsi(Matrixoutput):
-    def __new__(cls, state, d):
-        new = super().__new__(cls, state, d)
+class AlloVizPsi(Matrixoutput, Multicorepkg):
+    def __new__(cls, protein, d):
+        new = super().__new__(cls, protein, d)
         new._dih = "psi"
         return new
             
     
     def _computation(self, xtc):#pdb, traj, xtc, pq):
-        prot = self._d["mdau"].select_atoms("same segid as protein")
+        prot = self._d["mdau"].select_atoms(self._d["_protein_sel"])
         selected_res = self._d["_dihedral_residx"]()
         
         select_dih = lambda res: eval(f"res.{self._dih.lower()}_selection()")
         selected = [select_dih(res) for res in prot.residues[selected_res]]
 
         offset = 0
-        get_frames = lambda numreader: self._d["mdau"].trajectory.readers[numreader].n_frames
-        for numreader in range(xtc-1):
-            offset += get_frames(numreader)
+        
+        if hasattr(self._d["mdau"].trajectory, "readers"):
+            get_frames = lambda numreader: self._d["mdau"].trajectory.readers[numreader].n_frames
+            for numreader in range(xtc-1):
+                offset += get_frames(numreader)
+        else:
+            get_frames = lambda _: self._d["mdau"].trajectory.n_frames
 
         values = _mda_dihedrals.Dihedral(selected).run(start=offset, stop=offset+get_frames(xtc-1)).results.angles.transpose()
         
         corr = np.zeros((len(selected_res), len(selected_res)))
-        print("prot.n_residues:", prot.n_residues, "len(selected_res)", len(selected_res), "dihedrals array shape:", values.shape, "empty corr matrix shape:", corr.shape)
+        print("prot.n_residues:", prot.n_residues, "len(selected_res)", len(selected_res), "dihedrals array shape:", values.shape, "empty corr array shape:", corr.shape)#
+        
+#         iterator = set(range(len(selected_res)))
+#         for res1 in iterator:
+#             for res2 in iterator - set(range(res1)) - {res1}:
+#                 corr[res1, res2] = _npeet_lnc.MI.mi_LNC([values[res1], values[res2]])
+                
+#         return corr, xtc, selected_res
 
+        from multiprocess import Queue, Process
+    
+        in_data = Queue()
+        out_data = Queue()
+        
+        
+        def calculate_row(values, nres, in_data, out_data):
+             while not in_data.empty():
+                res, others = in_data.get()
+                row = np.zeros((nres,))
+                
+                for other in others:
+                    row[other] = _npeet_lnc.MI.mi_LNC([values[res], values[other]])
+                
+                out_data.put((res, row))
+        
+        
         iterator = set(range(len(selected_res)))
         for res1 in iterator:
+            others = []
             for res2 in iterator - set(range(res1)) - {res1}:
-                corr[res1, res2] = _npeet_lnc.MI.mi_LNC([values[res1], values[res2]])
-    
+                others.append(res2)
+            if len(others) > 0: in_data.put((res1, others))
+        
+        
+        ps = []
+        for _ in range(self.taskcpus):
+            p = Process(target=calculate_row,
+                        args=(values, len(selected_res), in_data, out_data)) 
+            p.start()
+            ps.append(p)
+
+        for _ in range(len(selected_res)):
+            res, row = out_data.get()
+            corr[res, :] = row
+            
+        for p in ps:
+            p.join()
+            
+            
         return corr, xtc, selected_res
     
     
     
 class AlloVizPhi(AlloVizPsi):
-    def __new__(cls, state, d):
-        new = super().__new__(cls, state, d)
+    def __new__(cls, protein, d):
+        new = super().__new__(cls, protein, d)
         new._dih = "phi"
         return new
 
         
 
 class AlloVizOmega(AlloVizPsi):
-    def __new__(cls, state, d):
-        new = super().__new__(cls, state, d)
+    def __new__(cls, protein, d):
+        new = super().__new__(cls, protein, d)
         new._dih = "omega"
         return new
 
@@ -429,8 +482,8 @@ class AlloVizDihs(CombinedDihs, AlloVizPsi):
         
         
 class MDEntropyContacts(Matrixoutput, Multicorepkg):
-    def __new__(cls, state, d):
-        new = super().__new__(cls, state, d)
+    def __new__(cls, protein, d):
+        new = super().__new__(cls, protein, d)
         
         # # Opción si las necesidades de memoria incrementan con taskcpus
         # extra_taskcpus = int((self.taskcpus/4 - 1) * 4) if self.taskcpus>=4 else 0
@@ -464,8 +517,8 @@ class MDEntropyContacts(Matrixoutput, Multicorepkg):
         
         
 class MDEntropyDihs(MDEntropyContacts):
-    def __new__(cls, state, d):
-        new = super().__new__(cls, state, d)        
+    def __new__(cls, protein, d):
+        new = super().__new__(cls, protein, d)        
         new._function = _mdentropy.DihedralMutualInformation
         new._types = {"types": ["phi", "psi", "omega"]}
         new._resl = new._d["_dihedral_residx"]()
@@ -478,8 +531,8 @@ class MDEntropyAlphaAngle(MDEntropyContacts):
     The alpha angle of residue `i` is the dihedral formed by the four CA atoms
     of residues `i-1`, `i`, `i+1` and `i+2`.
     """
-    def __new__(cls, state, d):
-        new = super().__new__(cls, state, d)        
+    def __new__(cls, protein, d):
+        new = super().__new__(cls, protein, d)        
         new._function = _mdentropy.AlphaAngleMutualInformation
         new._types = {"types": ["alpha"]}
         new._resl = new._d["_dihedral_residx"](-2)
@@ -509,8 +562,8 @@ class MDEntropyAlphaAngle(MDEntropyContacts):
     
 
 class MDTASK(Matrixoutput, Multicorepkg):
-    def __new__(cls, state, d):
-        new = super().__new__(cls, state, d)        
+    def __new__(cls, protein, d):
+        new = super().__new__(cls, protein, d)        
         new._empties = 2
         return new
     
@@ -528,8 +581,8 @@ class MDTASK(Matrixoutput, Multicorepkg):
 
 
 class PytrajCA(Matrixoutput):
-    def __new__(cls, state, d):
-        new = super().__new__(cls, state, d)
+    def __new__(cls, protein, d):
+        new = super().__new__(cls, protein, d)
         new._mask = new._name[-2:]
         return new
     
@@ -543,9 +596,9 @@ class PytrajCA(Matrixoutput):
     
     
 class PytrajCB(PytrajCA):
-    def __new__(cls, state, d):
-        new = super().__new__(cls, state, d)
-        new._selection = "(same segid as protein) and not resname GLY"
+    def __new__(cls, protein, d):
+        new = super().__new__(cls, protein, d)
+        new._selection = f"({d['_protein_sel']}) and not resname GLY"
         return new
 
         
@@ -561,13 +614,13 @@ class PyInteraphBase(Matrixoutput):
     
     
 class PyInteraph(PyInteraphBase):
-    def __new__(cls, state, d):
-        new = super().__new__(cls, state, d)
+    def __new__(cls, protein, d):
+        new = super().__new__(cls, protein, d)
         
-        reslist = set(new._d["mdau"].select_atoms("same segid as protein").residues.resnames)
+        reslist = set(new._d["mdau"].select_atoms(d["_protein_sel"]).residues.resnames)
         new._CLIargs = f"-m --cmpsn-graph dummy"# --cmpsn-residues {','.join(reslist)}"
         
-        new._bonded_cys_indices = new.state._get_bonded_cys(new._d["_pdbf"])
+        new._bonded_cys_indices = new.protein._get_bonded_cys(new._d["_pdbf"])
         
         return new
                 
@@ -589,8 +642,8 @@ class PyInteraph(PyInteraphBase):
     
     
 class PyInteraphEne(PyInteraphBase):
-    def __new__(cls, state, d):
-        new = super().__new__(cls, state, d)
+    def __new__(cls, protein, d):
+        new = super().__new__(cls, protein, d)
         new._CLIargs = "-p --kbp-graph dummy"
         return new
         
@@ -600,8 +653,8 @@ class PyInteraphEne(PyInteraphBase):
         
 # only for local
 class G_corrCAMI(Matrixoutput):
-    def __new__(cls, state, d):
-        new = super().__new__(cls, state, d)
+    def __new__(cls, protein, d):
+        new = super().__new__(cls, protein, d)
         new._CLIargs = ""
         return new
                 
@@ -619,7 +672,7 @@ g_correlation -f {self._trajs[xtc]} -s {self._pdbf} -o {pq}.dat {self._CLIargs} 
 EOF
 """)
         # Read output.dat
-        size = self._d["mdau"].select_atoms("(same segid as protein) and name CA").n_atoms
+        size = self._d["mdau"].select_atoms(f"({self._d['_protein_sel']}) and name CA").n_atoms
         corr = np.empty([size, size])
         rown = 0
         row = []
@@ -643,8 +696,8 @@ EOF
     
     
 class G_corrCOMMI(COMpkg, G_corrCAMI):
-    def __new__(cls, state, d):
-        new = super().__new__(cls, state, d)
+    def __new__(cls, protein, d):
+        new = super().__new__(cls, protein, d)
         new._CLIargs = ""
         return new
         
@@ -652,8 +705,8 @@ class G_corrCOMMI(COMpkg, G_corrCAMI):
         
         
 class G_corrCALMI(G_corrCAMI):
-    def __new__(cls, state, d):
-        new = super().__new__(cls, state, d)
+    def __new__(cls, protein, d):
+        new = super().__new__(cls, protein, d)
         new._CLIargs = "-linear"
         return new
     
@@ -690,8 +743,8 @@ g_sa_analyze -sa {out}/lf_str.out -MImatrix -MImat {out}/lf_MImat.out -eeMImat {
         
         
 class GRINN(dcdpkg, Multicorepkg):
-    def __new__(cls, state, d):
-        new = super().__new__(cls, state, d)
+    def __new__(cls, protein, d):
+        new = super().__new__(cls, protein, d)
         
         if "namd" in new._d:
             new.namd = new._d["namd"]
@@ -704,7 +757,7 @@ class GRINN(dcdpkg, Multicorepkg):
         if "auto_send" not in new._d:
             d = new._d.copy()
             d.update({"namd": new.namd, "auto_send": True})
-            new.state._set_pkgclass(self.state, "gRINNcorr", d)
+            new.protein._set_pkgclass(self.protein, "gRINNcorr", d)
         
         return new
         
@@ -731,8 +784,8 @@ class GRINN(dcdpkg, Multicorepkg):
     
     
 class GRINNcorr(GRINN):
-    def __new__(cls, state, d):
-        new = super().__new__(cls, state, d)
+    def __new__(cls, protein, d):
+        new = super().__new__(cls, protein, d)
         
         if "auto_send" in new._d:
             new._auto_send = new._d["auto_send"]
@@ -743,7 +796,7 @@ class GRINNcorr(GRINN):
     
     
     def __init__(self):
-        if not rhasattr(self, "state", "GRINN") and not self._auto_send:
+        if not rhasattr(self, "protein", "GRINN") and not self._auto_send:
             raise Exception("Make sure to send GRINN calculation before GRINNcorr")
         
         no_exist = lambda files: [not os.path.isfile(file) for file in files]

@@ -43,12 +43,12 @@ filterbyl = ["whole", "incontact", "intercontact"]
 
 
 
-class Pair:
+class Delta:
     def __init__(self, refstate, state2, **kwargs):
         self.state1, self.state2 = refstate, state2
-        self.states = [self.state1, self.state2]
-        for state in self.states:
-            setattr(state, "_pair", self)
+        self._states = [self.state1, self.state2]
+        for state in self._states:
+            setattr(state, "_delta", self)
             
             # translate_ix = lambda ix: tuple(to_aln_pos[_] for _ in ix) if isinstance(ix, tuple) else to_aln_pos[ix]
             
@@ -57,14 +57,18 @@ class Pair:
         
         # nodes_subset = self._add_nodes_subset()
         # self.sources_subset, self.targets_subset = nodes_subset.values()
-    
-    
-    
-    def get_delta(self):
+        
+        
         delta = self.state1 - self.state2
-        setattr(self, "delta", delta)
-        setattr(self.delta, "pair", self)
-        return delta
+        self.__dict__.update(delta)
+    
+    
+    
+    # def get_delta(self):
+    #     delta = self.state1 - self.state2
+    #     setattr(self, "delta", delta)
+    #     setattr(self.delta, "pair", self)
+    #     return delta
     
     
     
@@ -100,8 +104,8 @@ class Pair:
             print(stderr)
             raise Exception("Structural alignment of the structures couldn't be performed.")
         
-        for state, aln in zip(self.states, alignment):
-            aas = [f"{res.resname}:{res.resid}" for res in state._prot.residues]
+        for state, aln in zip(self._states, alignment):
+            aas = [f"{res.resname}:{res.resid}" for res in state.prot.residues]
             aln_mapper = dict( (aas.pop(0), pos) for pos, res in enumerate(aln.seq) if res != "-" and res == seq1(aas[0].split(":")[0], custom_map = state._res_dict) )
             aln_mapper.update( dict(map(reversed, aln_mapper.items())) )
             setattr(state, "_aln_mapper", aln_mapper)
@@ -229,16 +233,120 @@ class Pair:
     
 
 
-class Store:
+class _Store:
     pass
 
-class State:    
-    def __init__(self, pdb='', trajs:list=[], path='', psf=None, parameters=None, GPCR=False, **kwargs):
+class Protein:
+    r"""AlloViz main class.
+
+    Objects of the class store the initialization information about the protein
+    structure and trajectory files, process it and allow to calculate the different
+    networks and network analyses with associated methods.
+    
+    Last updated on 3/6
+
+    Parameters
+    ----------
+    pdb : str
+        Filename of the PDB structure to read, process and use.
+    trajs : str or list
+        Filename(s) of the MD trajectory (or trajectories) to read and use. File format
+        must be recognized by MDAnalysis (e.g., xtc), and other network construction
+        packages may have stricter file format requirements.
+    GPCR : bool or int, default: False
+        Use `True` if the structure is a GPCR, or pass the ID of a GPCRmd database
+        dynamics entry, without specifying the `pdb` nor the `trajs` parameters, to 
+        automatically retrieve the files from the database and process them. They will
+        be downloaded to `path`, which if left undefined will default to the GPCRmd ID.
+    name : str, default: `pdb`
+        Name string of the protein/class instance to be used for visualization, e.g., 
+        for the title of the colorbar shown when representing a network with nglviewer.
+    path : str, optional
+        Path to store results in. It can exist already or not, and a new folder inside
+        it called `data` will be also created to store computation results and other
+        files. If unspecified, it defaults to "." or the GPCRmd ID in case it is used.
+
+    Other Parameters
+    ----------------
+    protein_sel : str, default: "same segid as protein"
+        MDAnalysis atom selection string to select the protein structure from the 
+        Universe (e.g., in case simulation in biological conditions are used, with
+        water molecules, ions...). Some network construction methods use the source
+        files directly, and might end up providing data with a different size than that
+        obtained with this selection, which will cause errors.
+    psf : str, optional
+        Filename of the .psf file corresponding to the pdb used. It is required by gRINN.
+    parameters : str, optional
+        Filename of the MD simulation force-field parameters file in NAMD format. It is
+        required by gRINN.
+    **kwargs
+        A dictionary can be passed with the `special_res` keyword argument, containing
+        a mapping of special residue 3/4-letter code(s) present in the structure to the
+        corresponding 1-letter code(s). Most times it is not necessary, and it may also
+        cause problems with network construction methods that do not interpret these 
+        special residues as part of the protein, which will return data with size
+        different to what is expected causing errors.
+    
+    Attributes
+    ------
+    pdb
+    trajs
+    path
+    GPCR
+    pdbu : MDAnalysis.core.Universe
+        Universe of the pdb file provided.
+    prot : MDAnalysis.core.groups.AtomGroup
+        AtomGroup of the selected `protein_sel` string, taken from the `pdbu` Universe.
+    mdau : MDAnalysis.core.Universe
+        Universe of the pdb and trajectory file(s) provided.
+    
+    Raises
+    ------
+    FileNotFoundError
+        If any of the files passed in `pdb` and `traj` (and `psf` and `parameters` if 
+        provided) parameters cannot be accessed.
+        
+    See Also
+    --------
+    AlloViz.Delta : Class for calculation of the delta-network(s) between two Protein
+                    objects.
+    ..
+        Notes
+        -----
+        Notes about the implementation algorithm (if needed).
+
+        This can have multiple paragraphs.
+
+        You may include some math:
+
+        .. math:: X(e^{j\omega } ) = x(n)e^{ - j\omega n}
+
+        And even use a Greek symbol like :math:`\omega` inline.
+
+        References
+        ----------
+        Cite the relevant literature, e.g. [1]_.  You may also cite these
+        references in the notes section above.
+
+        .. [1] O. McNoleg, "The integration of GIS, remote sensing,
+           expert systems and adaptive co-kriging for environmental habitat
+           modelling of the Highland Haggis using object-oriented, fuzzy-logic
+           and neural-network techniques," Computers & Geosciences, vol. 22,
+           pp. 585-588, 1996.
+
+    Example
+    --------
+    >>> opioidGPCR = AlloViz.Protein(GPCR=169)
+    >>> print(opioidGPCR.mdau)
+    <Universe with 88651 atoms>
+    """
+    
+    def __init__(self, pdb="", trajs=[], GPCR=False, name=None, path="", protein_sel="same segid as protein", psf=None, parameters=None, **kwargs):
         self.GPCR = GPCR
         
         if not isinstance(self.GPCR, bool) and isinstance(self.GPCR, int):
             self._gpcrmdid = self.GPCR
-            self._path = f"{self.GPCR}"
+            self._path = f"{self.GPCR}" if len(path) == 0 else path
             os.makedirs(self._path, exist_ok=True)
             if not any([re.search("(pdb$|psf$|xtc$|parameters$)", file) for file in os.listdir(self._path)]):
                 self._download_files()
@@ -252,25 +360,34 @@ class State:
         else:
             psf_params = parameters is not None and psf is not None
             
-            files_to_check = trajs + [pdb] if not psf_params else trajs + [pdb, psf, parameters]
+            self._pdbf = pdb
+            self._trajs = {1: trajs} if isinstance(trajs, str) else dict(enumerate(trajs, 1))
+            
+            files_to_check = list(self._trajs.values()) + [self._pdbf] if not psf_params else list(self._trajs.values()) + [self._pdbf, psf, parameters]
             files_exist = {file: os.path.isfile(file) for file in files_to_check}
             if any([not file_exist for file_exist in files_exist.values()]):
                 raise FileNotFoundError(f"Some of the files could not be found: {files_exist}")
             
-            self._path = path
+            self._path = "." if len(path) == 0 else path
             os.makedirs(self._path, exist_ok=True)
-            self._pdbf = pdb
-            self._trajs = dict(enumerate(trajs, 1))
             if psf_params:
                 self._psff = psf
                 self._paramf = parameters
+        
+        # Temporary patch
+        self.pdb = self._pdbf
+        self.trajs = list(self._trajs.values())
+        self.path = self._path
+        
+        self.name = name if name is not None else self._pdbf
+        self._protein_sel = protein_sel
                 
         self._datadir = f"{self._path}/data"
         os.makedirs(self._datadir, exist_ok=True)
         
         self._res_dict = self._get_res_dict(**kwargs)
-        self.mdau, self._prot = self._get_mdau()
-        self._dihedral_residx = self._get_dihedral_residx(self._prot)
+        self.pdbu, self.prot, self.u = self._get_mdau(self._protein_sel)
+        self._dihedral_residx = self._get_dihedral_residx(self.prot)
         self._translate_ix = lambda mapper: lambda ix: tuple(mapper[_] for _ in ix) if isinstance(ix, tuple) else mapper[ix]
         
         
@@ -287,31 +404,104 @@ class State:
     
     
     def __sub__(self, other):
-        delta = Store()
+        delta = _Store()
         
         for pkg in (key for key in self.__dict__ if key.lower() in [x.lower() for x in pkgsl] and key in other.__dict__):
-            setattr(delta, pkg, Store())
+            setattr(delta, pkg, _Store())
             for filterby in (key for key in getattr(self, pkg).__dict__ if key.lower() in ["whole", "incontact", "intercontact", "raw"] and key in getattr(other, pkg).__dict__): #if not re.search("(^_|raw)", key)
-                setattr(getattr(delta, pkg), filterby, Store())
+                setattr(getattr(delta, pkg), filterby, _Store())
                 for elem in (key for key in rgetattr(self, pkg, filterby).__dict__ if key.lower() in ["nodes", "edges"] and key in rgetattr(other, pkg, filterby).__dict__): 
-                # setattr(getattr(delta, pkg), filterby, Store())
+                # setattr(getattr(delta, pkg), filterby, _Store())
                 # for norm in (key for key in rgetattr(self, pkg, filterby).__dict__ if key in ["norm", "no_norm"] and key in rgetattr(self, pkg, filterby).__dict__):
                     # dif = rgetattr(self, pkg, filterby, norm) - rgetattr(other, pkg, filterby, norm)
                     # setattr(rgetattr(delta, pkg, filterby), norm, Edges(self._pair, dif))
                     dif = rgetattr(self, pkg, filterby, elem) - rgetattr(other, pkg, filterby, elem)
                     elemclass = eval(elem.capitalize())
-                    setattr(rgetattr(delta, pkg, filterby), elem, elemclass(self._pair, dif))
+                    setattr(rgetattr(delta, pkg, filterby), elem, elemclass(self._delta, dif))
                     
-        return delta
+        return delta.__dict__
         
         
         
     
     def calculate(self, pkg="all", cores=1, **kwargs): # ow
+        r"""Calculate edge weights of allosteric networks.
+
+        Send the computation of the raw edge weights for the selected network
+        construction methods.
+
+        Parameters
+        ----------
+        pkg : str or list, default: "all"
+            Package(s)/Network construction method(s) for which to send raw edge weight
+            computation. "all" sends the computation for all available methods within
+            AlloViz (check `AlloViz.Classes.pkgsl`).
+        cores : int, default: 1
+            Number of cores to use for parallelization with a `multiprocess` Pool.
+            Default value only uses 1 core with a custom `dummypool` (check
+            `AlloViz.utils.dummypool`) that perform computations synchronously.
+
+        Returns
+        -------
+        None
+
+        Other Parameters
+        ----------------
+        **kwargs
+            `taskcpus` keyword argument can be passed to specify the amount of cores
+            that parallelizable network construction methods can use (i.e., AlloViz's
+            method, getcontacts, dynetan, PyInteraph, MDEntropy and gRINN). `namd`
+            keyword argument can be passed to point to the namd2 executable location; if
+            the `namd` command is accessible through the CLI it is automatically
+            retrieved with the `distutils` package.
+        ..
+            Raises
+            ------
+            BadException
+                Because you shouldn't have done that.
+
+        See Also
+        --------
+        AlloViz.Protein.analyze : Class method to analyze the calculated raw edge weights
+                                  with graph theory-based methods.
+        AlloViz.Protein.visualize : Class method to visualize the network on the protein
+                                    structure.
+                                    
+        Notes
+        -----
+        Method returns nothing, but calculation results are stored as new instance
+        attributes with the same name as the selected packages/network construction
+        methods. If the object is created providing more than one trajectory file,
+        the average and standard error of the weights between the replicas are also
+        calculated.
+        
+        ..
+            References
+            ----------
+            Cite the relevant literature, e.g. [1]_.  You may also cite these
+            references in the notes section above.
+
+            .. [1] O. McNoleg, "The integration of GIS, remote sensing,
+               expert systems and adaptive co-kriging for environmental habitat
+               modelling of the Highland Haggis using object-oriented, fuzzy-logic
+               and neural-network techniques," Computers & Geosciences, vol. 22,
+               pp. 585-588, 1996.
+
+        Examples
+        --------        
+        If we have a 6-core computer and want to use 2 cores to compute the values for
+        each of the three trajectories of the protein (GPCRmd stores three replicas of
+        each structure):
+        
+        >>> opioidGPCR = AlloViz.Protein(GPCR=169)
+        >>> opioidGPCR.calculate("dynetan", cores=6, taskcpus=2)
+        >>> print(opioidGPCR.dynetan.raw.shape)
+        (41041, 5)
+        """
         pkgs = pkgsl if pkg=="all" else pkg if isinstance(pkg, list) else [pkg]
         
         if any(["COM" in pkg for pkg in pkgs]):
-            self._add_comtrajs()
+            self._add_comtrajs(self._protein_sel)
             
         if any([re.search("(carma|grinn)", pkg.lower()) for pkg in pkgs]):
             self._make_dcds()
@@ -346,7 +536,105 @@ class State:
     
     
     
-    def analyze(self, pkg="all", filterby="incontact", element="edges", metrics="all", normalize=True, cores=1): # ow
+    def analyze(self, pkg="all", filterby="Whole", element="edges", metrics="all", normalize=True, cores=1,
+                nodes_dict = {'btw': 'networkx.algorithms.centrality.betweenness_centrality',
+                              'cfb': 'networkx.algorithms.centrality.current_flow_betweenness_centrality'},
+                edges_dict = {'btw': 'networkx.algorithms.centrality.edge_betweenness_centrality',
+                              'cfb': 'networkx.algorithms.centrality.edge_current_flow_betweenness_centrality'})
+        # from networkx.algorithms.centrality import edge_betweenness_centrality, edge_betweenness_centrality_subset
+        # from networkx.algorithms.centrality import edge_current_flow_betweenness_centrality, edge_current_flow_betweenness_centrality_subset
+        # from networkx.algorithms.centrality import betweenness_centrality, betweenness_centrality_subset
+        # from networkx.algorithms.centrality import current_flow_betweenness_centrality, current_flow_betweenness_centrality_subset
+        r"""Analyze calculated edge weights with network analyses.
+        
+        Perform analyses of the raw edge weights for the selected packages/network
+        construction methods, filtering schemes and network elements, calculating the
+        desired network metrics.
+
+        Parameters
+        ----------
+        pkg : str or list, default: "all"
+            Package(s)/Network construction method(s) for which to analyze their raw edge
+            weights, which must be already calculated and their data saved as instance
+            attribute. In this case, "all" sends the computation for all available
+            methodsthat are already calculated and saved as instance attributes.
+        filterby : str or list, {"Whole", "Incontact", "Intercontact"}
+            Filtering schemes with which to filter the list of network edges before
+            analysis. "Whole" is the default and means no filtering, and "Incontact" and
+            "Intercontact" (see Notes) require that raw data from the `getcontacts`
+            package has been calculated first.
+        element : str or list, {"edges", "nodes"}
+            Network elements for which to perform the analysis.
+        metrics : str or list, default: "all"
+            Network metrics to compute, which must be keys in the `nodes_dict` or
+            `edges_dict` dictionaries. Default is "all" and it sends the computation for
+            all the metrics defined in the corresponding dictionary of the selected
+            elements in `element`.
+
+        Returns
+        -------
+        None
+
+        Other Parameters
+        ----------------
+        normalize : bool, default: True
+            Passed to the NetworkX functions that calculate the metrics, to output
+            normalized results or not.
+        cores : int, default: 1
+            Number of cores to use for parallelization with a `multiprocess` Pool.
+            Default value only uses 1 core with a custom `dummypool` (check
+            `AlloViz.utils.dummypool`) that perform computations synchronously.
+        nodes_dict, edges_dict : dict
+            Dictionary that maps network metrics custom names (e.g., betweenness
+            centrality, "btw") with their corresponding NetworkX function (e.g.,
+            "networkx.algorithms.centrality.betweenness_centrality"). Functions strings
+            must be written as if they were absolute imports, and must return a
+            dictionary of edges or nodes, depending on the element dictionary in which
+            they are. The keys of the dictionaries will be used to name the columns of
+            the analyzed data that the functions produce.
+
+        See Also
+        --------
+        AlloViz.Protein.calculate : Class method to calculate the network(s) raw edge
+                                    weights with different network construction methods.
+        AlloViz.Protein.visualize : Class method to visualize the network on the protein
+                                    structure.
+
+        Notes
+        -----
+        Method returns nothing, but analysis results are stored as nested attributes
+        "inside" each of the packages' attributes of the `Protein` object, first using
+        the name of the filtering scheme (e.g., `.Package.filterby`) and lastly with the
+        analyzed network element name (e.g., `.Package.filterby.element`). If the
+        `Protein` object was created providing more than one trajectory file, the
+        analyses are performed both on the replicas' weights and the average, and an
+        average and standard error of the replicas' analysis results are also calculated.
+        
+        "Incontact" filtering only retains edges of residue pairs in contact -those for
+        which getcontacts is able to compute contact frequencies-, and "Intercontact"
+        only keeps edges of pairs that are both in contact and apart in the sequence (more
+        than 5 positions away in the sequence).
+        
+        ..
+            References
+            ----------
+            Cite the relevant literature, e.g. [1]_.  You may also cite these
+            references in the notes section above.
+
+            .. [1] O. McNoleg, "The integration of GIS, remote sensing,
+               expert systems and adaptive co-kriging for environmental habitat
+               modelling of the Highland Haggis using object-oriented, fuzzy-logic
+               and neural-network techniques," Computers & Geosciences, vol. 22,
+               pp. 585-588, 1996.
+
+        Examples
+        --------
+        >>> opioidGPCR = AlloViz.Protein(GPCR=169)
+        >>> opioidGPCR.calculate(["getcontacts", "dynetan"], cores=6, taskcpus=2)
+        >>> opioidGPCR.analyze("dynetan", filterby="Intercontact", element=["edges", "nodes"], metrics="btw")
+        >>> print(opioidGPCR.dynetan.Intercontact.edges.df.shape)
+        (3410, 5)
+        """
         pkgs = [pkg for pkg in self.__dict__ if pkg.lower() in (pkg.lower() for pkg in pkgl)] if pkg=="all" else pkg if isinstance(pkg, list) else [pkg]
         metrics = metricsl if metrics=="all" else metrics if isinstance(metrics, list) else [metrics]
         filterbys = filterbyl if filterby=="all" else filterby if isinstance(filterby, list) else [filterby]
@@ -443,7 +731,7 @@ class Element:
 
         cols = [col for col in selfdf.columns if col in otherdf.columns]
     
-        subs = [col for col in cols if "avg" in col]
+        subs = [col for col in cols if "std" not in col]
         sub = pandas.DataFrame.sub(selfdf[subs], otherdf[subs], axis=0, level="aln_pos").dropna() #fill_value = 0, level="aln_pos"
     
         adds = [col for col in cols if "std" in col]
@@ -479,20 +767,22 @@ class Element:
     def _show_cbar(self, cmap, minv, maxv):
         pl.imshow([[minv,maxv],], cmap = cmap)
         pl.gca().set_visible(False)
-        if isinstance(self._parent, Pair):
+        if isinstance(self._parent, Delta):
             cbar = pl.colorbar(orientation = "horizontal", ticks = [minv,maxv])
-            cbar.ax.set_xticklabels([self._parent.state2._pdbf.capitalize(), self._parent.state1._pdbf.capitalize()])
+            cbar.ax.set_xticklabels([self._parent.state2.name, self._parent.state1.name])
+            cbar.ax.set_title("Delta-network")
         else:
             cbar = pl.colorbar(orientation = "horizontal", ticks = [minv,maxv])
+            cbar.ax.set_title(self._parent.name)
 
         return
     
     
     def _get_nv(self, nv):
-        mdau_parent = self._parent.state1 if isinstance(self._parent, Pair) else self._parent
+        mdau_parent = self._parent.state1 if isinstance(self._parent, Delta) else self._parent
         
         if nv is None:
-            prot = mda.core.universe.Merge(mdau_parent.mdau.select_atoms("(same segid as protein) or segid LIG"))
+            prot = mda.core.universe.Merge(mdau_parent.pdbu.select_atoms(f"({mdau_parent._protein_sel}) or segid LIG"))
             nv = nglview.show_mdanalysis(prot, default=False)
             nv.add_cartoon('protein', color='white')
         
@@ -502,34 +792,38 @@ class Element:
     
     
     def view(self, metric, num=20, colors=["orange", "turquoise"], nv=None):
-        metric = f"{metric}_avg" if not re.search("_avg$", metric) else metric
+        # metric = f"{metric}_avg" if not re.search("_avg$", metric) else metric
         # if metric not in df.columns etc
         data = self.df.sort_values(metric, key = abs, ascending = False)
-        get_subset = lambda num: data[0:num]
-        subset = get_subset(num)
+        subset = data[0:num]
+#         get_subset = lambda num: data[0:num]
+#         subset = get_subset(num)
         
-        if isinstance(self._parent, Pair):
-            while not any(0 < subset[metric]) or not any(0 > subset[metric]):
-                num += 1
-                subset = get_subset(num)
-            print(num)
+#         if isinstance(self._parent, Pair):
+#             while not any(0 < subset[metric]) or not any(0 > subset[metric]):
+#                 num += 1
+#                 subset = get_subset(num)
+#             print(num)
             
         color1, color2 = colors
         cmap = matplotlib.colors.LinearSegmentedColormap.from_list('bar', [color1, "w", color2], 2048)
 
         self._show_cbar(cmap, data[metric].min(), data[metric].max())
         colors = self._get_colors(data[metric], cmap)[:num]
-
-        error = "weight_std" if "weight_avg" in metric else metric.replace("avg", "std")
-        sizes = np.interp(subset[error], (subset[error].min(), subset[error].max()), (1, 0.1))
+        
+        error = "weight_std" if "weight" in metric else f"{metric}_std"
+        if error in data.columns:
+            sizes = np.interp(subset[error], (subset[error].min(), subset[error].max()), (1, 0.1))
+        else:
+            sizes = np.ones(len(subset))
         
         nv, mdau_parent = self._get_nv(nv)
-        mdau = mdau_parent.mdau
+        #mdau = mdau_parent.mdau
         
         indices = subset.index if isinstance(subset.index[0][0], str) else subset.index.map(mdau_parent._translate_ix(mdau_parent._aln_mapper))
         
         for i in range(len(subset[metric])):
-            self._add_element(nv, mdau, indices[i], colors[i], sizes[i])
+            self._add_element(nv, mdau_parent.pdbu, indices[i], colors[i], sizes[i])
 
         return nv
     
@@ -579,7 +873,7 @@ class Analysis: #(_Edges)
         # self.normalize = normalize
         self._name = self.__class__.__name__
         
-        self._path = f"{self._pkg.state._datadir}/{self._pkg._name}/{self._name}" # lambda norm might not be needed
+        self._path = f"{self._pkg.protein._datadir}/{self._pkg._name}/{self._name}" # lambda norm might not be needed
         os.makedirs(self._path, exist_ok=True)
         self._datapq = lambda element, metric: f"{self._path}/{element}_{metric}.pq"
         
@@ -605,7 +899,8 @@ class Analysis: #(_Edges)
         for elem in elements:
             if not rhasattr(self, elem, "df"):
                 if elem == "edges":
-                    data = self._filtdata[["weight_avg", "weight_std"]]
+                    cols = ["weight" in col for col in self._filtdata.columns]
+                    data = self._filtdata.loc[:,cols]
                 elif elem == "nodes":
                     data = pandas.DataFrame()
             else:
@@ -630,20 +925,24 @@ class Analysis: #(_Edges)
             
             def add_data(args):
                 elem, data = args
-                print(f"adding analyzed {elem} {self._pkg} {self._name} data of for {self._pkg.state._pdbf}")
+                print(f"adding analyzed {elem} {self._pkg} {self._name} data of for {self._pkg.protein._pdbf}")
 
                 for pq in pqs(elem):
                     metric = pq.rsplit("/", 1)[-1].split("_", 1)[-1].split(".")[0]
                     df = pandas.read_parquet(pq)
-
-                    cols = [f"{metric}_{num}" for num in self._pkg.state._trajs]
-                    df[f"{metric}_avg"] = df[cols].fillna(0).mean(axis=1)
-                    df[f"{metric}_std"] = df[cols].fillna(0).std(axis=1)
-                    out = df.drop(cols, axis=1)
+                    
+                    if len(self._pkg.protein._trajs) > 1:
+                        cols = [f"{metric}_{num}" for num in self._pkg.protein._trajs]
+                        df[f"{metric}"] = df[cols].fillna(0).mean(axis=1)
+                        df[f"{metric}_std"] = df[cols].fillna(0).std(axis=1)
+                        out = df.drop(cols, axis=1)
+                    else:
+                        out = df
+                        
                     data = pandas.concat([data, out], axis=1)#data.join(out) if data is not None else out
 
                 elemclass = eval(elem.capitalize())
-                setattr(self, elem, elemclass(self._pkg.state, data))
+                setattr(self, elem, elemclass(self._pkg.protein, data))
 
                 
             utils.get_pool().apply_async(wait_analyze,
@@ -656,7 +955,8 @@ class Analysis: #(_Edges)
     
     def _analyze(self, metric, elem, normalize, pq):
         pool = utils.get_pool()
-        rawdata = self._filtdata.drop("weight_std", axis=1)
+        cols = ["std" not in col for col in self._filtdata.columns]
+        rawdata = self._filtdata.loc[:,cols]
         nodes = {}   
         
         if callable(metric):
@@ -672,12 +972,16 @@ class Analysis: #(_Edges)
             
             if "subset" in metric:
                 metricf = eval(f"{metricf.__name__}_subset")
-                nodes = {"sources": self._pkg.state.sources_subset, "targets": self._pkg.state.targets_subset}  
+                nodes = {"sources": self._pkg.protein.sources_subset, "targets": self._pkg.protein.targets_subset}  
                 
                 
                 
         def save_pq(df):
-            newcolnames = {name: f"{metric}_{name}" for name in df.columns}
+            if len(df.columns) > 1:
+                newcolnames = {name: f"{metric}_{name}" for name in df.columns}
+            else:
+                newcolnames = {df.columns[0]: metric}
+                
             df.rename(columns=newcolnames, inplace=True)
             df.to_parquet(pq)
             return
@@ -736,7 +1040,7 @@ class Incontact(Analysis):
         df = super()._get_filt_data()
         
         try:
-            indices = self._pkg.state.Getcontacts.raw.index
+            indices = self._pkg.protein.Getcontacts.raw.index
         except:
             raise Exception("Getcontacts results are needed first")
 #         if not rhasattr(self._pkg.state, "Getcontacts", "raw"):
