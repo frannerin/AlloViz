@@ -1,0 +1,5 @@
+recursive-include examples *.txt *.pdb *.dat
+include COPYING
+include COPYING.LESSER
+include README.md
+include requirements.txt

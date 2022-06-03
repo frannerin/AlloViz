@@ -1,0 +1,13 @@
+.DS_Store
+.idea
+.pytest_cache
+!/.gitignore
+
+._*.py
+*.pyc
+__pycache__
+*.py.bak
+*.swp
+example/5xnd_all-contacts.tsv
+tests/5xnd_contacts.tsv
+.cache
