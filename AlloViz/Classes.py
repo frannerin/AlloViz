@@ -542,7 +542,7 @@ class Protein:
                 nodes_dict = {'btw': 'networkx.algorithms.centrality.betweenness_centrality',
                               'cfb': 'networkx.algorithms.centrality.current_flow_betweenness_centrality'},
                 edges_dict = {'btw': 'networkx.algorithms.centrality.edge_betweenness_centrality',
-                              'cfb': 'networkx.algorithms.centrality.edge_current_flow_betweenness_centrality'})
+                              'cfb': 'networkx.algorithms.centrality.edge_current_flow_betweenness_centrality'}):
         r"""Analyze calculated edge weights with network analyses.
         
         Perform analyses of the raw edge weights for the selected packages/network
@@ -634,9 +634,9 @@ class Protein:
         (3410, 5)
         """
         pkgs = [pkg for pkg in self.__dict__ if pkg.lower() in (pkg.lower() for pkg in pkgl)] if pkg=="all" else pkg if isinstance(pkg, list) else [pkg]
-        metrics = metricsl if metrics=="all" else metrics if isinstance(metrics, list) else [metrics]
         filterbys = filterbyl if filterby=="all" else filterby if isinstance(filterby, list) else [filterby]
         elements = element if isinstance(element, list) else [element]
+        metrics = set(list(nodes_dict.keys()) + list(edges_dict.keys())) if metrics=="all" else metrics if isinstance(metrics, list) else [metrics]
         
         utils.pool = utils.dummypool()
         if cores>1:
@@ -656,7 +656,7 @@ class Protein:
                 filterby = lambda: rgetattr(pkg, anaclass.__name__)
                 if not filterby():
                      setattr(pkg, anaclass.__name__, anaclass(pkg))
-                filterby()._add_metrics(elements, metrics, normalize)
+                filterby()._add_metrics(elements, metrics, normalize, nodes_dict, edges_dict)
                 
                 
         # for filterby in filterbys:
@@ -890,7 +890,7 @@ class Analysis: #(_Edges)
     
         
     
-    def _add_metrics(self, element, metrics, normalize=True):
+    def _add_metrics(self, element, metrics, normalize=True, nodes_dict, edges_dict):
         metrics = metricsl if metrics=="all" else metrics if isinstance(metrics, list) else [metrics]
         elements = element if isinstance(element, list) else [element]
         
