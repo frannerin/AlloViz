@@ -5,3 +5,4 @@ MDAnalysis
 numpy
 lazyasd
 networkx
+numpydocs
