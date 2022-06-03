@@ -1,19 +1,21 @@
-import sys, os, io, re, pandas, time, requests
+import sys, os, io, re, time
 
-from multiprocess import Pool
+
+import pandas, requests
 import MDAnalysis as mda
 import numpy as np
+from multiprocess import Pool
 from Bio import AlignIO
+from networkx import from_pandas_edgelist as nx_from_pandas
+
 
 from importlib import import_module
 from lazyasd import LazyObject
 matplotlib = LazyObject(lambda: import_module('matplotlib'), globals(), 'matplotlib')
 nglview = LazyObject(lambda: import_module('nglview'), globals(), 'nglview')
 pl = LazyObject(lambda: import_module('matplotlib.pyplot'), globals(), 'pl')
-# import matplotlib, nglview#, ipywidgets, matplotlib.cm
-# from matplotlib import pyplot as pl
 
-from networkx import from_pandas_edgelist as nx_from_pandas
+
 # import networkx.algorithms.centrality as nx_centrality#import edge_betweenness_centrality, edge_betweenness_centrality_subset # edge_betweenness
 from networkx.algorithms.centrality import edge_betweenness_centrality, edge_betweenness_centrality_subset
 from networkx.algorithms.centrality import edge_current_flow_betweenness_centrality, edge_current_flow_betweenness_centrality_subset

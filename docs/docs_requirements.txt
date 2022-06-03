@@ -1,3 +1,4 @@
+numpydoc
 pandas
 requests
 multiprocess
