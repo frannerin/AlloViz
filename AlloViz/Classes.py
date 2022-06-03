@@ -890,11 +890,11 @@ class Analysis: #(_Edges)
     
         
     
-    def _add_metrics(self, element, metrics, normalize=True, nodes_dict, edges_dict):
-        metrics = metricsl if metrics=="all" else metrics if isinstance(metrics, list) else [metrics]
+    def _add_metrics(self, element, metrics, normalize, nodes_dict, edges_dict):
+        # metrics = metricsl if metrics=="all" else metrics if isinstance(metrics, list) else [metrics]
         elements = element if isinstance(element, list) else [element]
         
-        for elem in elements:
+        for elem in elements:            
             if not rhasattr(self, elem, "df"):
                 if elem == "edges":
                     cols = ["weight" in col for col in self._filtdata.columns]
@@ -903,16 +903,17 @@ class Analysis: #(_Edges)
                     data = pandas.DataFrame()
             else:
                 data = rgetattr(self, elem, "df")
-
-
-            pqs = lambda elem: [self._datapq(elem, metric) for metric in metrics]
+            
+            elem_dict = eval(f"{elem}_dict")
+            elem_metrics = [metric for metric in metrics if metric in elem_dict]
+            pqs = lambda elem: [self._datapq(elem, metric) for metric in elem_metrics]
             no_exist = lambda pqs: [not os.path.isfile(pq) for pq in pqs]
             # is_in_df = any([f"{metric}_avg" not in data.columns for metric in metrics])
             
             # if not is_in_df and 
             if any(no_exist(pqs(elem))): # or ow
-                for metric in (metric for metric in metrics if no_exist(pqs(elem))[pqs(elem).index(self._datapq(elem, metric))]):
-                    self._analyze(metric, elem, normalize, self._datapq(elem, metric))
+                for metric in (metric for metric in elem_metrics if no_exist(pqs(elem))[pqs(elem).index(self._datapq(elem, metric))]):
+                    self._analyze(metric, elem_dict[metric], elem, normalize, self._datapq(elem, metric))
 
 
             def wait_analyze(elem, data):
@@ -951,26 +952,30 @@ class Analysis: #(_Edges)
 
     
     
-    def _analyze(self, metric, elem, normalize, pq):
+    def _analyze(self, metric, metric_import, elem, normalize, pq):
         pool = utils.get_pool()
         cols = ["std" not in col for col in self._filtdata.columns]
         rawdata = self._filtdata.loc[:,cols]
-        nodes = {}   
+        nodes = {}
         
-        if callable(metric):
-            metricf = metric
-        else:        
-            if "cfb" in metric:
-                metricf = current_flow_betweenness_centrality
-            elif "btw" in metric:
-                metricf = betweenness_centrality
+        module, f = metric_import.rsplit(".", 1)
+        metricf = eval(f"{import_module('module')}.{f}"
+        
+        
+#         if callable(metric):
+#             metricf = metric
+#         else:        
+#             if "cfb" in metric:
+#                 metricf = current_flow_betweenness_centrality
+#             elif "btw" in metric:
+#                 metricf = betweenness_centrality
             
-            if elem == "edges":
-                metricf = eval(f"edge_{metricf.__name__}")
+#             if elem == "edges":
+#                 metricf = eval(f"edge_{metricf.__name__}")
             
-            if "subset" in metric:
-                metricf = eval(f"{metricf.__name__}_subset")
-                nodes = {"sources": self._pkg.protein.sources_subset, "targets": self._pkg.protein.targets_subset}  
+#             if "subset" in metric:
+#                 metricf = eval(f"{metricf.__name__}_subset")
+#                 nodes = {"sources": self._pkg.protein.sources_subset, "targets": self._pkg.protein.targets_subset}  
                 
                 
                 
