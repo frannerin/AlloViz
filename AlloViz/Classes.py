@@ -541,10 +541,6 @@ class Protein:
                               'cfb': 'networkx.algorithms.centrality.current_flow_betweenness_centrality'},
                 edges_dict = {'btw': 'networkx.algorithms.centrality.edge_betweenness_centrality',
                               'cfb': 'networkx.algorithms.centrality.edge_current_flow_betweenness_centrality'})
-        # from networkx.algorithms.centrality import edge_betweenness_centrality, edge_betweenness_centrality_subset
-        # from networkx.algorithms.centrality import edge_current_flow_betweenness_centrality, edge_current_flow_betweenness_centrality_subset
-        # from networkx.algorithms.centrality import betweenness_centrality, betweenness_centrality_subset
-        # from networkx.algorithms.centrality import current_flow_betweenness_centrality, current_flow_betweenness_centrality_subset
         r"""Analyze calculated edge weights with network analyses.
         
         Perform analyses of the raw edge weights for the selected packages/network
