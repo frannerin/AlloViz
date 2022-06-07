@@ -13,7 +13,7 @@ build-backend = 'setuptools.build_meta'
 name = "AlloViz"
 description = "A Python package to interactively computate, analyze and visualize protein allosteric communication (residue interaction) networks and delta-networks."
 authors = [{name = "Francho Nerín-Fonz", email = "francho.nerin01@estudiant.upf.edu"}]
-readme = "README.md"
+readme = "README.rst"
 #dynamic = ["version"]
 version = "1.0"
 
