@@ -1,7 +1,7 @@
 API
-===
+=======
 
-.. autosummary::
-   :toctree: generated
-
-   AlloViz
+.. automodule:: AlloViz
+   :members:
+   :undoc-members:
+   :show-inheritance:

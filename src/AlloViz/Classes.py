@@ -43,198 +43,6 @@ filterbyl = ["whole", "incontact", "intercontact"]
 
 
 
-
-
-class Delta:
-    def __init__(self, refstate, state2, **kwargs):
-        self.state1, self.state2 = refstate, state2
-        self._states = [self.state1, self.state2]
-        for state in self._states:
-            setattr(state, "_delta", self)
-            
-            # translate_ix = lambda ix: tuple(to_aln_pos[_] for _ in ix) if isinstance(ix, tuple) else to_aln_pos[ix]
-            
-            
-        self._aln = self._make_struct_aln(**kwargs)
-        
-        # nodes_subset = self._add_nodes_subset()
-        # self.sources_subset, self.targets_subset = nodes_subset.values()
-        
-        
-        delta = self.state1 - self.state2
-        self.__dict__.update(delta)
-    
-    
-    
-    # def get_delta(self):
-    #     delta = self.state1 - self.state2
-    #     setattr(self, "delta", delta)
-    #     setattr(self.delta, "pair", self)
-    #     return delta
-    
-    
-    
-    def _make_struct_aln(self, aln_method="TMalign_pair"):
-        # ****** Pairwise Structural Alignment Methods:
-        # --------------------------------------------
-        # align_pdbpair        built_in                                                   [pg:        t_coffee is  Installed][built_in]
-        # lalign_pdbpair       built_in                                                   [pg:        t_coffee is  Installed][built_in]
-        # extern_pdbpair       built_in                                                   [pg:        t_coffee is  Installed][built_in]
-        # thread_pair          built_in                                                   [pg:        t_coffee is  Installed][built_in]
-        # fugue_pair           http://mizuguchilab.org/fugue/                             [pg:        fugueali is NOT Installed][]
-        # pdb_pair             built_in                                                   [pg:        t_coffee is  Installed][built_in]
-        # sap_pair             https://mathbio.crick.ac.uk/wiki/Software#SAP              [pg:             sap is  Installed][/gpcr/users/frann/networks/tcoffee/bin/sap]
-        # sara_pair            built_in                                                   [pg:        t_coffee is  Installed][built_in]
-        # daliweb_pair         built_in                                                   [pg:     dalilite.pl is  Installed][built_in]
-        # dali_pair            built_in                                                   [pg:     dalilite.pl is  Installed][built_in]
-        # mustang_pair         http://lcb.infotech.monash.edu.au/mustang/                 [pg:         mustang is  Installed][/gpcr/users/frann/networks/tcoffee/bin/mustang]
-        # TMalign_pair         http://zhanglab.ccmb.med.umich.edu/TM-align/TMalign.f      [pg:         TMalign is  Installed][/gpcr/users/frann/networks/tcoffee/bin/TMalign]
-        
-        from subprocess import Popen, PIPE
-        from Bio.SeqUtils import seq1
-        from distutils.spawn import find_executable
-
-        path = find_executable('t_coffee').replace('/t_coffee', '')
-        env = {"HOME": path, "PATH": os.environ["PATH"] + f":{path}"}
-        tcoffee = Popen(f"t_coffee -pdb={self.state1._protpdb},{self.state2._protpdb} -method {aln_method} -outfile no -template_file no -output clustalw -align".split(" "),
-                        stdout=PIPE, stderr=PIPE, encoding="utf-8", env=env)
-        
-        stderr = tcoffee.stderr.read()
-        if "error" not in stderr.lower():
-            alignment = AlignIO.read(io.StringIO(tcoffee.stdout.read()), "clustal")
-        else:
-            print(stderr)
-            raise Exception("Structural alignment of the structures couldn't be performed.")
-        
-        for state, aln in zip(self._states, alignment):
-            aas = [f"{res.resname}:{res.resid}" for res in state.prot.residues]
-            aln_mapper = dict( (aas.pop(0), pos) for pos, res in enumerate(aln.seq) if res != "-" and res == seq1(aas[0].split(":")[0], custom_map = state._res_dict) )
-            aln_mapper.update( dict(map(reversed, aln_mapper.items())) )
-            setattr(state, "_aln_mapper", aln_mapper)
-        
-        return alignment
-        
-     
-    
-    
-#     def _add_nodes_subset(self):
-#         bfac = lambda atom: f"{atom.tempfactor:.2f}"
-#         is_wb = lambda atom: atom.name == "N" and -8.1 <= atom.tempfactor <= 8.1 and (bfac(atom) != "1.00" and bfac(atom) != "0.00")
-        
-        
-#         targets = [3.50, 6.30, 7.49, 7.50, 7.51, 7.52, 7.53]
-#         # In Ballesteros-Weinstein: Ionic lock 3.50 and 6.30; NPxxY 7.49-7.53
-    
-    
-#         def get_sources(states):
-#             resnum_to_wb = lambda nums, state: (bfac(atom)
-#                                                 for residue in nums
-#                                                 for atom in state.mdau.select_atoms(f"resnum {residue}")
-#                                                 if is_wb(atom))
-            
-#             has_lig = [state if ("LIG" in (seg.segid for seg in state.mdau.segments)) else False for state in self.states]
-#             if any(has_lig):
-#                 state = next(item for item in has_lig if item != False)
-#                 aas = state.mdau.select_atoms("(same residue as around 4 segid LIG) and protein").residues
-#                 return list(resnum_to_wb(aas.resnums, state))
-#             else:
-#                 return [3.32] # Conserved position
-      
-    
-#         nodes_subset = {"sources": [val for val in get_sources(self.states) if val not in targets],
-#                         "targets": list(map(lambda x: f"{x:.2f}", targets))}
-        
-        
-        
-#         format_res = lambda aa: f"A:{aa.resname}:{aa.resnum}"
-#         wb_to_aa = lambda wblist, state: list(map(format_res, (atom.residue
-#                                                                for residue in state.mdau.select_atoms("protein").residues
-#                                                                for atom in residue.atoms
-#                                                                if is_wb(atom) and bfac(atom) in wblist)))
-        
-#         for state in self.states:
-#             state.sources_subset, state.targets_subset = wb_to_aa(nodes_subset["sources"], state), wb_to_aa(nodes_subset["targets"], state) 
-        
-#         return nodes_subset    
-    
-    
-    
-    
-    
-#     def calculate(self, pkg="all", cores=1, **kwargs): # , ow=False, filterby="incontact"
-#         pkgs = pkgsl if pkg=="all" else pkg if isinstance(pkg, list) else [pkg]
-        
-#         if any(["COM" in pkg for pkg in pkgs]):
-#             for state in self.states: state._add_comtrajs()
-        
-#         if cores>1:
-#             mypool = Pool(cores)
-#             utils.pool = mypool
-#         print(utils.pool)
-        
-#         for state in self.states:
-#             for pkg in pkgs:
-#                 self._set_pkgclass(state, pkg, **kwargs)
-        
-#         if cores>1:
-#             mypool.close()
-#             mypool.join()
-#             utils.pool = utils.dummypool()
-
-    
-    
-    
-#     def analyze(self, pkg="all", metrics="all", filterby="incontact", element:list=["edges"], normalize=True): # ow
-#         pkgs = pkgsl if pkg=="all" else pkg if isinstance(pkg, list) else [pkg]
-#         metrics = metricsl if metrics=="all" else metrics if isinstance(metrics, list) else [metrics]
-#         filterbys = filterbyl if filterby=="all" else filterby if isinstance(filterby, list) else [filterby]
-        
-#         if cores>1:
-#             mypool = Pool(cores)
-#             utils.pool = mypool
-#         print(utils.pool)
-        
-#         for state in self.states:
-#             for filterby in filterbys:
-#                 for pkg in pkgs:
-#                     self._set_anaclass(state, pkg, metrics, filterby, element, normalize)
-        
-#         if cores>1:
-#             mypool.close()
-#             mypool.join()
-#             utils.pool = utils.dummypool()
-
-
-    
-    
-    def view(self, pkg, metric, normalize=True, filterby="incontact", num=20):
-        # norm = self.state1._get_norm_str(normalize)
-        # self.state1.pkg.filterby._norm
-        if not hasattr(self, "delta"): self.get_delta()
-        if not rhasattr(self.delta, capitalize(pkg), capitalize(filterby)): self.analyze(pkg, filterby=filterby, normalize=normalize)
-        return rgetattr(self.delta, capitalize(pkg), capitalize(filterby)).view(metric, num)
-
-    
-    
-    
-    def view(self, pkg, metric, filterby="incontact", element:list=["edges"], num=20, colors=["orange", "turquoise"]):
-        # norm = self._get_norm_str(normalize)
-        # if not rhasattr(self.data, filterby, norm, pkg):
-        #     self.analyze(pkg, normalize=normalize, filterby=filterby)
-        
-        get_element = lambda element: rgetattr(self, capitalize(pkg), capitalize(filterby), element.lower())
-        
-        nv = get_element(element[0]).view(metric, num, colors)
-        
-        if len(element) == 2:
-            nv = get_element(element[1]).view(metric, num, colors, nv)
-            
-        return nv
-    
-    
-    
-
-
 class _Store:
     pass
 
@@ -701,6 +509,195 @@ class Protein:
         return nv
 
 
+    
+    
+    
+class Delta:
+    def __init__(self, refstate, state2, **kwargs):
+        self.state1, self.state2 = refstate, state2
+        self._states = [self.state1, self.state2]
+        for state in self._states:
+            setattr(state, "_delta", self)
+            
+            # translate_ix = lambda ix: tuple(to_aln_pos[_] for _ in ix) if isinstance(ix, tuple) else to_aln_pos[ix]
+            
+            
+        self._aln = self._make_struct_aln(**kwargs)
+        
+        # nodes_subset = self._add_nodes_subset()
+        # self.sources_subset, self.targets_subset = nodes_subset.values()
+        
+        
+        delta = self.state1 - self.state2
+        self.__dict__.update(delta)
+    
+    
+    
+    # def get_delta(self):
+    #     delta = self.state1 - self.state2
+    #     setattr(self, "delta", delta)
+    #     setattr(self.delta, "pair", self)
+    #     return delta
+    
+    
+    
+    def _make_struct_aln(self, aln_method="TMalign_pair"):
+        # ****** Pairwise Structural Alignment Methods:
+        # --------------------------------------------
+        # align_pdbpair        built_in                                                   [pg:        t_coffee is  Installed][built_in]
+        # lalign_pdbpair       built_in                                                   [pg:        t_coffee is  Installed][built_in]
+        # extern_pdbpair       built_in                                                   [pg:        t_coffee is  Installed][built_in]
+        # thread_pair          built_in                                                   [pg:        t_coffee is  Installed][built_in]
+        # fugue_pair           http://mizuguchilab.org/fugue/                             [pg:        fugueali is NOT Installed][]
+        # pdb_pair             built_in                                                   [pg:        t_coffee is  Installed][built_in]
+        # sap_pair             https://mathbio.crick.ac.uk/wiki/Software#SAP              [pg:             sap is  Installed][/gpcr/users/frann/networks/tcoffee/bin/sap]
+        # sara_pair            built_in                                                   [pg:        t_coffee is  Installed][built_in]
+        # daliweb_pair         built_in                                                   [pg:     dalilite.pl is  Installed][built_in]
+        # dali_pair            built_in                                                   [pg:     dalilite.pl is  Installed][built_in]
+        # mustang_pair         http://lcb.infotech.monash.edu.au/mustang/                 [pg:         mustang is  Installed][/gpcr/users/frann/networks/tcoffee/bin/mustang]
+        # TMalign_pair         http://zhanglab.ccmb.med.umich.edu/TM-align/TMalign.f      [pg:         TMalign is  Installed][/gpcr/users/frann/networks/tcoffee/bin/TMalign]
+        
+        from subprocess import Popen, PIPE
+        from Bio.SeqUtils import seq1
+        from distutils.spawn import find_executable
+
+        path = find_executable('t_coffee').replace('/t_coffee', '')
+        env = {"HOME": path, "PATH": os.environ["PATH"] + f":{path}"}
+        tcoffee = Popen(f"t_coffee -pdb={self.state1._protpdb},{self.state2._protpdb} -method {aln_method} -outfile no -template_file no -output clustalw -align".split(" "),
+                        stdout=PIPE, stderr=PIPE, encoding="utf-8", env=env)
+        
+        stderr = tcoffee.stderr.read()
+        if "error" not in stderr.lower():
+            alignment = AlignIO.read(io.StringIO(tcoffee.stdout.read()), "clustal")
+        else:
+            print(stderr)
+            raise Exception("Structural alignment of the structures couldn't be performed.")
+        
+        for state, aln in zip(self._states, alignment):
+            aas = [f"{res.resname}:{res.resid}" for res in state.prot.residues]
+            aln_mapper = dict( (aas.pop(0), pos) for pos, res in enumerate(aln.seq) if res != "-" and res == seq1(aas[0].split(":")[0], custom_map = state._res_dict) )
+            aln_mapper.update( dict(map(reversed, aln_mapper.items())) )
+            setattr(state, "_aln_mapper", aln_mapper)
+        
+        return alignment
+        
+     
+    
+    
+#     def _add_nodes_subset(self):
+#         bfac = lambda atom: f"{atom.tempfactor:.2f}"
+#         is_wb = lambda atom: atom.name == "N" and -8.1 <= atom.tempfactor <= 8.1 and (bfac(atom) != "1.00" and bfac(atom) != "0.00")
+        
+        
+#         targets = [3.50, 6.30, 7.49, 7.50, 7.51, 7.52, 7.53]
+#         # In Ballesteros-Weinstein: Ionic lock 3.50 and 6.30; NPxxY 7.49-7.53
+    
+    
+#         def get_sources(states):
+#             resnum_to_wb = lambda nums, state: (bfac(atom)
+#                                                 for residue in nums
+#                                                 for atom in state.mdau.select_atoms(f"resnum {residue}")
+#                                                 if is_wb(atom))
+            
+#             has_lig = [state if ("LIG" in (seg.segid for seg in state.mdau.segments)) else False for state in self.states]
+#             if any(has_lig):
+#                 state = next(item for item in has_lig if item != False)
+#                 aas = state.mdau.select_atoms("(same residue as around 4 segid LIG) and protein").residues
+#                 return list(resnum_to_wb(aas.resnums, state))
+#             else:
+#                 return [3.32] # Conserved position
+      
+    
+#         nodes_subset = {"sources": [val for val in get_sources(self.states) if val not in targets],
+#                         "targets": list(map(lambda x: f"{x:.2f}", targets))}
+        
+        
+        
+#         format_res = lambda aa: f"A:{aa.resname}:{aa.resnum}"
+#         wb_to_aa = lambda wblist, state: list(map(format_res, (atom.residue
+#                                                                for residue in state.mdau.select_atoms("protein").residues
+#                                                                for atom in residue.atoms
+#                                                                if is_wb(atom) and bfac(atom) in wblist)))
+        
+#         for state in self.states:
+#             state.sources_subset, state.targets_subset = wb_to_aa(nodes_subset["sources"], state), wb_to_aa(nodes_subset["targets"], state) 
+        
+#         return nodes_subset    
+    
+    
+    
+    
+    
+#     def calculate(self, pkg="all", cores=1, **kwargs): # , ow=False, filterby="incontact"
+#         pkgs = pkgsl if pkg=="all" else pkg if isinstance(pkg, list) else [pkg]
+        
+#         if any(["COM" in pkg for pkg in pkgs]):
+#             for state in self.states: state._add_comtrajs()
+        
+#         if cores>1:
+#             mypool = Pool(cores)
+#             utils.pool = mypool
+#         print(utils.pool)
+        
+#         for state in self.states:
+#             for pkg in pkgs:
+#                 self._set_pkgclass(state, pkg, **kwargs)
+        
+#         if cores>1:
+#             mypool.close()
+#             mypool.join()
+#             utils.pool = utils.dummypool()
+
+    
+    
+    
+#     def analyze(self, pkg="all", metrics="all", filterby="incontact", element:list=["edges"], normalize=True): # ow
+#         pkgs = pkgsl if pkg=="all" else pkg if isinstance(pkg, list) else [pkg]
+#         metrics = metricsl if metrics=="all" else metrics if isinstance(metrics, list) else [metrics]
+#         filterbys = filterbyl if filterby=="all" else filterby if isinstance(filterby, list) else [filterby]
+        
+#         if cores>1:
+#             mypool = Pool(cores)
+#             utils.pool = mypool
+#         print(utils.pool)
+        
+#         for state in self.states:
+#             for filterby in filterbys:
+#                 for pkg in pkgs:
+#                     self._set_anaclass(state, pkg, metrics, filterby, element, normalize)
+        
+#         if cores>1:
+#             mypool.close()
+#             mypool.join()
+#             utils.pool = utils.dummypool()
+
+
+    
+    
+    def view(self, pkg, metric, normalize=True, filterby="incontact", num=20):
+        # norm = self.state1._get_norm_str(normalize)
+        # self.state1.pkg.filterby._norm
+        if not hasattr(self, "delta"): self.get_delta()
+        if not rhasattr(self.delta, capitalize(pkg), capitalize(filterby)): self.analyze(pkg, filterby=filterby, normalize=normalize)
+        return rgetattr(self.delta, capitalize(pkg), capitalize(filterby)).view(metric, num)
+
+    
+    
+    
+    def view(self, pkg, metric, filterby="incontact", element:list=["edges"], num=20, colors=["orange", "turquoise"]):
+        # norm = self._get_norm_str(normalize)
+        # if not rhasattr(self.data, filterby, norm, pkg):
+        #     self.analyze(pkg, normalize=normalize, filterby=filterby)
+        
+        get_element = lambda element: rgetattr(self, capitalize(pkg), capitalize(filterby), element.lower())
+        
+        nv = get_element(element[0]).view(metric, num, colors)
+        
+        if len(element) == 2:
+            nv = get_element(element[1]).view(metric, num, colors, nv)
+            
+        return nv
+    
 
 
 
