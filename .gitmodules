@@ -1,3 +1,27 @@
 [submodule "src/Packages/correlationplus"]
 	path = src/Packages/correlationplus
 	url = https://github.com/frannerin/correlationplus
+[submodule "src/Packages/NPEET_LNC"]
+	path = src/Packages/NPEET_LNC
+	url = https://github.com/frannerin/NPEET_LNC
+[submodule "src/Packages/MD-TASK"]
+	path = src/Packages/MD-TASK
+	url = https://github.com/frannerin/MD-TASK
+[submodule "src/Packages/dynetan"]
+	path = src/Packages/dynetan
+	url = https://github.com/frannerin/dynetan
+[submodule "src/Packages/getcontacts"]
+	path = src/Packages/getcontacts
+	url = https://github.com/frannerin/getcontacts
+[submodule "src/Packages/mdentropy"]
+	path = src/Packages/mdentropy
+	url = https://github.com/frannerin/mdentropy
+[submodule "src/Packages/msmbuilder"]
+	path = src/Packages/msmbuilder
+	url = https://github.com/frannerin/msmbuilder
+[submodule "src/Packages/pyinteraph2"]
+	path = src/Packages/pyinteraph2
+	url = https://github.com/frannerin/pyinteraph2
+[submodule "src/Packages/gRINN_Bitbucket"]
+	path = src/Packages/gRINN_Bitbucket
+	url = https://frannerin@bitbucket.org/fnerin/grinn_bitbucket.git
