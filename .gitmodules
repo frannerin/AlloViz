@@ -26,3 +26,11 @@
 	shallow = True
 	path = src/Packages/gRINN_Bitbucket
 	url = https://bitbucket.org/fnerin/grinn_bitbucket.git
+[submodule "src/Packages/mdentropy"]
+	shallow = True
+	path = src/Packages/mdentropy
+	url = https://github.com/msmbuilder/mdentropy
+[submodule "src/Packages/NPEET_LNC"]
+	shallow = True
+	path = src/Packages/NPEET_LNC
+	url = https://github.com/ViktorvdValk/NPEET_LNC
