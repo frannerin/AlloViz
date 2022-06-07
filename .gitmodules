@@ -1,36 +1,3 @@
-[submodule "src/Packages/getcontacts"]
-	path = src/src/Packages/getcontacts
-	url = https://github.com/frannerin/getcontacts.git
-	shallow = true
-[submodule "src/Packages/dynetan"]
-	path = src/Packages/dynetan
-	url = https://github.com/frannerin/dynetan
-	shallow = true
-[submodule "src/Packages/MD-TASK"]
-	path = src/Packages/MD-TASK
-	url = https://github.com/frannerin/MD-TASK
-	shallow = true
-[submodule "src/Packages/pyinteraph2"]
-	path = src/Packages/pyinteraph2
-	url = https://github.com/frannerin/pyinteraph2
-	shallow = true
-[submodule "src/Packages/gRINN_Bitbucket"]
-	path = src/Packages/gRINN_Bitbucket
-	url = https://bitbucket.org/fnerin/grinn_bitbucket.git
-	shallow = true
 [submodule "src/Packages/correlationplus"]
 	path = src/Packages/correlationplus
 	url = https://github.com/frannerin/correlationplus
-	shallow = true
-[submodule "src/Packages/NPEET_LNC"]
-	path = src/Packages/NPEET_LNC
-	url = https://github.com/ViktorvdValk/NPEET_LNC
-	shallow = true
-[submodule "src/Packages/mdentropy"]
-	path = src/Packages/mdentropy
-	url = https://github.com/msmbuilder/mdentropy
-	shallow = true
-[submodule "src/Packages/msmbuilder"]
-	path = src/Packages/msmbuilder
-	url = https://github.com/frannerin/msmbuilder
-	shallow = true

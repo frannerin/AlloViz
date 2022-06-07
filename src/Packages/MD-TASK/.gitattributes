@@ -1,3 +1,0 @@
-# enforce correct line endings for shell and batch files.
-* text eol=lf
-*.bat text eol=crlf

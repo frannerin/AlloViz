@@ -1,5 +1,0 @@
-include README.rst
-include INSTALL.rst
-include LICENSE
-include MANIFEST.in
-include dynetan/vizmod/*

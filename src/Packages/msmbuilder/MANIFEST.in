@@ -1,4 +1,0 @@
-graft examples
-graft msmbuilder
-include basesetup.py
-include LICENSE
