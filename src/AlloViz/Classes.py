@@ -98,7 +98,7 @@ class Protein:
         different to what is expected causing errors.
     
     Attributes
-    ------
+    ----------
     pdb
     trajs
     path
@@ -120,36 +120,35 @@ class Protein:
     --------
     AlloViz.Delta : Class for calculation of the delta-network(s) between two Protein
                     objects.
-    ..
-        Notes
-        -----
-        Notes about the implementation algorithm (if needed).
-
-        This can have multiple paragraphs.
-
-        You may include some math:
-
-        .. math:: X(e^{j\omega } ) = x(n)e^{ - j\omega n}
-
-        And even use a Greek symbol like :math:`\omega` inline.
-
-        References
-        ----------
-        Cite the relevant literature, e.g. [1]_.  You may also cite these
-        references in the notes section above.
-
-        .. [1] O. McNoleg, "The integration of GIS, remote sensing,
-           expert systems and adaptive co-kriging for environmental habitat
-           modelling of the Highland Haggis using object-oriented, fuzzy-logic
-           and neural-network techniques," Computers & Geosciences, vol. 22,
-           pp. 585-588, 1996.
 
     Example
-    --------
+    -------
     >>> opioidGPCR = AlloViz.Protein(GPCR=169)
     >>> print(opioidGPCR.mdau)
     <Universe with 88651 atoms>
     """
+#     Notes
+#     -----
+#     Notes about the implementation algorithm (if needed).
+
+#     This can have multiple paragraphs.
+
+#     You may include some math:
+
+#     .. math:: X(e^{j\omega } ) = x(n)e^{ - j\omega n}
+
+#     And even use a Greek symbol like :math:`\omega` inline.
+
+#     References
+#     ----------
+#     Cite the relevant literature, e.g. [1]_.  You may also cite these
+#     references in the notes section above.
+
+#     .. [1] O. McNoleg, "The integration of GIS, remote sensing,
+#        expert systems and adaptive co-kriging for environmental habitat
+#        modelling of the Highland Haggis using object-oriented, fuzzy-logic
+#        and neural-network techniques," Computers & Geosciences, vol. 22,
+#        pp. 585-588, 1996.
     
     def __init__(self, pdb="", trajs=[], GPCR=False, name=None, path="", protein_sel="same segid as protein", psf=None, parameters=None, **kwargs):
         self.GPCR = GPCR
@@ -264,11 +263,6 @@ class Protein:
             keyword argument can be passed to point to the namd2 executable location; if
             the `namd` command is accessible through the CLI it is automatically
             retrieved with the `distutils` package.
-        ..
-            Raises
-            ------
-            BadException
-                Because you shouldn't have done that.
 
         See Also
         --------
@@ -284,18 +278,6 @@ class Protein:
         methods. If the object is created providing more than one trajectory file,
         the average and standard error of the weights between the replicas are also
         calculated.
-        
-        ..
-            References
-            ----------
-            Cite the relevant literature, e.g. [1]_.  You may also cite these
-            references in the notes section above.
-
-            .. [1] O. McNoleg, "The integration of GIS, remote sensing,
-               expert systems and adaptive co-kriging for environmental habitat
-               modelling of the Highland Haggis using object-oriented, fuzzy-logic
-               and neural-network techniques," Computers & Geosciences, vol. 22,
-               pp. 585-588, 1996.
 
         Examples
         --------        
@@ -416,23 +398,13 @@ class Protein:
         analyses are performed both on the replicas' weights and the average, and an
         average and standard error of the replicas' analysis results are also calculated.
         
+        Notes
+        -----
         "Incontact" filtering only retains edges of residue pairs in contact -those for
         which getcontacts is able to compute contact frequencies-, and "Intercontact"
         only keeps edges of pairs that are both in contact and apart in the sequence (more
         than 5 positions away in the sequence).
         
-        ..
-            References
-            ----------
-            Cite the relevant literature, e.g. [1]_.  You may also cite these
-            references in the notes section above.
-
-            .. [1] O. McNoleg, "The integration of GIS, remote sensing,
-               expert systems and adaptive co-kriging for environmental habitat
-               modelling of the Highland Haggis using object-oriented, fuzzy-logic
-               and neural-network techniques," Computers & Geosciences, vol. 22,
-               pp. 585-588, 1996.
-
         Examples
         --------
         >>> opioidGPCR = AlloViz.Protein(GPCR=169)
