@@ -121,8 +121,8 @@ class Protein:
     AlloViz.Delta : Class for calculation of the delta-network(s) between two Protein
                     objects.
 
-    Example
-    -------
+    Examples
+    --------
     >>> opioidGPCR = AlloViz.Protein(GPCR=169)
     >>> print(opioidGPCR.mdau)
     <Universe with 88651 atoms>

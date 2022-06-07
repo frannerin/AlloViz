@@ -34,6 +34,7 @@ extensions = [
     #'sphinx.ext.autodoc',
     'sphinx.ext.viewcode',
     #'sphinx.ext.napoleon',
+    #'sphinx.ext.napoleon',
     'numpydoc',
     'sphinx.ext.autosectionlabel',
 ]
@@ -43,6 +44,7 @@ autosectionlabel_prefix_document = True
 
 # autodoc
 autodoc_member_order = "bysource"
+numpydoc_show_class_members = False
 
 # Napoleon settings
 napoleon_google_docstring = False
