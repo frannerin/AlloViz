@@ -9,7 +9,7 @@ Welcome to AlloViz's documentation!
 
 **AlloViz** is a Python package to interactively compute, analyze and visualize protein allosteric communication (residue interaction) networks and delta-networks.
 
-Check out :doc:`README` description for further information, including how to :ref:`README:Install` the project.
+Check out :doc:`README` description for further information, including how to :ref:`install <README:Install>` the project.
 
 .. note::
 

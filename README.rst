@@ -109,60 +109,63 @@ Available information sources for network generation
    https://github.com/msmbuilder/msmbuilder/blob/515fd5c27836c797692d600216b5eb224dfc1c5d/msmbuilder/featurizer/featurizer.py#L802
     -->
 
-+-------------------+-----------------+------------------+-------------------------+---------------------------+
-| Residue           | Package         | Correlation      | Subset of atoms         | Name in AlloViz           |
-| information       |                 | measurement      | tracked                 |                           |
-| extracted from    |                 |                  |                         |                           |
-| trajectories      |                 |                  |                         |                           |
-+===================+=================+==================+=========================+===========================+
-| Movement          | dynetan         | Mutual           | Whole residue           | Dynetan                   |
-| correlation       |                 | Information (MI) +-------------------------+---------------------------+
-|                   |                 |                  | Residue COM             | DynetanCOM                |
-|                   +-----------------+------------------+-------------------------+---------------------------+
-|                   | pytraj          | Pearson's        | alpha-C                 | PytrajCA                  |
-|                   |                 |                  +-------------------------+---------------------------+
-|                   |                 |                  | beta-C                  | PytrajCB                  |
-|                   +-----------------+------------------+-------------------------+---------------------------+
-|                   | MD-TASK         | Pearson's        | alpha-C                 | MDTASK                    |
-|                   +-----------------+------------------+-------------------------+---------------------------+
-|                   | correlationplus | Pearson's        | alpha-C                 | Corrplus                  |
-|                   |                 |                  +-------------------------+---------------------------+
-|                   |                 |                  | Residue COM             | CorrplusCOM               |
-|                   |                 +------------------+-------------------------+---------------------------+
-|                   |                 | LMI              | alpha-C                 | CorrplusLMI               |
-|                   |                 |                  +-------------------------+---------------------------+
-|                   |                 |                  | Residue COM             | CorrplusCOMLMI            |
-+-------------------+                 +------------------+-------------------------+---------------------------+
-| Dihedral          |                 | Pearson's        | Individual backbone     | CorrplusDihs              |
-| correlation       |                 |                  | dihedrals (Phi, psi     | (Corrplus[Psi, Phi,       |
-|                   |                 |                  | and omega) and their    | Omega])                   |
-|                   |                 |                  | combination             |                           |
-|                   +-----------------+------------------+-------------------------+---------------------------+
-|                   | AlloViz         | MI               | Individual backbone     | AlloVizDihs               |
-|                   |                 |                  | dihedrals (Phi, psi     | (AlloViz[Psi, Phi,        |
-|                   |                 |                  | and omega) and their    | Omega])                   |
-|                   |                 |                  | combination             |                           |
-|                   +-----------------+------------------+-------------------------+---------------------------+
-|                   | MDEntropy       | MI               | Combination of the      | MDEntropyDihs             |
-|                   |                 |                  | backbone dihedrals      |                           |
-|                   |                 |                  | (Phi, psi and omega)    |                           |
-|                   |                 |                  +-------------------------+---------------------------+
-|                   |                 |                  | Alpha angle (dihedral   | MDEntropyAlphaAngle       |
-|                   |                 |                  | between i-1, i, i+1 and |                           |
-|                   |                 |                  | i+2's alpha-Cs)         |                           |
-+-------------------+                 |                  +-------------------------+---------------------------+
-| Contact frequency |                 |                  | Whole residue           | MDEntropyContacts         |
-|                   +-----------------+------------------+-------------------------+---------------------------+
-|                   | getcontacts     | \-               | Whole residue           | Getcontacts               |
-|                   +-----------------+------------------+-------------------------+---------------------------+
-|                   | PyInteraph2     | \-               | Whole residue           | PyInteraph                |
-+-------------------+                 |                  +-------------------------+---------------------------+
-| Interaction       |                 |                  | Whole residue           | PyInteraphEne             |
-| energies          +-----------------+------------------+-------------------------+---------------------------+
-|                   | gRINN           | \-               | Whole residue           | GRINN                     |
-|                   |                 +------------------+-------------------------+---------------------------+
-|                   |                 | Pearson's        | Whole residue           | GRINNcorr                 |
-+-------------------+-----------------+------------------+-------------------------+---------------------------+
+.. table:: This is my table
+	:widths: 20 15 20 20 25
+
+	+-------------------+-----------------+------------------+-------------------------+---------------------------+
+	| Residue           | Package         | Correlation      | Subset of atoms         | Name in AlloViz           |
+	| information       |                 | measurement      | tracked                 |                           |
+	| extracted from    |                 |                  |                         |                           |
+	| trajectories      |                 |                  |                         |                           |
+	+===================+=================+==================+=========================+===========================+
+	| Movement          | dynetan         | Mutual           | Whole residue           | Dynetan                   |
+	| correlation       |                 | Information (MI) +-------------------------+---------------------------+
+	|                   |                 |                  | Residue COM             | DynetanCOM                |
+	|                   +-----------------+------------------+-------------------------+---------------------------+
+	|                   | pytraj          | Pearson's        | alpha-C                 | PytrajCA                  |
+	|                   |                 |                  +-------------------------+---------------------------+
+	|                   |                 |                  | beta-C                  | PytrajCB                  |
+	|                   +-----------------+------------------+-------------------------+---------------------------+
+	|                   | MD-TASK         | Pearson's        | alpha-C                 | MDTASK                    |
+	|                   +-----------------+------------------+-------------------------+---------------------------+
+	|                   | correlationplus | Pearson's        | alpha-C                 | Corrplus                  |
+	|                   |                 |                  +-------------------------+---------------------------+
+	|                   |                 |                  | Residue COM             | CorrplusCOM               |
+	|                   |                 +------------------+-------------------------+---------------------------+
+	|                   |                 | LMI              | alpha-C                 | CorrplusLMI               |
+	|                   |                 |                  +-------------------------+---------------------------+
+	|                   |                 |                  | Residue COM             | CorrplusCOMLMI            |
+	+-------------------+                 +------------------+-------------------------+---------------------------+
+	| Dihedral          |                 | Pearson's        | Individual backbone     | CorrplusDihs              |
+	| correlation       |                 |                  | dihedrals (Phi, psi     | (Corrplus[Psi, Phi,       |
+	|                   |                 |                  | and omega) and their    | Omega])                   |
+	|                   |                 |                  | combination             |                           |
+	|                   +-----------------+------------------+-------------------------+---------------------------+
+	|                   | AlloViz         | MI               | Individual backbone     | AlloVizDihs               |
+	|                   |                 |                  | dihedrals (Phi, psi     | (AlloViz[Psi, Phi,        |
+	|                   |                 |                  | and omega) and their    | Omega])                   |
+	|                   |                 |                  | combination             |                           |
+	|                   +-----------------+------------------+-------------------------+---------------------------+
+	|                   | MDEntropy       | MI               | Combination of the      | MDEntropyDihs             |
+	|                   |                 |                  | backbone dihedrals      |                           |
+	|                   |                 |                  | (Phi, psi and omega)    |                           |
+	|                   |                 |                  +-------------------------+---------------------------+
+	|                   |                 |                  | Alpha angle (dihedral   | MDEntropyAlphaAngle       |
+	|                   |                 |                  | between i-1, i, i+1 and |                           |
+	|                   |                 |                  | i+2's alpha-Cs)         |                           |
+	+-------------------+                 |                  +-------------------------+---------------------------+
+	| Contact frequency |                 |                  | Whole residue           | MDEntropyContacts         |
+	|                   +-----------------+------------------+-------------------------+---------------------------+
+	|                   | getcontacts     | \-               | Whole residue           | Getcontacts               |
+	|                   +-----------------+------------------+-------------------------+---------------------------+
+	|                   | PyInteraph2     | \-               | Whole residue           | PyInteraph                |
+	+-------------------+                 |                  +-------------------------+---------------------------+
+	| Interaction       |                 |                  | Whole residue           | PyInteraphEne             |
+	| energies          +-----------------+------------------+-------------------------+---------------------------+
+	|                   | gRINN           | \-               | Whole residue           | GRINN                     |
+	|                   |                 +------------------+-------------------------+---------------------------+
+	|                   |                 | Pearson's        | Whole residue           | GRINNcorr                 |
+	+-------------------+-----------------+------------------+-------------------------+---------------------------+
 
 Cite
 -------
