@@ -398,8 +398,6 @@ class Protein:
         analyses are performed both on the replicas' weights and the average, and an
         average and standard error of the replicas' analysis results are also calculated.
         
-        Notes
-        -----
         "Incontact" filtering only retains edges of residue pairs in contact -those for
         which getcontacts is able to compute contact frequencies-, and "Intercontact"
         only keeps edges of pairs that are both in contact and apart in the sequence (more

@@ -164,10 +164,8 @@ Available information sources for network generation
 |                   |                 | Pearson's        | Whole residue           | GRINNcorr                 |
 +-------------------+-----------------+------------------+-------------------------+---------------------------+
 
-## Cite
+Cite
 -------
 
-Licensing
+License
 ---------
-
-:upside_down_face:
