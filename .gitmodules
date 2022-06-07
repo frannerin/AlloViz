@@ -1,36 +1,36 @@
-[submodule "Packages/getcontacts"]
-	path = Packages/getcontacts
+[submodule "src/Packages/getcontacts"]
+	path = src/src/Packages/getcontacts
 	url = https://github.com/frannerin/getcontacts.git
 	shallow = true
-[submodule "Packages/dynetan"]
-	path = Packages/dynetan
+[submodule "src/Packages/dynetan"]
+	path = src/Packages/dynetan
 	url = https://github.com/frannerin/dynetan
 	shallow = true
-[submodule "Packages/MD-TASK"]
-	path = Packages/MD-TASK
+[submodule "src/Packages/MD-TASK"]
+	path = src/Packages/MD-TASK
 	url = https://github.com/frannerin/MD-TASK
 	shallow = true
-[submodule "Packages/pyinteraph2"]
-	path = Packages/pyinteraph2
+[submodule "src/Packages/pyinteraph2"]
+	path = src/Packages/pyinteraph2
 	url = https://github.com/frannerin/pyinteraph2
 	shallow = true
-[submodule "Packages/gRINN_Bitbucket"]
-	path = Packages/gRINN_Bitbucket
+[submodule "src/Packages/gRINN_Bitbucket"]
+	path = src/Packages/gRINN_Bitbucket
 	url = https://bitbucket.org/fnerin/grinn_bitbucket.git
 	shallow = true
-[submodule "Packages/correlationplus"]
-	path = Packages/correlationplus
+[submodule "src/Packages/correlationplus"]
+	path = src/Packages/correlationplus
 	url = https://github.com/frannerin/correlationplus
 	shallow = true
-[submodule "Packages/NPEET_LNC"]
-	path = Packages/NPEET_LNC
+[submodule "src/Packages/NPEET_LNC"]
+	path = src/Packages/NPEET_LNC
 	url = https://github.com/ViktorvdValk/NPEET_LNC
 	shallow = true
-[submodule "Packages/mdentropy"]
-	path = Packages/mdentropy
+[submodule "src/Packages/mdentropy"]
+	path = src/Packages/mdentropy
 	url = https://github.com/msmbuilder/mdentropy
 	shallow = true
-[submodule "Packages/msmbuilder"]
-	path = Packages/msmbuilder
+[submodule "src/Packages/msmbuilder"]
+	path = src/Packages/msmbuilder
 	url = https://github.com/frannerin/msmbuilder
 	shallow = true
