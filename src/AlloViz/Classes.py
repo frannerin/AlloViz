@@ -535,10 +535,20 @@ class Delta:
         env = {"HOME": path, "PATH": os.environ["PATH"] + f":{path}"}
         tcoffee = Popen(f"t_coffee -pdb={self.state1._protpdb},{self.state2._protpdb} -method {aln_method} -outfile no -template_file no -output clustalw -align".split(" "),
                         stdout=PIPE, stderr=PIPE, encoding="utf-8", env=env)
+        # tmalign = Popen(f"TMalign {self.state1._protpdb} {self.state2._protpdb}".split(" "),# -method {aln_method} -outfile no -template_file no -output clustalw -align".split(" "),
+        #                 stdout=PIPE, stderr=PIPE, encoding="utf-8")#, env=env)
         
         stderr = tcoffee.stderr.read()
+        # stderr = tmalign.stderr.read()
         if "error" not in stderr.lower():
             alignment = AlignIO.read(io.StringIO(tcoffee.stdout.read()), "clustal")
+#             aln = tmalign.stdout.readlines()[-4:]
+#             fasta = f""">{self.state1._protpdb}
+# {aln[0].strip()}
+# >{self.state2._protpdb}
+# {aln[2].strip()}
+# """
+#             alignment = AlignIO.read(io.StringIO(fasta), "fasta")
         else:
             print(stderr)
             raise Exception("Structural alignment of the structures couldn't be performed.")
@@ -926,7 +936,7 @@ class Analysis: #(_Edges)
         nodes = {}
         
         module, f = metric_import.rsplit(".", 1)
-        metricf = eval(f"{import_module('module')}.{f}")
+        metricf = eval(f"import_module('{module}').{f}")
         
         
 #         if callable(metric):
@@ -984,6 +994,7 @@ class Analysis: #(_Edges)
         try:
             analyzed = metricf(network, normalized=normalize, weight="weight", **nodes)
             # print(column.name, pandas.Series(analyzed).max())
+        # from scipy.linalg import LinAlgError
         except: # LinAlgError
             print("Singular matrix!", self._pkg._name, self._name, elem, metricf.__name__)
             analyzed = {k: 0 for k in eval(f"network.{elem.lower()}")}#{tuple(sorted(k, key = lambda x: int(x.split(":")[-1]))): 0 for k in network.edges()}

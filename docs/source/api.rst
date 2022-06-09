@@ -1,5 +1,5 @@
 API
-=======
+===
 
 .. automodule:: AlloViz
    :imported-members:

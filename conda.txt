@@ -16,11 +16,13 @@ pandas>=1.3.5 # pyinteraph might need 1.4
 pyarrow>=6.0
 
 networkx>=2.6
+scipy>=1.8 # networkx needs coo_array in >1.8
 
 #pybind11 #probably for tmtools
 # redo # for opencadd git installation
 t-coffee>=13.45 # FROM BIOCONDA for structural alignment
-
+#tmalign
+#compilers
 
 # for downloading files
 beautifulsoup4>=4.0
@@ -31,11 +33,8 @@ requests>=2.0
 
 # jupyter and viz
 nglview>=3.0
-notebook # might be faster than installing the more complex jupyterlab
-#jupyterlab
-#jupyter-lsp
-#jupyterlab-lsp
-#python-lsp-server
+#notebook # might be faster than installing the more complex jupyterlab
+
 
 
 

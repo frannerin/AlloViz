@@ -163,7 +163,7 @@ class Matrixoutput(Pkg):
         elif len(resl) == 0:
             resl = slice(0, corr.shape[0])
             
-        resnames = [f"{aa.resname}:{aa.resid}" for aa in self._d["mdau"].select_atoms(self._selection).residues[resl]]
+        resnames = [f"{aa.resname}:{aa.resid}" for aa in self._d["u"].select_atoms(self._selection).residues[resl]]
         
         df = pandas.DataFrame(corr, columns=resnames, index=resnames)
         df = df.where( np.triu(np.ones(df.shape), k=1).astype(bool) )
@@ -383,7 +383,7 @@ class AlloVizPsi(Matrixoutput, Multicorepkg):
             
     
     def _computation(self, xtc):#pdb, traj, xtc, pq):
-        prot = self._d["mdau"].select_atoms(self._d["_protein_sel"])
+        prot = self._d["u"].select_atoms(self._d["_protein_sel"])
         selected_res = self._d["_dihedral_residx"]()
         
         select_dih = lambda res: eval(f"res.{self._dih.lower()}_selection()")
@@ -391,12 +391,12 @@ class AlloVizPsi(Matrixoutput, Multicorepkg):
 
         offset = 0
         
-        if hasattr(self._d["mdau"].trajectory, "readers"):
-            get_frames = lambda numreader: self._d["mdau"].trajectory.readers[numreader].n_frames
+        if hasattr(self._d["u"].trajectory, "readers"):
+            get_frames = lambda numreader: self._d["u"].trajectory.readers[numreader].n_frames
             for numreader in range(xtc-1):
                 offset += get_frames(numreader)
         else:
-            get_frames = lambda _: self._d["mdau"].trajectory.n_frames
+            get_frames = lambda _: self._d["u"].trajectory.n_frames
 
         values = _mda_dihedrals.Dihedral(selected).run(start=offset, stop=offset+get_frames(xtc-1)).results.angles.transpose()
         
@@ -416,6 +416,16 @@ class AlloVizPsi(Matrixoutput, Multicorepkg):
         out_data = Queue()
         
         
+        iterator = set(range(len(selected_res)))
+        for res1 in iterator:
+            others = []
+            for res2 in iterator - set(range(res1)) - {res1}:
+                others.append(res2)
+                
+            if len(others) > 0: 
+                in_data.put((res1, others))
+        
+        
         def calculate_row(values, nres, in_data, out_data):
              while not in_data.empty():
                 res, others = in_data.get()
@@ -425,15 +435,7 @@ class AlloVizPsi(Matrixoutput, Multicorepkg):
                     row[other] = _npeet_lnc.MI.mi_LNC([values[res], values[other]])
                 
                 out_data.put((res, row))
-        
-        
-        iterator = set(range(len(selected_res)))
-        for res1 in iterator:
-            others = []
-            for res2 in iterator - set(range(res1)) - {res1}:
-                others.append(res2)
-            if len(others) > 0: in_data.put((res1, others))
-        
+                
         
         ps = []
         for _ in range(self.taskcpus):
@@ -441,11 +443,11 @@ class AlloVizPsi(Matrixoutput, Multicorepkg):
                         args=(values, len(selected_res), in_data, out_data)) 
             p.start()
             ps.append(p)
-
-        for _ in range(len(selected_res)):
+        
+        for _ in range(len(selected_res)-1):
             res, row = out_data.get()
             corr[res, :] = row
-            
+        
         for p in ps:
             p.join()
             
@@ -617,7 +619,7 @@ class PyInteraph(PyInteraphBase):
     def __new__(cls, protein, d):
         new = super().__new__(cls, protein, d)
         
-        reslist = set(new._d["mdau"].select_atoms(d["_protein_sel"]).residues.resnames)
+        reslist = set(new._d["u"].select_atoms(d["_protein_sel"]).residues.resnames)
         new._CLIargs = f"-m --cmpsn-graph dummy"# --cmpsn-residues {','.join(reslist)}"
         
         new._bonded_cys_indices = new.protein._get_bonded_cys(new._d["_pdbf"])
@@ -672,7 +674,7 @@ g_correlation -f {self._trajs[xtc]} -s {self._pdbf} -o {pq}.dat {self._CLIargs} 
 EOF
 """)
         # Read output.dat
-        size = self._d["mdau"].select_atoms(f"({self._d['_protein_sel']}) and name CA").n_atoms
+        size = self._d["u"].select_atoms(f"({self._d['_protein_sel']}) and name CA").n_atoms
         corr = np.empty([size, size])
         rown = 0
         row = []

@@ -73,6 +73,10 @@ installed with conda.
 Then go to the package folder (``cd AlloViz``) and install the package,
 preferably with ``pip install .``.
 
+.. note::
+
+   If environment creation with `conda_explicit.txt` fails, the non-explicit requirements/dependencies file `conda.txt` can be used, providing the conda channels `conda-forge` and `bioconda` (`-c conda-forge -c bioconda`).
+
 Quickstart
 ----------
 

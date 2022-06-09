@@ -12,7 +12,7 @@ if not on_rtd:
   # from .Packages.mdentropy.basesetup import write_version_py
   sys.path.append(".")
   from src.Packages.mdentropy.basesetup import write_version_py
-  sys.path.append("./Packages/mdentropy")
+  sys.path.append("./src/Packages/mdentropy")
   from src.Packages.mdentropy.setup import VERSION, ISRELEASED
   write_version_py(VERSION, ISRELEASED, 'src/Packages/mdentropy/mdentropy/version.py')
 
