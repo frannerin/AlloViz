@@ -2,7 +2,6 @@ import sys, os, re, io, requests
 
 import MDAnalysis as mda
 import numpy as np
-from lazyasd import LazyObject
 
 from . import utils
 

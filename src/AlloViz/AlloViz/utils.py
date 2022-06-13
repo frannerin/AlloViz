@@ -1,3 +1,16 @@
+pkgsl = ["MDTASK", "Getcontacts", "PyInteraph", "PyInteraphEne", "Dynetan", "DynetanCOM", "PytrajCA", "PytrajCB",
+         "Corrplus", "CorrplusLMI", "CorrplusCOM", "CorrplusCOMLMI", "CorrplusPsi", "CorrplusPhi", "CorrplusOmega", "CorrplusDihs",
+        "gRINN", "gRINNcorr", "G_corrCAMI", "G_corrCOMMI", "g_corrCALMI", "g_corrCOMLMI",
+        "AlloVizPsi", "AlloVizPhi", "AlloVizOmega", "AlloVizDihs",
+        "MDEntropyContacts", "MDEntropyDihs", "MDEntropyAlphaAngle"]
+
+metricsl = ["cfb", "btw"]
+
+filterbyl = ["whole", "incontact", "intercontact"]
+
+
+
+
 def rgetattr(obj, *attrs):
     attl = list(attrs)
     while len(attl) >= 1:
@@ -39,6 +52,16 @@ def capitalize(string):
 #     return "norm" if normalize else "no_norm"
 
 
+
+
+
+
+from importlib import import_module
+from lazyasd import LazyObject
+
+def lazy_import(key, val):
+    extra_arg = "package='AlloViz'" if 'Packages' in val else ''
+    return LazyObject(lambda: import_module(val, extra_arg(val)), globals(), key)
 
 
 

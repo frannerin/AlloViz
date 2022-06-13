@@ -84,3 +84,20 @@ html_theme = 'sphinx_rtd_theme'
 # relative to this directory. They are copied after the builtin static files,
 # so a file named "default.css" will overwrite the builtin "default.css".
 #html_static_path = ['_static']
+
+
+
+sys.path.insert(0, os.path.abspath('../..'))
+import pandas
+from src.AlloViz.AlloViz import info
+
+  df = info.df
+  df.index = pandas.MultiIndex.from_tuples(list(df.index), names=["Residue information extracted from trajectories",
+                                                                "Package",
+                                                                "Correlation measurement",
+                                                                "Atom/angle tracked"])
+
+  with open("table.html") as f:
+    f.writelines(
+      df.to_html(buf=, header=False).replace(' valign="top"', '')
+      )

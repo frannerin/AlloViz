@@ -54,6 +54,24 @@ if not on_rtd:
 
 
 else:
+
+  
+  # from src.AlloViz.AlloViz import info
+
+  # df = info.df
+  # df.index = pandas.MultiIndex.from_tuples(list(df.index), names=["Residue information extracted from trajectories",
+  #                                                               "Package",
+  #                                                               "Correlation measurement",
+  #                                                               "Atom/angle tracked"])
+
+  # with open("docs/source/table.html") as f:
+  #   f.writelines(
+  #     df.to_html(buf=, header=False).replace(' valign="top"', '')
+  #     )
+
+
+
+
 	ext_modules = []
 
 

@@ -1,45 +1,19 @@
-import sys, os, io, re, time
+import os, io, re
 
-
-import pandas, requests
-import MDAnalysis as mda
-import numpy as np
 from multiprocess import Pool
-from Bio import AlignIO
-from networkx import from_pandas_edgelist as nx_from_pandas
 
 
-from importlib import import_module
-from lazyasd import LazyObject
-matplotlib = LazyObject(lambda: import_module('matplotlib'), globals(), 'matplotlib')
-nglview = LazyObject(lambda: import_module('nglview'), globals(), 'nglview')
-pl = LazyObject(lambda: import_module('matplotlib.pyplot'), globals(), 'pl')
+from .Analysis import Whole, Incontact, Intercontact
+from .Visualization import Edges, Nodes
 
-
-# import networkx.algorithms.centrality as nx_centrality#import edge_betweenness_centrality, edge_betweenness_centrality_subset # edge_betweenness
-from networkx.algorithms.centrality import edge_betweenness_centrality, edge_betweenness_centrality_subset
-from networkx.algorithms.centrality import edge_current_flow_betweenness_centrality, edge_current_flow_betweenness_centrality_subset
-from networkx.algorithms.centrality import betweenness_centrality, betweenness_centrality_subset
-from networkx.algorithms.centrality import current_flow_betweenness_centrality, current_flow_betweenness_centrality_subset
-
-from . import Pkgs
+from .utils import rgetattr, rhasattr, capitalize
+from . import utils
 from . import trajutils
 
-from . import utils
-rgetattr = utils.rgetattr
-rhasattr = utils.rhasattr
-capitalize = utils.capitalize
+from .. import Wrappers
 
 
-pkgsl = ["MDTASK", "getcontacts", "pyInteraph", "pyInteraphEne", "dynetan", "dynetanCOM", "pytrajCA", "pytrajCB",
-         "corrplus", "corrplusLMI", "corrplusCOM", "corrplusCOMLMI", "corrplusPsi", "corrplusPhi", "corrplusOmega", "corrplusDihs",
-        "gRINN", "gRINNcorr", "g_corrCAMI", "g_corrCOMMI", "g_corrCALMI", "g_corrCOMLMI",
-        "AlloVizPsi", "AlloVizPhi", "AlloVizOmega", "AlloVizDihs",
-        "MDEntropyContacts", "MDEntropyDihs", "MDEntropyAlphaAngle"]
-# metricsl = ["cfb", "cfb_subset", "btw", "btw_subset"]
-metricsl = ["cfb", "btw"]
-filterbyl = ["whole", "incontact", "intercontact"]
-#filterbyl = ["whole"]
+
 
 
 
@@ -209,13 +183,13 @@ class Protein:
     _get_res_dict = trajutils.get_res_dict
     _get_dihedral_residx = staticmethod(trajutils.get_dihedral_residx)
     
-        
+    
     
     
     def __sub__(self, other):
         delta = _Store()
         
-        for pkg in (key for key in self.__dict__ if key.lower() in [x.lower() for x in pkgsl] and key in other.__dict__):
+        for pkg in (key for key in self.__dict__ if key.lower() in [x.lower() for x in utils.pkgsl] and key in other.__dict__):
             setattr(delta, pkg, _Store())
             for filterby in (key for key in getattr(self, pkg).__dict__ if key.lower() in ["whole", "incontact", "intercontact", "raw"] and key in getattr(other, pkg).__dict__): #if not re.search("(^_|raw)", key)
                 setattr(getattr(delta, pkg), filterby, _Store())
@@ -244,7 +218,7 @@ class Protein:
         pkg : str or list, default: "all"
             Package(s)/Network construction method(s) for which to send raw edge weight
             computation. "all" sends the computation for all available methods within
-            AlloViz (check `AlloViz.Classes.pkgsl`).
+            AlloViz (check `AlloViz.AlloViz.utils.pkgsl`).
         cores : int, default: 1
             Number of cores to use for parallelization with a `multiprocess` Pool.
             Default value only uses 1 core with a custom `dummypool` (check
@@ -290,7 +264,7 @@ class Protein:
         >>> print(opioidGPCR.dynetan.raw.shape)
         (41041, 5)
         """
-        pkgs = pkgsl if pkg=="all" else pkg if isinstance(pkg, list) else [pkg]
+        pkgs = utils.pkgsl if pkg=="all" else pkg if isinstance(pkg, list) else [pkg]
         
         if any(["COM" in pkg for pkg in pkgs]):
             self._add_comtrajs(self._protein_sel)
@@ -317,13 +291,6 @@ class Protein:
             mypool.close()
             mypool.join()
             utils.pool = utils.dummypool()
-            
-        
-        
-    # def _set_pkgclass(self, state, pkg, d): #**kwargs):
-    #     pkgclass = eval(f"Pkgs.{capitalize(pkg)}") if isinstance(pkg, str) else pkg
-    #     if not hasattr(state, pkgclass.__name__):
-    #         setattr(state, pkgclass.__name__, pkgclass(state, d))#**kwargs))
     
     
     
@@ -412,7 +379,7 @@ class Protein:
         (3410, 5)
         """
         pkgs = [pkg for pkg in self.__dict__ if pkg.lower() in (pkg.lower() for pkg in pkgl)] if pkg=="all" else pkg if isinstance(pkg, list) else [pkg]
-        filterbys = filterbyl if filterby=="all" else filterby if isinstance(filterby, list) else [filterby]
+        filterbys = utils.filterbyl if filterby=="all" else filterby if isinstance(filterby, list) else [filterby]
         elements = element if isinstance(element, list) else [element]
         metrics = set(list(nodes_dict.keys()) + list(edges_dict.keys())) if metrics=="all" else metrics if isinstance(metrics, list) else [metrics]
         
@@ -435,40 +402,17 @@ class Protein:
                 if not filterby():
                      setattr(pkg, anaclass.__name__, anaclass(pkg))
                 filterby()._add_metrics(elements, metrics, normalize, nodes_dict, edges_dict)
-                
-                
-        # for filterby in filterbys:
-        #     filterby = rgetattr(self, pkgclass.__name__)
-        #     for pkg in pkgs:
-        #         # self._set_anaclass(self, pkg, metrics, filterby, element, normalize)
-        #         pkgclass = eval(f"Pkgs.{capitalize(pkg)}") if isinstance(pkg, str) else pkg
-        #         pkgobj = getattr(self, pkgclass.__name__)
-        #         anaclass = eval(f"{capitalize(filterby)}") if isinstance(filterby, str) else filterby
-        #         if not hasattr(pkgobj, anaclass.__name__):
-        #             setattr(pkgobj, anaclass.__name__, anaclass(pkgobj, metrics, element, normalize))
         
         if cores>1:
             mypool.close()
             mypool.join()
             utils.pool = utils.dummypool()
     
-    
-#     def _set_anaclass(self, state, pkg, metrics, filterby, element, normalize):
-#         pkgclass = eval(f"Pkgs.{capitalize(pkg)}") if isinstance(pkg, str) else pkg
-#         pkgobj = getattr(state, pkgclass.__name__)
-
-#         anaclass = eval(f"{capitalize(filterby)}") if isinstance(filterby, str) else filterby
-#         if not hasattr(pkgobj, anaclass.__name__):
-#             setattr(pkgobj, anaclass.__name__, anaclass(pkgobj, metrics, element, normalize))
         
     
     
         
-    def view(self, pkg, metric, filterby="incontact", element:list=["edges"], num=20, colors=["orange", "turquoise"]):
-        # norm = self._get_norm_str(normalize)
-        # if not rhasattr(self.data, filterby, norm, pkg):
-        #     self.analyze(pkg, normalize=normalize, filterby=filterby)
-        
+    def view(self, pkg, metric, filterby="incontact", element:list=["edges"], num=20, colors=["orange", "turquoise"]):        
         get_element = lambda element: rgetattr(self, capitalize(pkg), capitalize(filterby), element.lower())
         
         nv = get_element(element[0]).view(metric, num, colors)
@@ -503,14 +447,6 @@ class Delta:
     
     
     
-    # def get_delta(self):
-    #     delta = self.state1 - self.state2
-    #     setattr(self, "delta", delta)
-    #     setattr(self.delta, "pair", self)
-    #     return delta
-    
-    
-    
     def _make_struct_aln(self, aln_method="TMalign_pair"):
         # ****** Pairwise Structural Alignment Methods:
         # --------------------------------------------
@@ -528,6 +464,7 @@ class Delta:
         # TMalign_pair         http://zhanglab.ccmb.med.umich.edu/TM-align/TMalign.f      [pg:         TMalign is  Installed][/gpcr/users/frann/networks/tcoffee/bin/TMalign]
         
         from subprocess import Popen, PIPE
+        from Bio import AlignIO
         from Bio.SeqUtils import seq1
         from distutils.spawn import find_executable
 
@@ -606,64 +543,6 @@ class Delta:
     
     
     
-    
-    
-#     def calculate(self, pkg="all", cores=1, **kwargs): # , ow=False, filterby="incontact"
-#         pkgs = pkgsl if pkg=="all" else pkg if isinstance(pkg, list) else [pkg]
-        
-#         if any(["COM" in pkg for pkg in pkgs]):
-#             for state in self.states: state._add_comtrajs()
-        
-#         if cores>1:
-#             mypool = Pool(cores)
-#             utils.pool = mypool
-#         print(utils.pool)
-        
-#         for state in self.states:
-#             for pkg in pkgs:
-#                 self._set_pkgclass(state, pkg, **kwargs)
-        
-#         if cores>1:
-#             mypool.close()
-#             mypool.join()
-#             utils.pool = utils.dummypool()
-
-    
-    
-    
-#     def analyze(self, pkg="all", metrics="all", filterby="incontact", element:list=["edges"], normalize=True): # ow
-#         pkgs = pkgsl if pkg=="all" else pkg if isinstance(pkg, list) else [pkg]
-#         metrics = metricsl if metrics=="all" else metrics if isinstance(metrics, list) else [metrics]
-#         filterbys = filterbyl if filterby=="all" else filterby if isinstance(filterby, list) else [filterby]
-        
-#         if cores>1:
-#             mypool = Pool(cores)
-#             utils.pool = mypool
-#         print(utils.pool)
-        
-#         for state in self.states:
-#             for filterby in filterbys:
-#                 for pkg in pkgs:
-#                     self._set_anaclass(state, pkg, metrics, filterby, element, normalize)
-        
-#         if cores>1:
-#             mypool.close()
-#             mypool.join()
-#             utils.pool = utils.dummypool()
-
-
-    
-    
-    def view(self, pkg, metric, normalize=True, filterby="incontact", num=20):
-        # norm = self.state1._get_norm_str(normalize)
-        # self.state1.pkg.filterby._norm
-        if not hasattr(self, "delta"): self.get_delta()
-        if not rhasattr(self.delta, capitalize(pkg), capitalize(filterby)): self.analyze(pkg, filterby=filterby, normalize=normalize)
-        return rgetattr(self.delta, capitalize(pkg), capitalize(filterby)).view(metric, num)
-
-    
-    
-    
     def view(self, pkg, metric, filterby="incontact", element:list=["edges"], num=20, colors=["orange", "turquoise"]):
         # norm = self._get_norm_str(normalize)
         # if not rhasattr(self.data, filterby, norm, pkg):
@@ -677,392 +556,3 @@ class Delta:
             nv = get_element(element[1]).view(metric, num, colors, nv)
             
         return nv
-    
-
-
-
-
-class Element:
-    def __init__(self, parent, df):
-        self._parent = parent
-        self.df = df
-    
-    
-    
-    def __repr__(self):
-        print(self.df.shape)
-        return repr(self.df.iloc[:, :1])
-    
-    
-    def __sub__(self, other):
-#         if any(col not in other.df.columns for col in data.df.columns):
-        
-        selfreindex = self.df.index.map(self._parent._translate_ix(self._parent._aln_mapper))
-        selfdf = self.df.abs().reset_index(drop=True).assign(aln_pos=selfreindex.to_numpy()).set_index("aln_pos")
-        
-        otherreindex = other.df.index.map(other._parent._translate_ix(other._parent._aln_mapper))
-        otherdf = other.df.abs().reset_index(drop=True).assign(aln_pos=otherreindex.to_numpy()).set_index("aln_pos")
-        
-
-        cols = [col for col in selfdf.columns if col in otherdf.columns]
-    
-        subs = [col for col in cols if "std" not in col]
-        sub = pandas.DataFrame.sub(selfdf[subs], otherdf[subs], axis=0, level="aln_pos").dropna() #fill_value = 0, level="aln_pos"
-    
-        adds = [col for col in cols if "std" in col]
-        add = pandas.DataFrame.add(selfdf[adds], otherdf[adds], axis=0, level="aln_pos").dropna() #fill_value = 0, axis=0, level="aln_pos"
-        
-        return pandas.concat([add, sub], axis=1)
-    
-    
-    
-    
-#     def _get_cmap(self): # could be a class attr; even an Analysis or even State/Pair attr
-#         if isinstance(self._parent, Pair): 
-#             # colors = {"inactive": "r", "active": "g",
-#             #          "Gprotein": "y", "Barr": "b"}
-#             # color2, color1 = colors[self._parent.state1._pdbf], colors[self._parent.state2._pdbf]
-#             color2, color1 = ["r", "g"]
-#         else:
-#             color1, color2 = "orange", "turquoise"
-        
-#         return matplotlib.colors.LinearSegmentedColormap.from_list('bar', [color1, "w", color2], 2048)
-    
-    
-    
-    
-    def _get_colors(self, col, cmap):
-        # scale = [0, col.min(), col.max()] if isinstance(self._parent, Pair) else [col.mean(), col.min(), col.max()]
-        scale = [0, col.min(), col.max()] if col.min() < 0 else [col.mean(), col.min(), col.max()]
-        normdata = matplotlib.colors.TwoSlopeNorm(*scale)
-        return cmap( normdata( col.to_numpy() ).data )
-    
-    
-    
-    def _show_cbar(self, cmap, minv, maxv):
-        pl.imshow([[minv,maxv],], cmap = cmap)
-        pl.gca().set_visible(False)
-        if isinstance(self._parent, Delta):
-            cbar = pl.colorbar(orientation = "horizontal", ticks = [minv,maxv])
-            cbar.ax.set_xticklabels([self._parent.state2.name, self._parent.state1.name])
-            cbar.ax.set_title("Delta-network")
-        else:
-            cbar = pl.colorbar(orientation = "horizontal", ticks = [minv,maxv])
-            cbar.ax.set_title(self._parent.name)
-
-        return
-    
-    
-    def _get_nv(self, nv):
-        mdau_parent = self._parent.state1 if isinstance(self._parent, Delta) else self._parent
-        
-        if nv is None:
-            prot = mda.core.universe.Merge(mdau_parent.pdbu.select_atoms(f"({mdau_parent._protein_sel}) or segid LIG"))
-            nv = nglview.show_mdanalysis(prot, default=False)
-            nv.add_cartoon('protein', color='white')
-        
-        return nv, mdau_parent
-    
-    
-    
-    
-    def view(self, metric, num=20, colors=["orange", "turquoise"], nv=None):
-        # metric = f"{metric}_avg" if not re.search("_avg$", metric) else metric
-        # if metric not in df.columns etc
-        data = self.df.sort_values(metric, key = abs, ascending = False)
-        subset = data[0:num]
-#         get_subset = lambda num: data[0:num]
-#         subset = get_subset(num)
-        
-#         if isinstance(self._parent, Pair):
-#             while not any(0 < subset[metric]) or not any(0 > subset[metric]):
-#                 num += 1
-#                 subset = get_subset(num)
-#             print(num)
-            
-        color1, color2 = colors
-        cmap = matplotlib.colors.LinearSegmentedColormap.from_list('bar', [color1, "w", color2], 2048)
-
-        self._show_cbar(cmap, data[metric].min(), data[metric].max())
-        colors = self._get_colors(data[metric], cmap)[:num]
-        
-        error = "weight_std" if "weight" in metric else f"{metric}_std"
-        if error in data.columns:
-            sizes = np.interp(subset[error], (subset[error].min(), subset[error].max()), (1, 0.1))
-        else:
-            sizes = np.ones(len(subset))
-        
-        nv, mdau_parent = self._get_nv(nv)
-        #mdau = mdau_parent.mdau
-        
-        indices = subset.index if isinstance(subset.index[0][0], str) else subset.index.map(mdau_parent._translate_ix(mdau_parent._aln_mapper))
-        
-        for i in range(len(subset[metric])):
-            self._add_element(nv, mdau_parent.pdbu, indices[i], colors[i], sizes[i])
-
-        return nv
-    
-    
-    
-
-    
-
-    
-class Edges(Element):
-    def __init__(self, *args):
-        super().__init__(*args)
-        
-        
-
-    def _add_element(self, nv, prot, edge, color, size):
-        get_coords = lambda res: list( prot.select_atoms(f"resnum {res.split(':')[-1]} and name CA").positions[0] )
-        coords = [get_coords(res) for res in edge]
-
-        return nv.shape.add_cylinder(coords[0], coords[1], list(color),
-                                     np.float64(size), f"{edge[0]}_{edge[1]}")
-    
-
-    
-class Nodes(Element):
-    def __init__(self, *args):
-        super().__init__(*args)
-        
-        
-       
-    def _add_element(self, nv, prot, node, color, size):
-        
-        get_coords = lambda res: list( prot.select_atoms(f"resnum {res.split(':')[-1]} and name CA").positions[0] )
-        coords = get_coords(node)
-
-        return nv.shape.add_sphere(coords, list(color),
-                                   np.float64(size)*2.5, f"{node}")
-    
-    
-    
-    
-class Analysis: #(_Edges)
-    def __init__(self, pkg):
-        self._pkg = pkg
-        # self._parent = self.pkg.state
-        # self.metrics = metrics
-        # self.normalize = normalize
-        self._name = self.__class__.__name__
-        
-        self._path = f"{self._pkg.protein._datadir}/{self._pkg._name}/{self._name}" # lambda norm might not be needed
-        os.makedirs(self._path, exist_ok=True)
-        self._datapq = lambda element, metric: f"{self._path}/{element}_{metric}.pq"
-        
-        self._filtdata = self._get_filt_data()
-        # self._graph = nx_from_pandas(df=self._filtdata.reset_index(), 
-        #                                    source="level_0", target="level_1", 
-        #                                    edge_attr=list(self._filtdata.drop("weight_std", axis=1).columns))
-        
-        # self.add_metrics(metrics, element, normalize)
-    
-    
-    
-    def _get_filt_data(self):
-        return self._pkg.raw#[["weight_avg", "weight_std"]]
-    
-    
-        
-    
-    def _add_metrics(self, element, metrics, normalize, nodes_dict, edges_dict):
-        # metrics = metricsl if metrics=="all" else metrics if isinstance(metrics, list) else [metrics]
-        elements = element if isinstance(element, list) else [element]
-        
-        for elem in elements:            
-            if not rhasattr(self, elem, "df"):
-                if elem == "edges":
-                    cols = ["weight" in col for col in self._filtdata.columns]
-                    data = self._filtdata.loc[:,cols]
-                elif elem == "nodes":
-                    data = pandas.DataFrame()
-            else:
-                data = rgetattr(self, elem, "df")
-            
-            elem_dict = eval(f"{elem}_dict")
-            elem_metrics = [metric for metric in metrics if metric in elem_dict]
-            pqs = lambda elem: [self._datapq(elem, metric) for metric in elem_metrics]
-            no_exist = lambda pqs: [not os.path.isfile(pq) for pq in pqs]
-            # is_in_df = any([f"{metric}_avg" not in data.columns for metric in metrics])
-            
-            # if not is_in_df and 
-            if any(no_exist(pqs(elem))): # or ow
-                for metric in (metric for metric in elem_metrics if no_exist(pqs(elem))[pqs(elem).index(self._datapq(elem, metric))]):
-                    self._analyze(metric, elem_dict[metric], elem, normalize, self._datapq(elem, metric))
-
-
-            def wait_analyze(elem, data):
-                while any(no_exist(pqs(elem))):
-                    time.sleep(5)
-                return elem, data
-                
-            
-            def add_data(args):
-                elem, data = args
-                print(f"adding analyzed {elem} {self._pkg} {self._name} data of for {self._pkg.protein._pdbf}")
-
-                for pq in pqs(elem):
-                    metric = pq.rsplit("/", 1)[-1].split("_", 1)[-1].split(".")[0]
-                    df = pandas.read_parquet(pq)
-                    
-                    if len(self._pkg.protein._trajs) > 1:
-                        cols = [f"{metric}_{num}" for num in self._pkg.protein._trajs]
-                        df[f"{metric}"] = df[cols].fillna(0).mean(axis=1)
-                        df[f"{metric}_std"] = df[cols].fillna(0).std(axis=1)
-                        out = df.drop(cols, axis=1)
-                    else:
-                        out = df
-                        
-                    data = pandas.concat([data, out], axis=1)#data.join(out) if data is not None else out
-
-                elemclass = eval(elem.capitalize())
-                setattr(self, elem, elemclass(self._pkg.protein, data))
-
-                
-            utils.get_pool().apply_async(wait_analyze,
-                                   args=(elem, data),
-                                   callback=add_data)
-        return
-    
-
-    
-    
-    def _analyze(self, metric, metric_import, elem, normalize, pq):
-        pool = utils.get_pool()
-        cols = ["std" not in col for col in self._filtdata.columns]
-        rawdata = self._filtdata.loc[:,cols]
-        nodes = {}
-        
-        module, f = metric_import.rsplit(".", 1)
-        metricf = eval(f"import_module('{module}').{f}")
-        
-        
-#         if callable(metric):
-#             metricf = metric
-#         else:        
-#             if "cfb" in metric:
-#                 metricf = current_flow_betweenness_centrality
-#             elif "btw" in metric:
-#                 metricf = betweenness_centrality
-            
-#             if elem == "edges":
-#                 metricf = eval(f"edge_{metricf.__name__}")
-            
-#             if "subset" in metric:
-#                 metricf = eval(f"{metricf.__name__}_subset")
-#                 nodes = {"sources": self._pkg.protein.sources_subset, "targets": self._pkg.protein.targets_subset}  
-                
-                
-                
-        def save_pq(df):
-            if len(df.columns) > 1:
-                newcolnames = {name: f"{metric}_{name}" for name in df.columns}
-            else:
-                newcolnames = {df.columns[0]: metric}
-                
-            df.rename(columns=newcolnames, inplace=True)
-            df.to_parquet(pq)
-            return
-        
-        # pool.apply_async(lambda args: rawdata.apply(self._networkx_analysis, args=args),
-        #                  args=((metricf, elem, normalize, pq),),
-        #                  callback=save_pq)
-        pool.apply_async(lambda: rawdata.apply(self._networkx_analysis, args=(metricf, elem, normalize, nodes)), #pq
-                         #args=(,),
-                         callback=save_pq)
-        
-        
-        def _calculate_empty(pqf):
-            print("sleeping", pqf, os.getpid())
-            while not os.path.isfile(pqf):
-                time.sleep(5)
-            return
-        
-        for _ in range(len(rawdata.columns)-1): pool.apply_async(_calculate_empty, args=(pq,))
-    
-    
-    
-    
-    def _networkx_analysis(self, column, metricf, elem, normalize, nodes):#pq
-        weights = column[column != 0].dropna().abs().rename("weight").reset_index() # btw calculations fail with 0 value weightsa and cfb prob with negative
-        #it doesn't make sense either to keep them for others# .rename(columns={f"{column.name}": "weight"})
-        # print(column.name, type(column.name), sum(weights["weight"].isna()), weights["weight"].max())
-        network = nx_from_pandas(weights, "level_0", "level_1", "weight")
-        
-        try:
-            analyzed = metricf(network, normalized=normalize, weight="weight", **nodes)
-            # print(column.name, pandas.Series(analyzed).max())
-        # from scipy.linalg import LinAlgError
-        except: # LinAlgError
-            print("Singular matrix!", self._pkg._name, self._name, elem, metricf.__name__)
-            analyzed = {k: 0 for k in eval(f"network.{elem.lower()}")}#{tuple(sorted(k, key = lambda x: int(x.split(":")[-1]))): 0 for k in network.edges()}
-        
-        sort_index = lambda result: {tuple(sorted(k, key = lambda x: int(x.split(":")[-1]))): result[k] for k in result}
-        result = sort_index(analyzed) if elem == "edges" else analyzed# if elem == "nodes"
-        
-        return pandas.Series(result)#, pq
-    
-    
-    
-    
-class Whole(Analysis):
-    pass    
-    
-    
-    
-class Incontact(Analysis):
-    def __init__(self, *args):
-        super().__init__(*args)
-    
-    
-    def _get_filt_data(self):
-        df = super()._get_filt_data()
-        
-        try:
-            indices = self._pkg.protein.Getcontacts.raw.index
-        except:
-            raise Exception("Getcontacts results are needed first")
-#         if not rhasattr(self._pkg.state, "Getcontacts", "raw"):
-#             print("Getcontacts results are needed; sending calculation first...")
-            
-#             pool = utils.get_pool()
-            
-#             self._pkg.state._set_pkgclass(self._pkg.state, "Getcontacts", taskcpus = int(np.ceil(pool._processes/2)))
-            
-            
-#             gc = self._pkg.state.Getcontacts
-#             pqs = [gc._rawpq(xtc) for xtc in gc.state._trajs]
-#             no_exist = lambda pqs: [not os.path.isfile(pq) for pq in pqs]
-
-#             while any(no_exist(pqs)):
-#                 print("Waiting for pq files to be created")
-#                 time.sleep(5)
-                
-#             while not rhasattr(gc, "raw"):
-#                 print("Waiting for raw data to be added to object")
-#                 time.sleep(5)
-                
-                
-#         indexes = self._pkg.state.Getcontacts.raw.index
-            
-        return df.filter(indices, axis=0) # maybe pass indexes in class creation
-        
-        
-class Intercontact(Incontact):
-    def __init__(self, *args):
-        super().__init__(*args)
-
-        
-    def _get_filt_data(self):
-        df = super()._get_filt_data()
-        
-        
-        def get_intercontacts(indexl):
-            resnum = lambda res: int(res.rsplit(":")[-1])
-            return [idx for idx in indexl if abs(resnum(idx[0]) - resnum(idx[1]) ) > 5]
-        
-        return df.filter(get_intercontacts(df.index), axis=0)
-
-        
