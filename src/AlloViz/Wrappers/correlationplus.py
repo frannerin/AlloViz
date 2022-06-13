@@ -1,4 +1,4 @@
-from .Base import Base, Use_COM
+from .Base import Base, Use_COM, Combined_Dihs
 
 from ..AlloViz.utils import lazy_import
 

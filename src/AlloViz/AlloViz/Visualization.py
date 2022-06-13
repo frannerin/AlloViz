@@ -9,7 +9,7 @@ pl = LazyObject(lambda: import_module('matplotlib.pyplot'), globals(), 'pl')
 nglview = LazyObject(lambda: import_module('nglview'), globals(), 'nglview')
 
 
-from .Classes import Delta
+from . import Classes# import Protein
 
 
 
@@ -61,7 +61,7 @@ class Element:
     def _show_cbar(self, cmap, minv, maxv):
         pl.imshow([[minv,maxv],], cmap = cmap)
         pl.gca().set_visible(False)
-        if isinstance(self._parent, Delta):
+        if isinstance(self._parent, Classes.Delta):
             cbar = pl.colorbar(orientation = "horizontal", ticks = [minv,maxv])
             cbar.ax.set_xticklabels([self._parent.state2.name, self._parent.state1.name])
             cbar.ax.set_title("Delta-network")
@@ -73,7 +73,7 @@ class Element:
     
     
     def _get_nv(self, nv):
-        mdau_parent = self._parent.state1 if isinstance(self._parent, Delta) else self._parent
+        mdau_parent = self._parent.state1 if isinstance(self._parent, Classes.Delta) else self._parent
         
         if nv is None:
             prot = mda.core.universe.Merge(mdau_parent.pdbu.select_atoms(f"({mdau_parent._protein_sel}) or segid LIG"))

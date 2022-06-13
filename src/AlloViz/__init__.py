@@ -1,1 +1,1 @@
-from .Classes import Protein, Delta
+from .AlloViz.Classes import Protein, Delta

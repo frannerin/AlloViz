@@ -91,13 +91,13 @@ sys.path.insert(0, os.path.abspath('../..'))
 import pandas
 from src.AlloViz.AlloViz import info
 
-  df = info.df
-  df.index = pandas.MultiIndex.from_tuples(list(df.index), names=["Residue information extracted from trajectories",
-                                                                "Package",
-                                                                "Correlation measurement",
-                                                                "Atom/angle tracked"])
+df = info.df
+df.index = pandas.MultiIndex.from_tuples(list(df.index), names=["Residue information extracted from trajectories",
+                                                            "Package",
+                                                            "Correlation measurement",
+                                                            "Atom/angle tracked"])
 
-  with open("table.html") as f:
-    f.writelines(
-      df.to_html(buf=, header=False).replace(' valign="top"', '')
-      )
+with open("_static/table.html", "w") as f:
+	f.write(".. raw:: html\n\n")
+	for line in df.to_html(header=False).replace(' valign="top"', '').split("\n"):
+		f.write(f"\t{line}\n")

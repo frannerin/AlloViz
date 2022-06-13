@@ -1,6 +1,6 @@
 import numpy as np
 
-from .Base import Multicore, Use_COM
+from .Base import Multicore, Use_COM, Combined_Dihs
 
 from ..AlloViz.utils import lazy_import
 

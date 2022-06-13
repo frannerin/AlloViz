@@ -64,7 +64,7 @@ else:
   #                                                               "Correlation measurement",
   #                                                               "Atom/angle tracked"])
 
-  # with open("docs/source/table.html") as f:
+  # with open("docs/source/table.html", "w") as f:
   #   f.writelines(
   #     df.to_html(buf=, header=False).replace(' valign="top"', '')
   #     )

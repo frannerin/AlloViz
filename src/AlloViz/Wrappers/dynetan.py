@@ -43,5 +43,5 @@ class dynetan(Multicore):
 
 
 
-class dynetan_COM(Use_COM, Dynetan):
+class dynetan_COM(Use_COM, dynetan):
     pass
