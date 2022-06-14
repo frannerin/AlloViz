@@ -88,7 +88,7 @@ html_theme = 'sphinx_rtd_theme'
 
 
 sys.path.insert(0, os.path.abspath('../..'))
-from src.AlloViz.AlloViz import info
+from AlloViz.AlloViz import info
 
 df = info.df
 
