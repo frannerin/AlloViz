@@ -105,6 +105,144 @@ with associated class methods. For example:
    activeMuOR.view("corrplusCOM", "btw_avg", filterby="whole")
 
 Available information sources for network generation
+----------------------------------------------------
+
+.. raw:: html
+
+	<table border="1" class="dataframe">
+	  <thead>
+	    <tr>
+	      <th>Residue information extracted from trajectories</th>
+	      <th>Package</th>
+	      <th>Correlation measurement</th>
+	      <th>Atom/angle tracked</th>
+	      <th></th>
+	    </tr>
+	  </thead>
+	  <tbody>
+	    <tr>
+	      <th rowspan="9">Movement correlation</th>
+	      <th>MD-TASK</th>
+	      <th>Pearson's</th>
+	      <th>Carbon α</th>
+	      <td>MDTASK</td>
+	    </tr>
+	    <tr>
+	      <th rowspan="2">pytraj</th>
+	      <th rowspan="2">Pearson's</th>
+	      <th>Carbon α</th>
+	      <td>pytraj_CA</td>
+	    </tr>
+	    <tr>
+	      <th>Carbon β</th>
+	      <td>pytraj_CB</td>
+	    </tr>
+	    <tr>
+	      <th rowspan="2">dynetan</th>
+	      <th rowspan="2">Mutual Information (MI)</th>
+	      <th>Whole residue</th>
+	      <td>dynetan</td>
+	    </tr>
+	    <tr>
+	      <th>Residue COM</th>
+	      <td>dynetan_COM</td>
+	    </tr>
+	    <tr>
+	      <th rowspan="4">correlationplus</th>
+	      <th rowspan="2">Pearson's</th>
+	      <th>Carbon α</th>
+	      <td>correlationplus_CA_Pear</td>
+	    </tr>
+	    <tr>
+	      <th>Residue COM</th>
+	      <td>correlationplus_COM_Pear</td>
+	    </tr>
+	    <tr>
+	      <th rowspan="2">Linear MI (LMI)</th>
+	      <th>Carbon α</th>
+	      <td>correlationplus_CA_LMI</td>
+	    </tr>
+	    <tr>
+	      <th>Residue COM</th>
+	      <td>correlationplus_COM_LMI</td>
+	    </tr>
+	    <tr>
+	      <th rowspan="10">Dihedral correlation</th>
+	      <th rowspan="4">correlationplus</th>
+	      <th rowspan="4">Pearson's</th>
+	      <th>Phi</th>
+	      <td>correlationplus_Phi</td>
+	    </tr>
+	    <tr>
+	      <th>Psi</th>
+	      <td>correlationplus_Psi</td>
+	    </tr>
+	    <tr>
+	      <th>Omega</th>
+	      <td>correlationplus_Omega</td>
+	    </tr>
+	    <tr>
+	      <th>Backbone dihedrals (Phi, psi and omega)</th>
+	      <td>correlationplus_Dihs</td>
+	    </tr>
+	    <tr>
+	      <th rowspan="4">AlloViz</th>
+	      <th rowspan="4">MI</th>
+	      <th>Phi</th>
+	      <td>AlloViz_Phi</td>
+	    </tr>
+	    <tr>
+	      <th>Psi</th>
+	      <td>AlloViz_Psi</td>
+	    </tr>
+	    <tr>
+	      <th>Omega</th>
+	      <td>AlloViz_Omega</td>
+	    </tr>
+	    <tr>
+	      <th>Backbone dihedrals (Phi, psi and omega)</th>
+	      <td>AlloViz_Dihs</td>
+	    </tr>
+	    <tr>
+	      <th rowspan="2">MDEntropy</th>
+	      <th rowspan="2">MI</th>
+	      <th>Backbone dihedrals (Phi, psi and omega)</th>
+	      <td>MDEntropy_Dihs</td>
+	    </tr>
+	    <tr>
+	      <th>Alpha angle</th>
+	      <td>MDEntropy_AlphaAngle</td>
+	    </tr>
+	    <tr>
+	      <th rowspan="3">Contact frequency</th>
+	      <th>MDEntropy</th>
+	      <th>MI</th>
+	      <th>Whole residue</th>
+	      <td>MDEntropy_Contacts</td>
+	    </tr>
+	    <tr>
+	      <th>GetContacts</th>
+	      <th>-</th>
+	      <th>Whole residue</th>
+	      <td>GetContacts</td>
+	    </tr>
+	    <tr>
+	      <th>PyInteraph2</th>
+	      <th>-</th>
+	      <th>Whole residue</th>
+	      <td>PyInteraph2_Contacts</td>
+	    </tr>
+	    <tr>
+	      <th>Interaction energy</th>
+	      <th>PyInteraph2</th>
+	      <th>-</th>
+	      <th>Whole residue</th>
+	      <td>PyInteraph2_Energy</td>
+	    </tr>
+	  </tbody>
+	</table>
+
+|
 
 Cite
 -------

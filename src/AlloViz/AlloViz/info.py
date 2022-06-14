@@ -2,7 +2,7 @@ alpha = "Carbon \u03B1"
 beta = "Carbon \u03B2"
 COM = "Residue COM"
 whole = "Whole residue"
-Dihs = "Backbone dihedrals\n(Phi, psi and omega)"
+Dihs = "Backbone dihedrals (Phi, psi and omega)"
 
 dynetani = ("Movement correlation", "dynetan", "Mutual Information (MI)")
 pytraji = ("Movement correlation", "pytraj", "Pearson's")

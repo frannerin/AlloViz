@@ -12,7 +12,7 @@
 #
 import os
 import sys
-sys.path.insert(0, os.path.abspath('../..'))#/..'), os.path.abspath('..'), os.path.abspath('../../src'), os.path.abspath('../../src/AlloViz'))
+sys.path.insert(0, os.path.abspath('..'))#/..'), os.path.abspath('..'), os.path.abspath('../../src'), os.path.abspath('../../src/AlloViz'))
 
 
 # -- Project information -----------------------------------------------------
@@ -110,11 +110,24 @@ for line in df.to_html(header=False).replace(' valign="top"', '').split("\n"):
 	tabulated_table += f"\t{line}\n"
 
 import fileinput, sys
-for line in fileinput.input("../../README.rst", inplace=True):
-    if line.startswith('Available information sources for network generation'):
-    	line = header + tabulated_table
-    sys.stdout.write(line)
+# for line in fileinput.input("../../README.rst", inplace=True):
+#     if line.startswith('Available information sources for network generation'):
+#     	line = header + tabulated_table
+#     sys.stdout.write(line)
 
+replace_line = False
+for line in fileinput.input("../../README.rst", inplace=True):
+	if line.startswith('Cite'):
+		replace_line = False
+
+	if replace_line:
+		continue
+
+	if line.startswith('Available information sources for network generation'):
+		line = header + tabulated_table + "\n|\n\n"
+		replace_line = True
+
+	sys.stdout.write(line)
 
 
 # with open("../../README.rst", "r") as in_file:
