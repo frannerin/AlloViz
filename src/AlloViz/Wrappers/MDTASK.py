@@ -3,7 +3,7 @@ from .Base import Multicore
 from ..AlloViz.utils import lazy_import
 
 imports = {
-"_mdtask": ".Packages.MD-TASK.mdtask.calc_correlation",
+"_mdtask": "..Packages.MD-TASK.mdtask.calc_correlation",
 }
 
 for key, val in imports.items():

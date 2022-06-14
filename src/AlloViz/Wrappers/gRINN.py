@@ -9,9 +9,9 @@ from .Base import Multicore, Use_dcd
 from ..AlloViz.utils import lazy_import
 
 imports = {
-"_grinn_args": ".Packages.gRINN_Bitbucket.source.grinn",
-"_grinn_calc": ".Packages.gRINN_Bitbucket.source.calc",
-"_grinn_corr": ".Packages.gRINN_Bitbucket.source.corr",
+"_grinn_args": "..Packages.gRINN_Bitbucket.source.grinn",
+"_grinn_calc": "..Packages.gRINN_Bitbucket.source.calc",
+"_grinn_corr": "..Packages.gRINN_Bitbucket.source.corr",
 }
 
 for key, val in imports.items():

@@ -3,7 +3,7 @@ from .Base import Base, Use_COM, Combined_Dihs
 from ..AlloViz.utils import lazy_import
 
 imports = {
-"_corrplus": ".Packages.correlationplus.correlationplus.calculate",
+"_corrplus": "..Packages.correlationplus.correlationplus.calculate",
 }
 
 for key, val in imports.items():

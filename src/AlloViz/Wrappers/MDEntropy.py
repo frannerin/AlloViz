@@ -6,7 +6,7 @@ from ..AlloViz.utils import lazy_import
 
 imports = {
 "_mdtraj": "mdtraj",
-"_mdentropy": ".Packages.mdentropy.mdentropy.metrics",
+"_mdentropy": "..Packages.mdentropy.mdentropy.metrics",
 }
 
 for key, val in imports.items():

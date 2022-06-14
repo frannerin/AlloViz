@@ -5,10 +5,8 @@ import pandas
 import numpy as np
 
 from .Visualization import Edges, Nodes
+from .utils import rgetattr, rhasattr, capitalize
 from . import utils
-rgetattr = utils.rgetattr
-rhasattr = utils.rhasattr
-capitalize = utils.capitalize
 
 
 

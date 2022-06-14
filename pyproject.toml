@@ -44,7 +44,7 @@ msmbuilder = "src/Packages/msmbuilder/msmbuilder"
 
 [tool.setuptools]
 packages = [
-	"AlloViz", "AlloViz.Packages", 
+	"AlloViz", "AlloViz.AlloViz", "AlloViz.Wrappers", "AlloViz.Packages",
 	"pyinteraph", "libinteract", 
 	"msmbuilder"
 ]

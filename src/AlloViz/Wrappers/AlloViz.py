@@ -5,7 +5,7 @@ from .Base import Multicore, Use_COM, Combined_Dihs
 from ..AlloViz.utils import lazy_import
 
 imports = {
-"_npeet_lnc": ".Packages.NPEET_LNC.lnc",
+"_npeet_lnc": "..Packages.NPEET_LNC.lnc",
 "_mda_dihedrals": "MDAnalysis.analysis.dihedrals",
 }
 
