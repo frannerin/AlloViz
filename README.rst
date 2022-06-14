@@ -110,7 +110,6 @@ Available information sources for network generation
 .. include:: table.html
 
 |
-|
 
 Cite
 -------

@@ -4,6 +4,7 @@ sphinx=>5
 sphinx_rtd_theme
 jupyterlab
 nb_conda_kernels
+tabulate
 
 # This file may be used to create an environment using:
 # $ conda create --name <env> --file <this file>

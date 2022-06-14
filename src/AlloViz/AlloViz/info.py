@@ -16,13 +16,18 @@ g_correlationi = ("Movement correlation", "g_correlation")
 
 
 wrappers = {
+    "MDTASK": ("Movement correlation", "MD-TASK", "Pearson's", alpha),
+
+    "pytraj_CA": pytraji + (alpha,),
+    "pytraj_CB": pytraji + (beta,),
+
     "dynetan": dynetani + (whole,),
     "dynetan_COM": dynetani + (COM,),
     
-    "pytraj_CA": pytraji + (alpha,),
-    "pytraj_CB": pytraji + (beta,),
-    
-    "MDTASK": ("Movement correlation", "MD-TASK", "Pearson's", alpha),
+#     "g_correlation_CA_MI": g_correlationi + ("MI", alpha), 
+#     "g_correlation_COM_MI": g_correlationi + ("MI", COM), 
+#     "g_correlation_CA_LMI": g_correlationi + ("LMI", alpha), 
+#     "g_correlation_COM_LMI": g_correlationi + ("LMI", COM),
     
     "correlationplus_CA_Pear": correlationplusi + ("Pearson's", alpha),
     "correlationplus_COM_Pear": correlationplusi + ("Pearson's", COM),
@@ -49,11 +54,6 @@ wrappers = {
     
 #     "gRINN": ("Interaction energy", "gRINN", NA, whole),
 #     "gRINN_corr": ("Interaction energy", "gRINN", "Pearson's", whole),
-    
-#     "g_correlation_CA_MI": g_correlationi + ("MI", alpha), 
-#     "g_correlation_COM_MI": g_correlationi + ("MI", COM), 
-#     "g_correlation_CA_LMI": g_correlationi + ("LMI", alpha), 
-#     "g_correlation_COM_LMI": g_correlationi + ("LMI", COM), 
 }
 
 
