@@ -9,13 +9,10 @@
    ![Conda](https://img.shields.io/conda/pn/bioconda/correlationplus)
    [![SWH](https://archive.softwareheritage.org/badge/origin/https://github.com/tekpinar/correlationplus/)](https://archive.softwareheritage.org/browse/origin/?origin_url=https://github.com/tekpinar/correlationplus) -->
 
-..
-	.. role::  raw-html(raw)
-	    :format: html
-	:raw-html:`&#128301;`
+.. _alloviz-:
 
-AlloViz
-=======
+AlloViz 🔭
+=========
 
 A Python package to interactively compute, analyze and visualize protein
 allosteric communication (residue interaction) networks and
@@ -43,7 +40,7 @@ correlation of atom movement or dihedrals, or interaction energies,
 depending on the package selected. Moreover, for example for movement
 correlation, the movement tracked can be that of the whole residue, its
 center of mass, its alpha-C or its beta-C; and it can be calculated as
-the Pearson’s correlation coefficient, Mutual Information (MI) or Linear
+the Pearson's correlation coefficient, Mutual Information (MI) or Linear
 MI (LMI). See
 `below <#available-information-sources-for-network-generation>`__.
 
@@ -54,8 +51,8 @@ visualized in an interactive Python Notebook (i.e.,
 `Jupyter <https://jupyter.org/>`__) using
 `nglview <https://github.com/nglviewer/nglview>`__.
 
-Install
--------
+Installation
+------------
 
 It is recommended to use a virtual environment
 (`Miniconda <https://docs.conda.io/en/latest/miniconda.html>`__). This
@@ -73,15 +70,15 @@ installed with conda.
 Then go to the package folder (``cd AlloViz``) and install the package,
 preferably with ``pip install .``.
 
-.. note::
+.. raw:: html
 
-   If environment creation with `conda_explicit.txt` fails, the non-explicit requirements/dependencies file `conda.txt` can be used, providing the conda channels `conda-forge` and `bioconda` (`-c conda-forge -c bioconda`).
+   <!--`pip install .`. Alternatively, use-->
 
 Quickstart
 ----------
 
 The package is designed for use in interactive notebooks. The main class
-to be used is ``Protein``; ``Delta`` allows to bind two Proteins for
+to be used is ``Protein``; ``Pair`` allows to bind two States for
 delta-network analysis.
 
 for GPCRmd files
@@ -107,13 +104,135 @@ with associated class methods. For example:
 Available information sources for network generation
 ----------------------------------------------------
 
-.. include:: table.html
+.. raw:: html
 
-|
-|
+   <!-- https://www.tablesgenerator.com/html_tables
+   https://github.com/msmbuilder/msmbuilder/blob/515fd5c27836c797692d600216b5eb224dfc1c5d/msmbuilder/featurizer/featurizer.py#L802
+    -->
+
+.. raw:: html
+
+   <table>
+   <thead>
+     <tr>
+       <th>Residue information extracted from trajectories</th>
+       <th>Package</th>
+       <th>Correlation measurement</th>
+       <th>Subset of atoms tracked</th>
+       <th>Name in AlloViz</th>
+     </tr>
+   </thead>
+   <tbody>
+     <tr>
+       <td rowspan="9">Movement correlation</td>
+       <td rowspan="2">dynetan</td>
+       <td rowspan="2">Mutual Information (MI)</td>
+       <td>Whole residue</td>
+       <td>Dynetan</td>
+     </tr>
+     <tr>
+       <td>Residue COM</td>
+       <td>DynetanCOM</td>
+     </tr>
+     <tr>
+       <td rowspan="2">pytraj</td>
+       <td rowspan="2">Pearson's</td>
+       <td>alpha-C</td>
+       <td>PytrajCA</td>
+     </tr>
+     <tr>
+       <td>beta-C</td>
+       <td>PytrajCB</td>
+     </tr>
+     <tr>
+       <td>MD-TASK</td>
+       <td>Pearson's</td>
+       <td>alpha-C</td>
+       <td>MDTASK</td>
+     </tr>
+     <tr>
+       <td rowspan="5">correlationplus</td>
+       <td rowspan="2">Pearson's</td>
+       <td>alpha-C</td>
+       <td>Corrplus</td>
+     </tr>
+     <tr>
+       <td>Residue COM</td>
+       <td>CorrplusCOM</td>
+     </tr>
+     <tr>
+       <td rowspan="2">LMI</td>
+       <td>alpha-C</td>
+       <td>CorrplusLMI</td>
+     </tr>
+     <tr>
+       <td>Residue COM</td>
+       <td>CorrplusCOMLMI</td>
+     </tr>
+     <tr>
+       <td rowspan="4">Dihedral correlation</td>
+       <td>Pearson's</td>
+       <td>Individual backbone dihedrals (Phi, psi and omega) and their combination</td>
+       <td>CorrplusDihs (Corrplus[Psi, Phi, Omega])</td>
+     </tr>
+     <tr>
+       <td>AlloViz</td>
+       <td>MI</td>
+       <td>Individual backbone dihedrals (Phi, psi and omega) and their combination</td>
+       <td>AlloVizDihs (AlloViz[Psi, Phi, Omega])</td>
+     </tr>
+     <tr>
+       <td rowspan="3">MDEntropy</td>
+       <td rowspan="3">MI</td>
+       <td>Combination of the backbone dihedrals (Phi, psi and omega)</td>
+       <td>MDEntropyDihs</td>
+     </tr>
+     <tr>
+       <td><a href="https://github.com/msmbuilder/msmbuilder/blob/515fd5c27836c797692d600216b5eb224dfc1c5d/msmbuilder/featurizer/featurizer.py#L802" target="_blank" rel="noopener noreferrer">Alpha angle</a> (dihedral between i-1, i, i+1 and i+2's alpha-Cs)</td>
+       <td>MDEntropyAlphaAngle</td>
+     </tr>
+     <tr>
+       <td rowspan="3">Contact frequency<br></td>
+       <td>Whole residue</td>
+       <td>MDEntropyContacts</td>
+     </tr>
+     <tr>
+       <td>getcontacts</td>
+       <td>-</td>
+       <td>Whole residue</td>
+       <td>Getcontacts</td>
+     </tr>
+     <tr>
+       <td rowspan="2">PyInteraph2</td>
+       <td rowspan="2">-</td>
+       <td>Whole residue</td>
+       <td>PyInteraph</td>
+     </tr>
+     <tr>
+       <td rowspan="3">Interaction energies</td>
+       <td>Whole residue</td>
+       <td>PyInteraphEne</td>
+     </tr>
+     <tr>
+       <td rowspan="2">gRINN</td>
+       <td>-</td>
+       <td>Whole residue</td>
+       <td>GRINN</td>
+     </tr>
+     <tr>
+       <td>Pearson's</td>
+       <td>Whole residue</td>
+       <td>GRINNcorr</td>
+     </tr>
+   </tbody>
+   </table>
 
 Cite
--------
+----
 
-License
+--
+
+Licensing
 ---------
+
+🙃

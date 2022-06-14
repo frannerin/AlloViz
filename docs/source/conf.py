@@ -97,7 +97,9 @@ df.index = pandas.MultiIndex.from_tuples(list(df.index), names=["Residue informa
                                                             "Correlation measurement",
                                                             "Atom/angle tracked"])
 
-with open("_static/table.html", "w") as f:
-	f.write(".. raw:: html\n\n")
+with open("table.html", "w") as f1, open("../../table.html", "w") as f2:
+	f1.write(".. raw:: html\n\n")
+	f2.write(".. raw:: html\n\n")
 	for line in df.to_html(header=False).replace(' valign="top"', '').split("\n"):
-		f.write(f"\t{line}\n")
+		f1.write(f"\t{line}\n")
+		f2.write(f"\t{line}\n")

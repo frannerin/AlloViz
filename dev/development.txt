@@ -1,0 +1,5 @@
+sphinx=>5
+sphinx_rtd_theme
+jupyterlab
+nb_conda_kernels
+
