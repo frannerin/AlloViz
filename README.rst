@@ -105,10 +105,6 @@ with associated class methods. For example:
    activeMuOR.view("corrplusCOM", "btw_avg", filterby="whole")
 
 Available information sources for network generation
-----------------------------------------------------
-
-.. include:: table.html
-
 
 Cite
 -------

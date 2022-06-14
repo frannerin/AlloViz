@@ -65,4 +65,8 @@ for key, val in wrappers.items():
 
 
 import pandas
-df = pandas.DataFrame.from_dict(inverse, orient="index", columns=["Name"])
+df = pandas.DataFrame.from_dict(inverse, orient="index", columns=["Name in AlloViz"])
+df.index = pandas.MultiIndex.from_tuples(list(df.index), names=["Residue information extracted from trajectories",
+                                                            "Package",
+                                                            "Correlation measurement",
+                                                            "Atom/angle tracked"])

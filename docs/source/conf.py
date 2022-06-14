@@ -88,21 +88,40 @@ html_theme = 'sphinx_rtd_theme'
 
 
 sys.path.insert(0, os.path.abspath('../..'))
-import pandas
 from src.AlloViz.AlloViz import info
 
 df = info.df
-df.index = pandas.MultiIndex.from_tuples(list(df.index), names=["Residue information extracted from trajectories",
-                                                            "Package",
-                                                            "Correlation measurement",
-                                                            "Atom/angle tracked"])
 
-with open("table.html", "w") as f:
-	f.write(".. raw:: html\n\n")
-	for line in df.to_html(header=False).replace(' valign="top"', '').split("\n"):
-		f.write(f"\t{line}\n")
+# with open("../../README.rst", "a") as f:
+# 	f.write(".. raw:: html\n\n")
+# 	for line in df.to_html(header=False).replace(' valign="top"', '').split("\n"):
+# 		f.write(f"\t{line}\n")
 
-with open("../../table.html", "w") as f:
-	f.writelines(
-		df.reset_index().to_markdown(tablefmt="grid", index=False)
-		)
+# with open("../../table.html", "w") as f:
+# 	f.writelines(
+# 		df.reset_index().to_markdown(tablefmt="grid", index=False)
+# 		)
+
+
+header = "Available information sources for network generation\n----------------------------------------------------\n\n.. raw:: html\n\n"
+
+tabulated_table = ""
+for line in df.to_html(header=False).replace(' valign="top"', '').split("\n"):
+	tabulated_table += f"\t{line}\n"
+
+import fileinput, sys
+for line in fileinput.input("../../README.rst", inplace=True):
+    if line.startswith('Available information sources for network generation'):
+    	line = header + tabulated_table
+    sys.stdout.write(line)
+
+
+
+# with open("../../README.rst", "r") as in_file:
+#     buf = in_file.readlines()
+
+# with open("../../README.rst", "w") as out_file:
+#     for line in buf:
+#         if line.startswith('Available information sources for network generation'):
+#         	line = header + tabulated_table
+#         out_file.write(line)
