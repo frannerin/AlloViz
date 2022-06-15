@@ -41,7 +41,9 @@ extensions = [
     "myst_nb",
 ]
 
+# fixes for myst_nbs
 source_suffix = ['.rst', '.ipynb']
+autosummary_generate = ['api.rst']
 
 
 
