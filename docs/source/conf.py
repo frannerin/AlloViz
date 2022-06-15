@@ -41,10 +41,7 @@ extensions = [
     "myst_nb",
 ]
 
-source_suffix = {
-    '.rst': 'restructuredtext',
-    '.ipynb': 'myst-nb',
-}
+source_suffix = ['.rst', '.ipynb']
 
 
 
