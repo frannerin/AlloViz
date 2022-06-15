@@ -283,9 +283,15 @@ class Protein:
         # taskcpus = kwargs.pop("taskcpus") if "taskcpus" in kwargs else cores
         
         for pkg in pkgs: #self._set_pkgclass(self, pkg, d) #**kwargs)
-            pkgclass = eval(f"Pkgs.{capitalize(pkg)}") if isinstance(pkg, str) else pkg
+            try:
+                pkg_ix = [pkg.lower() for pkg in utils.pkgsl].index(pkg.lower())
+            except:
+                raise Exception(f"{pkg} isn't a valid name of an AlloViz network construction method.")
+    
+            pkgclass = eval(f"Wrappers.{utils.pkgsl[pkg_ix]}")
+            
             if not hasattr(self, pkgclass.__name__):
-                setattr(self, pkgclass.__name__, pkgclass(self, d))#**kwargs))
+                setattr(self, pkgclass.__name__, pkgclass(self, d))
         
         if cores>1:
             mypool.close()
@@ -378,8 +384,8 @@ class Protein:
         >>> print(opioidGPCR.dynetan.Intercontact.edges.df.shape)
         (3410, 5)
         """
-        pkgs = [pkg for pkg in self.__dict__ if pkg.lower() in (pkg.lower() for pkg in pkgl)] if pkg=="all" else pkg if isinstance(pkg, list) else [pkg]
-        filterbys = utils.filterbyl if filterby=="all" else filterby if isinstance(filterby, list) else [filterby]
+        pkgs = [pkg for pkg in self.__dict__ if pkg in utils.pkgsl] if pkg=="all" else pkg if isinstance(pkg, list) else [pkg]
+        filterbys = utils.filterbysl if filterby=="all" else filterby if isinstance(filterby, list) else [filterby]
         elements = element if isinstance(element, list) else [element]
         metrics = set(list(nodes_dict.keys()) + list(edges_dict.keys())) if metrics=="all" else metrics if isinstance(metrics, list) else [metrics]
         
@@ -389,11 +395,11 @@ class Protein:
             utils.pool = mypool
         print(utils.pool)
         
-        for pkg in pkgs:
-            pkgclass = eval(f"Pkgs.{capitalize(pkg)}") if isinstance(pkg, str) else pkg
-            pkg = rgetattr(self, pkgclass.__name__)
+        for pkgn in pkgs:
+            # pkgclass = eval(f"Wrappers.{pkg}")#eval(f"Pkgs.{capitalize(pkg)}") if isinstance(pkg, str) else pkg
+            pkg = rgetattr(self, pkgn)
             if not pkg:
-                print(f"{pkgclass.__name__} calculation results are needed first")
+                print(f"{pkgn} calculation results are needed first")
                 continue
                 
             for filterby in filterbys:

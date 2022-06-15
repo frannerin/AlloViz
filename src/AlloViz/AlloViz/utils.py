@@ -1,8 +1,5 @@
-pkgsl = ["MDTASK", "Getcontacts", "PyInteraph", "PyInteraphEne", "Dynetan", "DynetanCOM", "PytrajCA", "PytrajCB",
-         "Corrplus", "CorrplusLMI", "CorrplusCOM", "CorrplusCOMLMI", "CorrplusPsi", "CorrplusPhi", "CorrplusOmega", "CorrplusDihs",
-        "gRINN", "gRINNcorr", "G_corrCAMI", "G_corrCOMMI", "g_corrCALMI", "g_corrCOMLMI",
-        "AlloVizPsi", "AlloVizPhi", "AlloVizOmega", "AlloVizDihs",
-        "MDEntropyContacts", "MDEntropyDihs", "MDEntropyAlphaAngle"]
+from . import info
+pkgsl = list(info.wrappers.keys())
 
 metricsl = ["cfb", "btw"]
 
@@ -55,13 +52,6 @@ def capitalize(string):
 
 
 
-
-from importlib import import_module
-from lazyasd import LazyObject
-
-def lazy_import(key, val):
-    extra_arg = "package='AlloViz'" if 'Packages' in val else ''
-    return LazyObject(lambda: import_module(val, extra_arg(val)), globals(), key)
 
 
 

@@ -1,9 +1,23 @@
-import pandas, time
+import os, time
+
+import pandas
 import numpy as np
 
 from contextlib import redirect_stdout, redirect_stderr
+from importlib import import_module
+from lazyasd import LazyObject
 
-from ..AlloViz.utils import rgetattr, rhasattr, capitalize
+from ..AlloViz.utils import get_pool, rgetattr, rhasattr, capitalize
+
+
+
+
+def lazy_import(key, val):
+    extra_arg = {"package": 'AlloViz'} if 'Packages' in val else {}
+    return LazyObject(lambda: import_module(val, **extra_arg), globals(), key)
+
+
+
 
 
 
@@ -148,7 +162,8 @@ class Combined_Dihs(Base):
         
         if any(no_exist(Dihl)):
             for Dih in (Dih for Dih in Dihl if no_exist(Dihl)[Dihl.index(Dih)]):
-                pkgclass = eval(capitalize(f"{pkg}{Dih}")) if isinstance(pkg, str) else pkg
+                #pkgclass = eval(f"{pkg}{Dih}") if isinstance(pkg, str) else pkg
+                pkgclass = eval(f"self._{Dih}")
                 setattr(self.protein, pkgclass.__name__, pkgclass(self.protein, self._d))
 
         

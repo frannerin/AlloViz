@@ -1,12 +1,12 @@
 import pandas
 
-from .Base import Multicore
+from .Base import lazy_import, Multicore
 
-from ..AlloViz.utils import lazy_import
+# from ..AlloViz.utils import lazy_import
 
 imports = {
-"_getcontacts_contacts": "..Packages.getcontacts.get_dynamic_contacts",
-"_getcontacts_freqs": "..Packages.getcontacts.get_contact_frequencies",
+"_getcontacts_contacts": ".Packages.getcontacts.get_dynamic_contacts",
+"_getcontacts_freqs": ".Packages.getcontacts.get_contact_frequencies",
 }
 
 for key, val in imports.items():

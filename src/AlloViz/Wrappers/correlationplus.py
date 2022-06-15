@@ -1,9 +1,9 @@
-from .Base import Base, Use_COM, Combined_Dihs
+from .Base import lazy_import, Base, Use_COM, Combined_Dihs
 
-from ..AlloViz.utils import lazy_import
+# from ..AlloViz.utils import lazy_import
 
 imports = {
-"_corrplus": "..Packages.correlationplus.correlationplus.calculate",
+"_corrplus": ".Packages.correlationplus.correlationplus.calculate",
 }
 
 for key, val in imports.items():
@@ -69,4 +69,7 @@ class correlationplus_Omega(correlationplus_Psi):
         
         
 class correlationplus_Dihs(Combined_Dihs, correlationplus_CA_Pear):
+    _Phi = correlationplus_Phi
+    _Psi = correlationplus_Psi
+    _Omega = correlationplus_Omega
     pass

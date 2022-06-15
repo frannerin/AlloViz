@@ -129,7 +129,7 @@ def add_comtrajs(state, protein_sel):
     compdb = f"{compath}/ca.pdb"
     if not os.path.isfile(compdb):
         print(f"Making trajectories of residue COM for {state._pdbf}")
-        prot = state.mdau.select_atoms(f"({protein_sel}) and name CA")
+        prot = state.u.select_atoms(f"({protein_sel}) and name CA")
         prot.write(compdb)
     setattr(state, "_compdbf", compdb)
 
@@ -138,8 +138,8 @@ def add_comtrajs(state, protein_sel):
 
     for xtc, comtraj in state._comtrajs.items():
         if not os.path.isfile(comtraj):
-            prot = state.mdau.select_atoms(protein_sel)
-            traj = state.mdau.trajectory.readers[xtc-1] if hasattr(state.mdau.trajectory, "readers") else state.mdau.trajectory
+            prot = state.u.select_atoms(protein_sel)
+            traj = state.u.trajectory.readers[xtc-1] if hasattr(state.u.trajectory, "readers") else state.u.trajectory
             # traj = next(traj for traj in state.mdau.trajectory.readers if traj.filename == state._trajs[xtc])
             arr = np.empty((prot.n_residues, traj.n_frames, 3))
             for ts in traj:

@@ -1,6 +1,6 @@
-from .Base import Base
+from .Base import lazy_import, Base
 
-from ..AlloViz.utils import lazy_import
+# from ..AlloViz.utils import lazy_import
 
 imports = {
 "_pyinteraph": "pyinteraph.main",

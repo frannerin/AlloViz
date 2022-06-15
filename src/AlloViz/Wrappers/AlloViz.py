@@ -1,11 +1,11 @@
 import numpy as np
 
-from .Base import Multicore, Use_COM, Combined_Dihs
+from .Base import lazy_import, Multicore, Use_COM, Combined_Dihs
 
-from ..AlloViz.utils import lazy_import
+# from ..AlloViz.utils import lazy_import
 
 imports = {
-"_npeet_lnc": "..Packages.NPEET_LNC.lnc",
+"_npeet_lnc": ".Packages.NPEET_LNC.lnc",
 "_mda_dihedrals": "MDAnalysis.analysis.dihedrals",
 }
 
@@ -122,4 +122,7 @@ class AlloViz_Omega(AlloViz):
         
     
 class AlloViz_Dihs(Combined_Dihs, AlloViz):
+    _Phi = AlloViz_Phi
+    _Psi = AlloViz_Psi
+    _Omega = AlloViz_Omega
     pass

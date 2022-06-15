@@ -1,11 +1,11 @@
 import numpy as np
 
-from .Base import Multicore, Use_COM
+from .Base import lazy_import, Multicore, Use_COM
 
-from ..AlloViz.utils import lazy_import
+# from ..AlloViz.utils import lazy_import
 
 imports = {
-"_dynetan": "..Packages.dynetan.dynetan.proctraj",
+"_dynetan": ".Packages.dynetan.dynetan.proctraj",
 }
 
 for key, val in imports.items():
