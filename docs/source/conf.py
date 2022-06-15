@@ -41,6 +41,13 @@ extensions = [
     "myst_nb",
 ]
 
+source_suffix = {
+    '.rst': 'restructuredtext',
+    '.ipynb': 'myst-nb',
+}
+
+
+
 # Make sure the target is unique
 autosectionlabel_prefix_document = True
 
