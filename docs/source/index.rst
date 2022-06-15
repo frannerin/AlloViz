@@ -24,7 +24,7 @@ Contents
    :maxdepth: 2
 
    README
-   ../../test
+   ../../test.ipynb
    api
 
 ..
