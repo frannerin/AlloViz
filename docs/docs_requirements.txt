@@ -7,3 +7,4 @@ numpy
 lazyasd
 networkx
 tabulate
+myst-nb

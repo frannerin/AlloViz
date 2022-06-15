@@ -38,6 +38,7 @@ extensions = [
     #'sphinx.ext.napoleon',
     'numpydoc',
     'sphinx.ext.autosectionlabel',
+    "myst_nb",
 ]
 
 # Make sure the target is unique

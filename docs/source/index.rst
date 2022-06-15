@@ -4,7 +4,7 @@
    contain the root `toctree` directive.
 
 
-Welcome to AlloViz's documentation!
+AlloViz's documentation!
 ===================================
 
 **AlloViz** is a Python package to interactively compute, analyze and visualize protein allosteric communication (residue interaction) networks and delta-networks.
@@ -24,6 +24,7 @@ Contents
    :maxdepth: 2
 
    README
+   ../../test
    api
 
 ..

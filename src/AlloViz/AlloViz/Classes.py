@@ -560,15 +560,4 @@ class Delta:
     
     
     def view(self, pkg, metric, filterby="Whole", element:list=["edges"], num=20, colors=["orange", "turquoise"]):
-        # norm = self._get_norm_str(normalize)
-        # if not rhasattr(self.data, filterby, norm, pkg):
-        #     self.analyze(pkg, normalize=normalize, filterby=filterby)
-        
-        get_element = lambda element: rgetattr(self, capitalize(pkg), capitalize(filterby), element.lower())
-        
-        nv = get_element(element[0]).view(metric, num, colors)
-        
-        if len(element) == 2:
-            nv = get_element(element[1]).view(metric, num, colors, nv)
-            
-        return nv
+        return Protein.view(self, pkg, metric, filterby, element, num, colors)
