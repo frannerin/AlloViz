@@ -3,6 +3,8 @@ import time
 
 import pandas
 import numpy as np
+import networkx as nx
+from importlib import import_module
 
 from .Visualization import Edges, Nodes
 from .utils import rgetattr, rhasattr, capitalize

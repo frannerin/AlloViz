@@ -418,12 +418,22 @@ class Protein:
     
     
         
-    def view(self, pkg, metric, filterby="incontact", element:list=["edges"], num=20, colors=["orange", "turquoise"]):        
-        get_element = lambda element: rgetattr(self, capitalize(pkg), capitalize(filterby), element.lower())
+    def view(self, pkg, metric, filterby="Whole", element:list=["edges"], num=20, colors=["orange", "turquoise"]):
+        try:
+            pkg_ix = [pkg.lower() for pkg in utils.pkgsl].index(pkg.lower())
+            pkg = utils.pkgsl[pkg_ix]
+        except:
+            raise Exception(f"{pkg} isn't a valid name of an AlloViz network construction method.")
+        
+        get_element = lambda element: rgetattr(self, pkg, capitalize(filterby), element.lower())
+        if not get_element(element[0]):
+            raise Exception(f"{element[0]} analysis with {filterby} filtering needs to be sent first.")
         
         nv = get_element(element[0]).view(metric, num, colors)
         
         if len(element) == 2:
+            if not get_element(element[0]):
+                raise Exception(f"{element[1]} analysis with {filterby} filtering needs to be sent first.")
             nv = get_element(element[1]).view(metric, num, colors, nv)
             
         return nv
@@ -549,7 +559,7 @@ class Delta:
     
     
     
-    def view(self, pkg, metric, filterby="incontact", element:list=["edges"], num=20, colors=["orange", "turquoise"]):
+    def view(self, pkg, metric, filterby="Whole", element:list=["edges"], num=20, colors=["orange", "turquoise"]):
         # norm = self._get_norm_str(normalize)
         # if not rhasattr(self.data, filterby, norm, pkg):
         #     self.analyze(pkg, normalize=normalize, filterby=filterby)
