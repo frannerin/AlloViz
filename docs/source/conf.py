@@ -35,8 +35,8 @@ extensions = [
     #'sphinx.ext.autodoc',
     'sphinx.ext.viewcode',
     #'sphinx.ext.napoleon',
-    #'sphinx.ext.napoleon',
-    'numpydoc',
+    'sphinx.ext.napoleon',
+    #'numpydoc',
     'sphinx.ext.autosectionlabel',
     "myst_nb",
 ]
