@@ -9,5 +9,6 @@ networkx
 tabulate
 #myst-nb
 ipython
+ipywidgets
 nbsphinx
 nbsphinx-link
