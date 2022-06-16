@@ -7,4 +7,6 @@ numpy
 lazyasd
 networkx
 tabulate
-myst-nb
+#myst-nb
+nbsphinx
+nbsphinx-link

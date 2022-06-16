@@ -38,15 +38,19 @@ extensions = [
     'sphinx.ext.napoleon',
     #'numpydoc',
     'sphinx.ext.autosectionlabel',
-    "myst_nb",
+    #"myst_nb",
+    "nbsphinx",
+    "nbsphinx_link",
 ]
 
 # fixes for myst_nbs
 source_suffix = ['.rst', '.ipynb']
 autosummary_generate = ['api.rst']
 
-nb_execution_mode = "off"
-nb_kernel_rgx_aliases = {"develop.*": "python3"}
+#nb_execution_mode = "off"
+#nb_kernel_rgx_aliases = {"develop.*": "python3"}
+nbsphinx_execute = 'never'
+nbsphinx_kernel_name = 'python3'
 
 
 
