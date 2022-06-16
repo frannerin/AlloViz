@@ -199,18 +199,18 @@ class Incontact(Analysis):
         df = super()._get_filt_data()
         
         try:
-            indices = self._pkg.protein.Getcontacts.raw.index
+            indices = self._pkg.protein.GetContacts.raw.index
         except:
-            raise Exception("Getcontacts results are needed first")
-#         if not rhasattr(self._pkg.state, "Getcontacts", "raw"):
-#             print("Getcontacts results are needed; sending calculation first...")
+            raise Exception("GetContacts results are needed first")
+#         if not rhasattr(self._pkg.state, "GetContacts", "raw"):
+#             print("GetContacts results are needed; sending calculation first...")
             
 #             pool = utils.get_pool()
             
-#             self._pkg.state._set_pkgclass(self._pkg.state, "Getcontacts", taskcpus = int(np.ceil(pool._processes/2)))
+#             self._pkg.state._set_pkgclass(self._pkg.state, "GetContacts", taskcpus = int(np.ceil(pool._processes/2)))
             
             
-#             gc = self._pkg.state.Getcontacts
+#             gc = self._pkg.state.GetContacts
 #             pqs = [gc._rawpq(xtc) for xtc in gc.state._trajs]
 #             no_exist = lambda pqs: [not os.path.isfile(pq) for pq in pqs]
 
@@ -223,7 +223,7 @@ class Incontact(Analysis):
 #                 time.sleep(5)
                 
                 
-#         indexes = self._pkg.state.Getcontacts.raw.index
+#         indexes = self._pkg.state.GetContacts.raw.index
             
         return df.filter(indices, axis=0) # maybe pass indexes in class creation
         

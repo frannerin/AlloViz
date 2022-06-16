@@ -45,6 +45,9 @@ extensions = [
 source_suffix = ['.rst', '.ipynb']
 autosummary_generate = ['api.rst']
 
+nb_execution_mode = "off"
+nb_kernel_rgx_aliases = {"develop.*": "python3"}
+
 
 
 # Make sure the target is unique

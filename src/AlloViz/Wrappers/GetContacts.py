@@ -1,3 +1,5 @@
+import os
+
 import pandas
 
 from .Base import lazy_import, Multicore
