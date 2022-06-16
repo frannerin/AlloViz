@@ -8,5 +8,6 @@ lazyasd
 networkx
 tabulate
 #myst-nb
+ipython
 nbsphinx
 nbsphinx-link
