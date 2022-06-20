@@ -484,9 +484,10 @@ class Delta:
         from Bio.SeqUtils import seq1
         from distutils.spawn import find_executable
 
-        path = find_executable('t_coffee').replace('/t_coffee', '')
+        t_coffee = find_executable('t_coffee')
+        path = t_coffee.replace('/t_coffee', '')
         env = {"HOME": path, "PATH": os.environ["PATH"] + f":{path}"}
-        tcoffee = Popen(f"t_coffee -pdb={self.state1._protpdb},{self.state2._protpdb} -method {aln_method} -outfile no -template_file no -output clustalw -align".split(" "),
+        tcoffee = Popen(f"{t_coffee} -pdb={self.state1._protpdb},{self.state2._protpdb} -method {aln_method} -outfile no -template_file no -output clustalw -align".split(" "),
                         stdout=PIPE, stderr=PIPE, encoding="utf-8", env=env)
         # tmalign = Popen(f"TMalign {self.state1._protpdb} {self.state2._protpdb}".split(" "),# -method {aln_method} -outfile no -template_file no -output clustalw -align".split(" "),
         #                 stdout=PIPE, stderr=PIPE, encoding="utf-8")#, env=env)

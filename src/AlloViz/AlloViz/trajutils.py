@@ -86,9 +86,18 @@ Please provide a mapping from 3/4-letter code to 1-letter code as a dictionary w
                                          files = {'pdb_file': protf.getvalue()})
                 with open(prot_numsf, "w") as prot_nums:
                     prot_nums.write(response.text)
-
-        nums = mda.Universe(prot_numsf).select_atoms(f"{protein_sel} and name N").tempfactors
-        mdau.select_atoms(f"{protein_sel} and name N").tempfactors = nums.round(2)
+        
+        # print "GPCRdb script labeling generic numbers on the annotated pdb structure\nKey bindings for labels:\nF1 - show generic numbers\nF2 - show Ballesteros-Weinstein numbers\nF3 - clear labels"
+        # label n. CA or n. N
+        # cmd.set_key('F1', 'label n. CA & (b >-8.1 and  b <8.1), str("%1.2f" %b).replace(".","x") if b > 0 else str("%1.3f" %(-b + 0.001)).replace(".", "x")')
+        # cmd.set_key('F2', 'label n. N & (b > 0 and  b <8.1), "%1.2f" %b')
+        # cmd.set_key('F3', 'label n. CA or n. N')
+        nums = mda.Universe(prot_numsf).select_atoms(f"{protein_sel} and name CA").tempfactors
+        GPCRdb_nums = np.array([round(bfactor, 2) if bfactor>1 else round(-bfactor+0.001, 3) if bfactor<0 else 0 for bfactor in nums])
+        
+        mdau.select_atoms(f"{protein_sel} and name CA").tempfactors = GPCRdb_nums#.round(2)
+        pdb.select_atoms(f"{protein_sel} and name CA").tempfactors = GPCRdb_nums
+        prot.select_atoms(f"{protein_sel} and name CA").tempfactors = GPCRdb_nums
     
     else:
         protcopy.write(state._protpdb)
