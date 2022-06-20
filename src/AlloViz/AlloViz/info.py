@@ -52,7 +52,7 @@ wrappers = {
     "PyInteraph2_Contacts": ("Contact frequency", "PyInteraph2", "-", whole),
     "PyInteraph2_Energy": ("Interaction energy", "PyInteraph2", "-", whole),
     
-    "gRINN": ("Interaction energy", "gRINN", NA, whole),
+    "gRINN": ("Interaction energy", "gRINN", "-", whole),
     # "gRINN_corr": ("Interaction energy", "gRINN", "Pearson's", whole),
 }
 
