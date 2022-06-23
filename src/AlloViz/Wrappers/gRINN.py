@@ -3,26 +3,32 @@ import os
 import pandas
 import numpy as np
 
-from .Base import lazy_import, Multicore, Use_dcd
+from .Base import lazy_import, Multicore#, Use_dcd
 
 # from ..AlloViz.utils import lazy_import
 
-imports = {
+imports = {mdau_parent.protein
 "_grinn_args": ".Packages.gRINN_Bitbucket.source.grinn",
 "_grinn_calc": ".Packages.gRINN_Bitbucket.source.calc",
 "_grinn_corr": ".Packages.gRINN_Bitbucket.source.corr",
+"_mdtraj": "mdtraj"
 }
 
 for key, val in imports.items():
     exec(f"{key} = lazy_import(*{key, val})")
     
-    
+
     
 
 
-class gRINN(Use_dcd, Multicore):
+class gRINN(Multicore): #Use_dcd
     def __new__(cls, protein, d):
         new = super().__new__(cls, protein, d)
+        
+        # new._dcdpath = f"{new._d['_datadir']}/dcd_trajs"
+        # os.makedirs(new._dcdpath, exist_ok=True)
+        # new._pdbf = new._d["_protpdb"]
+        # new._trajs = new._d["dcds"]
         
         if "namd" in new._d:
             new.namd = new._d["namd"]
@@ -41,17 +47,21 @@ class gRINN(Use_dcd, Multicore):
         
         
     def _computation(self, xtc):# pdb, traj, out, xtc, pq, psf, params, taskcpus):
-        psf = self._d["_protpsf"]
+        psf = self._d["_psff"]
         params = self._d["_paramf"]
         out = f"{self._path}/{xtc}"
         outf = f"{out}/energies_intEnMeanTotal.dat"
+        
+        dcd = f"{self._path}/{xtc}.dcd"
+        traj = _mdtraj.load(self._trajs[xtc], top=self._pdbf)#, atom_indices=Protein.protein.indices)
+        traj.save_dcd(dcd)
         
         if not os.path.isfile(outf):
             if os.path.isdir(out):
                 from shutil import rmtree
                 rmtree(out)
             
-            _grinn_calc.getResIntEn(_grinn_args.arg_parser(f"-calc --pdb {self._pdbf} --top {psf} --traj {self._trajs[xtc]} --exe {self.namd} --outfolder {out} --numcores {self.taskcpus} --parameterfile {params}".split()))
+            _grinn_calc.getResIntEn(_grinn_args.arg_parser(f"-calc --pdb {self._pdbf} --top {psf} --traj {dcd} --exe {self.namd} --outfolder {out} --numcores {self.taskcpus} --parameterfile {params}".split()))
             
         corr = np.loadtxt(outf)
         return corr, xtc

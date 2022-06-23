@@ -76,8 +76,8 @@ class Element:
         mdau_parent = self._parent.state1 if isinstance(self._parent, Classes.Delta) else self._parent
         
         if nv is None:
-            prot = mda.core.universe.Merge(mdau_parent.pdbu.select_atoms(f"({mdau_parent._protein_sel}) or segid LIG"))
-            nv = nglview.show_mdanalysis(prot, default=False)
+            # prot = mda.core.universe.Merge(mdau_parent.protein).select_atoms(f"({mdau_parent._protein_sel}) or segid LIG"))
+            nv = nglview.show_mdanalysis(mdau_parent.protein, default=False)
             nv.add_cartoon('protein', color='white')
         
         return nv, mdau_parent
@@ -109,7 +109,7 @@ class Element:
         indices = subset.index if isinstance(subset.index[0][0], str) else subset.index.map(mdau_parent._translate_ix(mdau_parent._aln_mapper))
         
         for i in range(len(subset[metric])):
-            self._add_element(nv, mdau_parent.pdbu, indices[i], colors[i], sizes[i])
+            self._add_element(nv, mdau_parent.protein, indices[i], colors[i], sizes[i])
 
         return nv
     

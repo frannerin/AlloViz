@@ -17,6 +17,10 @@
 AlloViz
 =======
 
+.. image:: https://readthedocs.org/projects/alloviz/badge/?version=latest
+:target: https://alloviz.readthedocs.io/en/latest/?badge=latest
+:alt: Documentation Status
+
 A Python package to interactively compute, analyze and visualize protein
 allosteric communication (residue interaction) networks and
 delta-networks.

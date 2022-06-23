@@ -24,7 +24,7 @@ class AlloViz(Multicore):
             
     
     def _computation(self, xtc):#pdb, traj, xtc, pq):
-        prot = self._d["u"].select_atoms(self._d["_protein_sel"])
+        prot = self._d["protein"]
         selected_res = self._d["_dihedral_residx"]()
         
         select_dih = lambda res: eval(f"res.{self._dih.lower()}_selection()")

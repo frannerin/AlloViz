@@ -30,7 +30,7 @@ class Base:
         new.protein = protein
         new._d = d
         
-        new._selection = d["_protein_sel"]
+        #new._selection = d["_protein_sel"]
         new._pdbf = d["_pdbf"]
         new._trajs = d["_trajs"]
         
@@ -106,7 +106,7 @@ class Base:
         elif len(resl) == 0:
             resl = slice(0, corr.shape[0])
             
-        resnames = [f"{aa.resname}:{aa.resid}" for aa in self._d["u"].select_atoms(self._selection).residues[resl]]
+        resnames = [f"{aa.resname}:{aa.resid}" for aa in self._d["protein"].residues[resl]]
         
         df = pandas.DataFrame(corr, columns=resnames, index=resnames)
         df = df.where( np.triu(np.ones(df.shape), k=1).astype(bool) )
@@ -211,11 +211,10 @@ class Use_COM(Base):
 
     
     
-class Use_dcd(Base):
-    def __new__(cls, protein, d):
-        new = super().__new__(cls, protein, d)
+# class Use_dcd(Base):
+#     def __new__(cls, protein, d):
+#         new = super().__new__(cls, protein, d)
         
-        new._pdbf = new._d["_protpdb"]
-        new._trajs = new._d["dcds"]
         
-        return new
+        
+#         return new

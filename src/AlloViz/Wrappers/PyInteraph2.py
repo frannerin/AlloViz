@@ -25,10 +25,10 @@ class PyInteraph2_Contacts(PyInteraph2_Base):
     def __new__(cls, protein, d):
         new = super().__new__(cls, protein, d)
         
-        reslist = set(new._d["u"].select_atoms(d["_protein_sel"]).residues.resnames)
+        #reslist = set(new._d["u"].select_atoms(d["_protein_sel"]).residues.resnames)
         new._CLIargs = f"-m --cmpsn-graph dummy"# --cmpsn-residues {','.join(reslist)}"
         
-        new._bonded_cys_indices = new.protein._get_bonded_cys(new._d["_pdbf"])
+        #new._bonded_cys_indices = new.protein._bonded_cys#(new._d["_pdbf"])
         
         return new
                 
@@ -37,7 +37,7 @@ class PyInteraph2_Contacts(PyInteraph2_Base):
         corr, xtc = super()._computation(xtc)#corr = _pyinteraph.main(f"-s {self._pdbf} -t {self._trajs[xtc]} {self._CLIargs}".split()) / 100
         corr = corr / 100
         
-        bonded_cys_indices = self._bonded_cys_indices
+        bonded_cys_indices = self._d["_bonded_cys"]
         
         if len(bonded_cys_indices) > 1:
             for res1 in bonded_cys_indices:

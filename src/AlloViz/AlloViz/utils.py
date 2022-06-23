@@ -3,7 +3,7 @@ pkgsl = list(info.wrappers.keys())
 
 metricsl = ["cfb", "btw"]
 
-filterbyl = ["whole", "incontact", "intercontact"]
+filterbysl = ["whole", "incontact", "intercontact"]
 
 
 

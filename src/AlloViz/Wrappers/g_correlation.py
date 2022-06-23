@@ -27,7 +27,7 @@ g_correlation -f {self._trajs[xtc]} -s {self._pdbf} -o {pq}.dat {self._CLIargs} 
 EOF
 """)
         # Read output.dat
-        size = self._d["u"].select_atoms(f"({self._d['_protein_sel']}) and name CA").n_atoms
+        size = self._d["protein"].select_atoms("name CA").n_atoms
         corr = np.empty([size, size])
         rown = 0
         row = []

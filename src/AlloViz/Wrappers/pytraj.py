@@ -30,5 +30,5 @@ class pytraj_CA(Base):
 class pytraj_CB(pytraj_CA):
     def __new__(cls, protein, d):
         new = super().__new__(cls, protein, d)
-        new._selection = f"({d['_protein_sel']}) and not resname GLY"
+        new._selection = "not resname GLY"#f"({d['_protein_sel']}) and not resname GLY"
         return new

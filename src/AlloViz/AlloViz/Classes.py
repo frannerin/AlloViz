@@ -1,14 +1,14 @@
 import os, io, re
 
 from multiprocess import Pool
-
+import MDAnalysis as mda
 
 from .Analysis import Whole, Incontact, Intercontact
 from .Visualization import Edges, Nodes
 
 from .utils import rgetattr, rhasattr, capitalize
 from . import utils
-from . import trajutils
+#from . import trajutils
 
 from .. import Wrappers
 
@@ -35,60 +35,54 @@ class Protein:
         Filename of the PDB structure to read, process and use.
     trajs : str or list
         Filename(s) of the MD trajectory (or trajectories) to read and use. File format
-        must be recognized by MDAnalysis (e.g., xtc), and other network construction
+        must be recognized by MDAnalysis (e.g., xtc), while other network construction
         packages may have stricter file format requirements.
     GPCR : bool or int, default: False
         Use `True` if the structure is a GPCR, or pass the ID of a GPCRmd database
         dynamics entry, without specifying the `pdb` nor the `trajs` parameters, to 
         automatically retrieve the files from the database and process them. They will
         be downloaded to `path`, which if left undefined will default to the GPCRmd ID.
-    name : str, default: `pdb`
-        Name string of the protein/class instance to be used for visualization, e.g., 
-        for the title of the colorbar shown when representing a network with nglviewer.
+    name : str, default: "protein"
+        Name string to be used, e.g., for the title of the colorbar shown when
+        representing a network with nglviewer.
     path : str, optional
         Path to store results in. It can exist already or not, and a new folder inside
         it called `data` will be also created to store computation results and other
         files. If unspecified, it defaults to "." or the GPCRmd ID in case it is used.
+    protein_sel : str, default: "(same segid as protein) and (not segid LIG) and (not chainid L)"
+        MDAnalysis atom selection string to select the protein structure from the 
+        Universe (e.g., in case simulation in biological conditions are used, with
+        water molecules, ions...).
 
     Other Parameters
     ----------------
-    protein_sel : str, default: "same segid as protein"
-        MDAnalysis atom selection string to select the protein structure from the 
-        Universe (e.g., in case simulation in biological conditions are used, with
-        water molecules, ions...). Some network construction methods use the source
-        files directly, and might end up providing data with a different size than that
-        obtained with this selection, which will cause errors.
     psf : str, optional
-        Filename of the .psf file corresponding to the pdb used. It is required by gRINN.
+        Optional kwarg of the filename of the .psf file corresponding to the pdb used.
+        It is required alongside the `parameters` file to use the gRINN network
+        construction method.
     parameters : str, optional
-        Filename of the MD simulation force-field parameters file in NAMD format. It is
-        required by gRINN.
-    **kwargs
-        A dictionary can be passed with the `special_res` keyword argument, containing
-        a mapping of special residue 3/4-letter code(s) present in the structure to the
-        corresponding 1-letter code(s). Most times it is not necessary, and it may also
-        cause problems with network construction methods that do not interpret these 
-        special residues as part of the protein, which will return data with size
-        different to what is expected causing errors.
+        Optional kwarg of the filename of the MD simulation force-field parameters file
+        in NAMD format. It is required alongside the `psf` file to use the gRINN network
+        construction method.
+    special_res : dict, optional
+        Optional kwarg of a dictionary containing a mapping of special residue 3/4-letter
+        code(s) present in the structure to the corresponding standard 1-letter code(s).
     
     Attributes
     ----------
     pdb
     trajs
-    path
     GPCR
-    pdbu : MDAnalysis.core.Universe
-        Universe of the pdb file provided.
-    prot : MDAnalysis.core.groups.AtomGroup
-        AtomGroup of the selected `protein_sel` string, taken from the `pdbu` Universe.
-    mdau : MDAnalysis.core.Universe
-        Universe of the pdb and trajectory file(s) provided.
+    protein : MDAnalysis.core.groups.AtomGroup
+        AtomGroup of the selected `protein_sel` string, taken from the pdb file.
+    u : MDAnalysis.core.Universe
+        Universe of the pdb and trajectory files with only the `protein_sel` atoms.
     
     Raises
     ------
     FileNotFoundError
-        If any of the files passed in `pdb` and `traj` (and `psf` and `parameters` if 
-        provided) parameters cannot be accessed.
+        If any of the files passed in the `pdb` and `traj` (and `psf` and `parameters`
+        if provided) parameters cannot be accessed.
         
     See Also
     --------
@@ -101,87 +95,77 @@ class Protein:
     >>> print(opioidGPCR.mdau)
     <Universe with 88651 atoms>
     """
-#     Notes
-#     -----
-#     Notes about the implementation algorithm (if needed).
-
-#     This can have multiple paragraphs.
-
-#     You may include some math:
-
-#     .. math:: X(e^{j\omega } ) = x(n)e^{ - j\omega n}
-
-#     And even use a Greek symbol like :math:`\omega` inline.
-
-#     References
-#     ----------
-#     Cite the relevant literature, e.g. [1]_.  You may also cite these
-#     references in the notes section above.
-
-#     .. [1] O. McNoleg, "The integration of GIS, remote sensing,
-#        expert systems and adaptive co-kriging for environmental habitat
-#        modelling of the Highland Haggis using object-oriented, fuzzy-logic
-#        and neural-network techniques," Computers & Geosciences, vol. 22,
-#        pp. 585-588, 1996.
     
-    def __init__(self, pdb="", trajs=[], GPCR=False, name=None, path="", protein_sel="same segid as protein", psf=None, parameters=None, **kwargs):
+    from . import trajutils as _trajutils
+    
+    def __init__(self, pdb="", trajs=[], GPCR=False, name=None, path=None, protein_sel=None, **kwargs): #psf=None, parameters=None
         self.GPCR = GPCR
         
         if not isinstance(self.GPCR, bool) and isinstance(self.GPCR, int):
-            self._gpcrmdid = self.GPCR
-            self._path = f"{self.GPCR}" if len(path) == 0 else path
+            self.name = f"{self.GPCR}" if not name else name
+            self._path = f"{self.GPCR}" if not path else path
             os.makedirs(self._path, exist_ok=True)
+            
             if not any([re.search("(pdb$|psf$|xtc$|parameters$)", file) for file in os.listdir(self._path)]):
-                self._download_files()
-                
+                self._trajutils.download_GPCRmd_files(self)
             files = os.listdir(self._path)
-            self._pdbf = self._path + '/' + next(file for file in files if re.search("pdb$", file))
-            self._psff = self._path + '/' + next(file for file in files if re.search("psf$", file))
-            self._paramf = self._path + '/' + next(file for file in files if re.search("parameters$", file))
-            self._trajs = dict(enumerate(sorted( f"{self._path}/{traj}" for traj in files if re.search("^(?!\.).*\.xtc$", traj) ), 1))
+            
+            get_filename = lambda ext: self._path + '/' + next(file for file in files if re.search(f"{ext}$", file))
+            self.pdb = get_filename("pdb")
+            self.trajs = list(sorted( f"{self._path}/{traj}" for traj in files if re.search("^(?!\.).*\.xtc$", traj) ))
+            self.psf = get_filename("psf")
+            kwargs.update({"psf": self.psf}) # So that it is processed later with process_input
+            self._paramf = get_filename("parameters")
+        
         
         else:
-            psf_params = parameters is not None and psf is not None
+            self.name = pdb.replace(".pdb", "").split("/")[-1] if not name else name
+            self._path = "." if not path else path
+            os.makedirs(self._path, exist_ok=True)
             
-            self._pdbf = pdb
-            self._trajs = {1: trajs} if isinstance(trajs, str) else dict(enumerate(trajs, 1))
+            self.pdb = pdb
+            self.trajs = trajs if isinstance(trajs, list) else [trajs]
             
-            files_to_check = list(self._trajs.values()) + [self._pdbf] if not psf_params else list(self._trajs.values()) + [self._pdbf, psf, parameters]
+            passed_psf_params = "parameters" in kwargs and "psf" in kwargs
+            if passed_psf_params:
+                self.psf = kwargs["psf"]
+                self._paramf = kwargs["parameters"]
+                
+            files_to_check = list(self._trajs.values()) + [self._pdbf] if not passed_psf_params else list(self._trajs.values()) + [self._pdbf, self._psff, self._paramf]
             files_exist = {file: os.path.isfile(file) for file in files_to_check}
             if any([not file_exist for file_exist in files_exist.values()]):
                 raise FileNotFoundError(f"Some of the files could not be found: {files_exist}")
             
-            self._path = "." if len(path) == 0 else path
-            os.makedirs(self._path, exist_ok=True)
-            if psf_params:
-                self._psff = psf
-                self._paramf = parameters
+
+        self._protein_sel = "(same segid as protein) and (not segid LIG) and (not chainid L)" if not protein_sel else protein_sel
         
-        # Temporary patch
-        self.pdb = self._pdbf
-        self.trajs = list(self._trajs.values())
-        self.path = self._path
-        
-        self.name = name if name is not None else self._pdbf
-        self._protein_sel = protein_sel
-                
         self._datadir = f"{self._path}/data"
         os.makedirs(self._datadir, exist_ok=True)
         
-        self._res_dict = self._get_res_dict(**kwargs)
-        self.pdbu, self.prot, self.u = self._get_mdau(self._protein_sel)
-        self._dihedral_residx = self._get_dihedral_residx(self.prot)
-        self._translate_ix = lambda mapper: lambda ix: tuple(mapper[_] for _ in ix) if isinstance(ix, tuple) else mapper[ix]
+        self._pdbf = f"{self._datadir}/{self.name}.pdb"
+        self._trajs = dict( [(num+1, f"{self._datadir}/{num+1}.xtc") for num in range(len(self.trajs))] )
+        
+        if any([not os.path.isfile(f) for f in list(self._trajs.values()) + [self._pdbf]]):
+            self._trajutils.process_input(self, **kwargs)
+        
+        self.protein = mda.Universe(self._pdbf)
+        self.u = mda.Universe(self._pdbf, *list(self._trajs.values()))
+        
+        self._bonded_cys = self._trajutils.get_bonded_cys(self)
         
         
         
-    _download_files = trajutils.download_files
-    _get_mdau = trajutils.get_mdau
-    _add_comtrajs = trajutils.add_comtrajs
-    _make_dcds = trajutils.make_dcds
-    _get_bonded_cys = trajutils.get_bonded_cys
-    _get_res_dict = trajutils.get_res_dict
-    _get_dihedral_residx = staticmethod(trajutils.get_dihedral_residx)
+    def _translate_ix(self, mapper):
+        # self._translate_ix = lambda mapper: lambda ix: tuple(mapper[_] for _ in ix) if isinstance(ix, tuple) else mapper[ix]
+        return lambda ix: tuple(mapper[_] for _ in ix) if isinstance(ix, tuple) else mapper[ix]
+    
+    def _dihedral_residx(self, end=-1):
+        res_arrays = np.split(self.protein.residues.resindices, np.where(np.diff(self.protein.residues.resnums) != 1)[0]+1)
+        # dihedral_residx = lambda end=-1: [elem for arr in res_arrays for elem in arr[1:end]]
+        return [elem for arr in res_arrays for elem in arr[1:end]]
+    
+    
+            
     
     
     
@@ -236,7 +220,9 @@ class Protein:
             method, getcontacts, dynetan, PyInteraph, MDEntropy and gRINN). `namd`
             keyword argument can be passed to point to the namd2 executable location; if
             the `namd` command is accessible through the CLI it is automatically
-            retrieved with the `distutils` package.
+            retrieved with the `distutils` package. `GetContacts_threshold` can be passed
+            to specify the minimum contact frequency (0-1, default 0) threshold, which
+            will be used to filter out contacts with a frequency (average) lower than it.
 
         See Also
         --------
@@ -267,10 +253,10 @@ class Protein:
         pkgs = utils.pkgsl if pkg=="all" else pkg if isinstance(pkg, list) else [pkg]
         
         if any(["COM" in pkg for pkg in pkgs]):
-            self._add_comtrajs(self._protein_sel)
+            self._trajutils.get_COM_trajs(self)
             
-        if any([re.search("(carma|grinn)", pkg.lower()) for pkg in pkgs]):
-            self._make_dcds()
+        # if any([re.search("(carma|grinn)", pkg.lower()) for pkg in pkgs]):
+        #     self._trajutils.get_dcd_trajs()
         
         d = self.__dict__.copy()
         d.update(kwargs)
@@ -305,7 +291,8 @@ class Protein:
                 nodes_dict = {'btw': 'networkx.algorithms.centrality.betweenness_centrality',
                               'cfb': 'networkx.algorithms.centrality.current_flow_betweenness_centrality'},
                 edges_dict = {'btw': 'networkx.algorithms.centrality.edge_betweenness_centrality',
-                              'cfb': 'networkx.algorithms.centrality.edge_current_flow_betweenness_centrality'}):
+                              'cfb': 'networkx.algorithms.centrality.edge_current_flow_betweenness_centrality'},
+                **kwargs):
         r"""Analyze calculated edge weights with network analyses.
         
         Perform analyses of the raw edge weights for the selected packages/network
@@ -353,6 +340,12 @@ class Protein:
             dictionary of edges or nodes, depending on the element dictionary in which
             they are. The keys of the dictionaries will be used to name the columns of
             the analyzed data that the functions produce.
+        **kwargs
+            `GetContacts_threshold` can be passed to specify the minimum contact
+            frequency (0-1, default 0) threshold, which will be used to filter out
+            contacts with a frequency (average) lower than it before analysis. Make sure
+            to delete/have deleted all previous analysis attributes and files of any 
+            network construction method.
 
         See Also
         --------
@@ -372,7 +365,7 @@ class Protein:
         average and standard error of the replicas' analysis results are also calculated.
         
         "Incontact" filtering only retains edges of residue pairs in contact -those for
-        which getcontacts is able to compute contact frequencies-, and "Intercontact"
+        which GetContacts is able to compute contact frequencies-, and "Intercontact"
         only keeps edges of pairs that are both in contact and apart in the sequence (more
         than 5 positions away in the sequence).
         
@@ -394,6 +387,9 @@ class Protein:
             mypool = Pool(cores)
             utils.pool = mypool
         print(utils.pool)
+        
+        if "GetContacts_threshold" in kwargs and rhasattr(self, "GetContacts"):
+            self.GetContacts.filter_edges(kwargs["GetContacts_threshold"])
         
         for pkgn in pkgs:
             # pkgclass = eval(f"Wrappers.{pkg}")#eval(f"Pkgs.{capitalize(pkg)}") if isinstance(pkg, str) else pkg
@@ -463,53 +459,75 @@ class Delta:
     
     
     
-    def _make_struct_aln(self, aln_method="TMalign_pair"):
-        # ****** Pairwise Structural Alignment Methods:
-        # --------------------------------------------
-        # align_pdbpair        built_in                                                   [pg:        t_coffee is  Installed][built_in]
-        # lalign_pdbpair       built_in                                                   [pg:        t_coffee is  Installed][built_in]
-        # extern_pdbpair       built_in                                                   [pg:        t_coffee is  Installed][built_in]
-        # thread_pair          built_in                                                   [pg:        t_coffee is  Installed][built_in]
-        # fugue_pair           http://mizuguchilab.org/fugue/                             [pg:        fugueali is NOT Installed][]
-        # pdb_pair             built_in                                                   [pg:        t_coffee is  Installed][built_in]
-        # sap_pair             https://mathbio.crick.ac.uk/wiki/Software#SAP              [pg:             sap is  Installed][/gpcr/users/frann/networks/tcoffee/bin/sap]
-        # sara_pair            built_in                                                   [pg:        t_coffee is  Installed][built_in]
-        # daliweb_pair         built_in                                                   [pg:     dalilite.pl is  Installed][built_in]
-        # dali_pair            built_in                                                   [pg:     dalilite.pl is  Installed][built_in]
-        # mustang_pair         http://lcb.infotech.monash.edu.au/mustang/                 [pg:         mustang is  Installed][/gpcr/users/frann/networks/tcoffee/bin/mustang]
-        # TMalign_pair         http://zhanglab.ccmb.med.umich.edu/TM-align/TMalign.f      [pg:         TMalign is  Installed][/gpcr/users/frann/networks/tcoffee/bin/TMalign]
+#     def _make_struct_aln(self, aln_method="TMalign_pair"):
+#         # ****** Pairwise Structural Alignment Methods:
+#         # --------------------------------------------
+#         # align_pdbpair        built_in                                                   [pg:        t_coffee is  Installed][built_in]
+#         # lalign_pdbpair       built_in                                                   [pg:        t_coffee is  Installed][built_in]
+#         # extern_pdbpair       built_in                                                   [pg:        t_coffee is  Installed][built_in]
+#         # thread_pair          built_in                                                   [pg:        t_coffee is  Installed][built_in]
+#         # fugue_pair           http://mizuguchilab.org/fugue/                             [pg:        fugueali is NOT Installed][]
+#         # pdb_pair             built_in                                                   [pg:        t_coffee is  Installed][built_in]
+#         # sap_pair             https://mathbio.crick.ac.uk/wiki/Software#SAP              [pg:             sap is  Installed][/gpcr/users/frann/networks/tcoffee/bin/sap]
+#         # sara_pair            built_in                                                   [pg:        t_coffee is  Installed][built_in]
+#         # daliweb_pair         built_in                                                   [pg:     dalilite.pl is  Installed][built_in]
+#         # dali_pair            built_in                                                   [pg:     dalilite.pl is  Installed][built_in]
+#         # mustang_pair         http://lcb.infotech.monash.edu.au/mustang/                 [pg:         mustang is  Installed][/gpcr/users/frann/networks/tcoffee/bin/mustang]
+#         # TMalign_pair         http://zhanglab.ccmb.med.umich.edu/TM-align/TMalign.f      [pg:         TMalign is  Installed][/gpcr/users/frann/networks/tcoffee/bin/TMalign]
         
-        from subprocess import Popen, PIPE
+#         from subprocess import Popen, PIPE
+#         from Bio import AlignIO
+#         from Bio.SeqUtils import seq1
+#         from distutils.spawn import find_executable
+
+#         t_coffee = find_executable('t_coffee')
+#         path = t_coffee.replace('/t_coffee', '')
+#         env = {"HOME": path, "PATH": os.environ["PATH"] + f":{path}"}
+#         tcoffee = Popen(f"{t_coffee} -pdb={self.state1._pdbf},{self.state2._pdbf} -method {aln_method} -outfile no -template_file no -output clustalw -align".split(" "),
+#                         stdout=PIPE, stderr=PIPE, encoding="utf-8", env=env)
+#         # tmalign = Popen(f"TMalign {self.state1._protpdb} {self.state2._protpdb}".split(" "),# -method {aln_method} -outfile no -template_file no -output clustalw -align".split(" "),
+#         #                 stdout=PIPE, stderr=PIPE, encoding="utf-8")#, env=env)
+        
+#         stderr = tcoffee.stderr.read()
+#         # stderr = tmalign.stderr.read()
+#         if "error" not in stderr.lower():
+#             alignment = AlignIO.read(io.StringIO(tcoffee.stdout.read()), "clustal")
+# #             aln = tmalign.stdout.readlines()[-4:]
+# #             fasta = f""">{self.state1._protpdb}
+# # {aln[0].strip()}
+# # >{self.state2._protpdb}
+# # {aln[2].strip()}
+# # """
+# #             alignment = AlignIO.read(io.StringIO(fasta), "fasta")
+#         else:
+#             print(stderr)
+#             raise Exception("Structural alignment of the structures couldn't be performed.")
+        
+#         for state, aln in zip(self._states, alignment):
+#             aas = [f"{res.resname}:{res.resid}" for res in state.protein.residues]
+#             aln_mapper = dict( (aas.pop(0), pos) for pos, res in enumerate(aln.seq) if res != "-" and res == seq1(aas[0].split(":")[0]) )#, custom_map = state._res_dict
+#             aln_mapper.update( dict(map(reversed, aln_mapper.items())) )
+#             setattr(state, "_aln_mapper", aln_mapper)
+        
+#         return alignment
+    def _make_struct_aln(self, **kwargs):
+        import pymol2
         from Bio import AlignIO
         from Bio.SeqUtils import seq1
-        from distutils.spawn import find_executable
-
-        t_coffee = find_executable('t_coffee')
-        path = t_coffee.replace('/t_coffee', '')
-        env = {"HOME": path, "PATH": os.environ["PATH"] + f":{path}"}
-        tcoffee = Popen(f"{t_coffee} -pdb={self.state1._protpdb},{self.state2._protpdb} -method {aln_method} -outfile no -template_file no -output clustalw -align".split(" "),
-                        stdout=PIPE, stderr=PIPE, encoding="utf-8", env=env)
-        # tmalign = Popen(f"TMalign {self.state1._protpdb} {self.state2._protpdb}".split(" "),# -method {aln_method} -outfile no -template_file no -output clustalw -align".split(" "),
-        #                 stdout=PIPE, stderr=PIPE, encoding="utf-8")#, env=env)
         
-        stderr = tcoffee.stderr.read()
-        # stderr = tmalign.stderr.read()
-        if "error" not in stderr.lower():
-            alignment = AlignIO.read(io.StringIO(tcoffee.stdout.read()), "clustal")
-#             aln = tmalign.stdout.readlines()[-4:]
-#             fasta = f""">{self.state1._protpdb}
-# {aln[0].strip()}
-# >{self.state2._protpdb}
-# {aln[2].strip()}
-# """
-#             alignment = AlignIO.read(io.StringIO(fasta), "fasta")
-        else:
-            print(stderr)
-            raise Exception("Structural alignment of the structures couldn't be performed.")
+        aln_file = f"{self.state1._datadir}/{self.state1.name}_{self.state2.name}_alignment.aln"
+        
+        with pymol2.PyMOL() as pymol:
+            pymol.cmd.load(self.state1._pdbf, self.state1.name)
+            pymol.cmd.load(self.state2._pdbf, self.state2.name)
+            pymol.cmd.align(self.state1name, self.state2.name, 'aln')
+            pymol.cmd.save(aln_file, 'aln')
+            
+        alignment = AlignIO.read(aln_file, "clustal")
         
         for state, aln in zip(self._states, alignment):
-            aas = [f"{res.resname}:{res.resid}" for res in state.prot.residues]
-            aln_mapper = dict( (aas.pop(0), pos) for pos, res in enumerate(aln.seq) if res != "-" and res == seq1(aas[0].split(":")[0], custom_map = state._res_dict) )
+            aas = [f"{res.resname}:{res.resid}" for res in state.protein.residues]
+            aln_mapper = dict( (aas.pop(0), pos) for pos, res in enumerate(aln.seq) if res != "-" and res == seq1(aas[0].split(":")[0]) )#, custom_map = state._res_dict
             aln_mapper.update( dict(map(reversed, aln_mapper.items())) )
             setattr(state, "_aln_mapper", aln_mapper)
         

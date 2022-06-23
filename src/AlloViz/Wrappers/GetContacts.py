@@ -3,6 +3,7 @@ import os
 import pandas
 
 from .Base import lazy_import, Multicore
+from ..AlloViz.utils import rgetattr, rhasattr, capitalize
 
 # from ..AlloViz.utils import lazy_import
 
@@ -38,4 +39,50 @@ class GetContacts(Multicore):
                              index_col = (0, 1), names = [f"{xtc}"])
         df.index = df.index.map(lambda idx: tuple(sorted([res.split(":", 1)[-1] for res in idx], key = lambda res: int(res.split(":")[-1]))))
         df.to_parquet(self._rawpq(xtc))
+        
+    
+    
+    def __init__(self, *args):
+        super().__init__(*args)
+        
+        # Filter dataset according to GetContacts_threshold optional kwarg
+        if "GetContacts_threshold" in self._d:
+            self.filter_contacts(self._d["GetContacts_threshold"])
+    
+    
+    
+    def filter_contacts(self, GetContacts_threshold:float):
+        r"""Filter contacts below a frequency threshold.
+
+        Parameters
+        ----------
+        GetContacts_threshold : float
+            Value of the minimum contact frequency (between 0 and 1) threshold, which
+            will be used to filter out contacts with a frequency (average) lower than it.
+
+        Returns
+        -------
+        None
+                                    
+        Notes
+        -----
+        Method returns nothing, but GetContacts raw data attribute is filtered according
+        to the threshold. Make sure to delete previous analysis attributes and files.
+        Analysis results are determined by the input data (e.g., filtered or unfiltered
+        network), so they can't simply be filtered according to this new criteria and
+        the analysis must be done again.
+        """
+        print("Make sure to delete/have deleted all previous analysis attributes and files.")
+        # message = True
+        for filterby in utils.filterbysl:
+            if rhasattr(self, capitalize(filterby)):
+                # if message:
+                #     print("It looks like you had already analyzed the network before this contacts filtering, please make sure you delete all analysis files so that the analysis is done again with the filtered network.")
+                # message = False
+                
+                delattr(self, capitalize(filterby))
+        
+        
+        self.raw = self.raw[self.raw["weight"] >= GetContacts_threshold]
+        
         
