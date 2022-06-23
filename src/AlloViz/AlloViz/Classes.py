@@ -520,7 +520,7 @@ class Delta:
         with pymol2.PyMOL() as pymol:
             pymol.cmd.load(self.state1._pdbf, self.state1.name)
             pymol.cmd.load(self.state2._pdbf, self.state2.name)
-            pymol.cmd.align(self.state1name, self.state2.name, 'aln')
+            pymol.cmd.align(self.state1.name, self.state2.name, object='aln')
             pymol.cmd.save(aln_file, 'aln')
             
         alignment = AlignIO.read(aln_file, "clustal")
