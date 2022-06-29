@@ -10,7 +10,7 @@ numpy
 pandas
 pyarrow
 networkx
-pymol-open-source
+pymol-open-source # 2.4 is selected; 2.5 is available
 
 # for downloading files
 beautifulsoup4

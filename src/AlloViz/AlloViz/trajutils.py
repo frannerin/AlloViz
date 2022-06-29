@@ -161,12 +161,10 @@ class ProteinBase:
             protein.write(self._pdbf)
 
         # Write protein psf file if it exists
-        psff = self._pdbf.replace("pdb", "psf")
-        if "psf" in kwargs and not os.path.isfile(psff):
-            psf = parmed.load_file(kwargs["psf"])[protein.indices]
-            psf.title = psff
-            psf.write_psf(psff)
-            setattr(self, "_psff", psff)
+        if self._psff and not os.path.isfile(self._psff):
+            psf = parmed.load_file(self.psf)[protein.indices]
+            psf.title = self._psff
+            psf.write_psf(self._psff)
 
         # Write protein trajectory(ies) file(s)
         if any([not os.path.isfile(f) for f in self._trajs.values()]):
@@ -212,8 +210,8 @@ class ProteinBase:
 
         for xtc, comtraj in self._comtrajs.items():
             if not os.path.isfile(comtraj):
-                prot = self.protein
-                traj = self.U.trajectory.readers[xtc-1] if hasattr(self.U.trajectory, "readers") else self.U.trajectory
+                prot = self.protein.atoms
+                traj = self.u.trajectory.readers[xtc-1] if hasattr(self.u.trajectory, "readers") else self.u.trajectory
                 # traj = next(traj for traj in self.mdau.trajectory.readers if traj.filename == self._trajs[xtc])
                 arr = np.empty((prot.n_residues, traj.n_frames, 3))
                 for ts in traj:
@@ -227,14 +225,14 @@ class ProteinBase:
     
     
     
-    def _translate_ix(self, mapper):
-        # self._translate_ix = lambda mapper: lambda ix: tuple(mapper[_] for _ in ix) if isinstance(ix, tuple) else mapper[ix]
-        return lambda ix: tuple(mapper[_] for _ in ix) if isinstance(ix, tuple) else mapper[ix]
+#     def _translate_ix(self, mapper):
+#         # self._translate_ix = lambda mapper: lambda ix: tuple(mapper[_] for _ in ix) if isinstance(ix, tuple) else mapper[ix]
+#         return lambda ix: tuple(mapper[_] for _ in ix) if isinstance(ix, tuple) else mapper[ix]
     
-    def _dihedral_residx(self, end=-1):
-        res_arrays = np.split(self.protein.residues.resindices, np.where(np.diff(self.protein.residues.resnums) != 1)[0]+1)
-        # dihedral_residx = lambda end=-1: [elem for arr in res_arrays for elem in arr[1:end]]
-        return [elem for arr in res_arrays for elem in arr[1:end]]
+#     def _dihedral_residx(self, end=-1):
+#         res_arrays = np.split(self.protein.residues.resindices, np.where(np.diff(self.protein.residues.resnums) != 1)[0]+1)
+#         # dihedral_residx = lambda end=-1: [elem for arr in res_arrays for elem in arr[1:end]]
+#         return [elem for arr in res_arrays for elem in arr[1:end]]
 
 
 

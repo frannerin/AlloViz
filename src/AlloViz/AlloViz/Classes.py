@@ -2,6 +2,7 @@ import os, io, re
 
 from multiprocess import Pool
 import MDAnalysis as mda
+import numpy as np
 
 from .Analysis import Whole, Incontact, Intercontact
 from .Visualization import Edges, Nodes
@@ -113,7 +114,6 @@ class Protein(ProteinBase):
             self.pdb = get_filename("pdb")
             self.trajs = list(sorted( f"{self._path}/{traj}" for traj in files if re.search("^(?!\.).*\.xtc$", traj) ))
             self.psf = get_filename("psf")
-            kwargs.update({"psf": self.psf}) # So that it is processed later with process_input
             self._paramf = get_filename("parameters")
         
         
@@ -130,7 +130,7 @@ class Protein(ProteinBase):
                 self.psf = kwargs["psf"]
                 self._paramf = kwargs["parameters"]
                 
-            files_to_check = list(self._trajs.values()) + [self._pdbf] if not passed_psf_params else list(self._trajs.values()) + [self._pdbf, self._psff, self._paramf]
+            files_to_check = self.trajs + [self.pdb] if not passed_psf_params else self.trajs + [self.pdb, self.psf, self._paramf]
             files_exist = {file: os.path.isfile(file) for file in files_to_check}
             if any([not file_exist for file_exist in files_exist.values()]):
                 raise FileNotFoundError(f"Some of the files could not be found: {files_exist}")
@@ -143,6 +143,7 @@ class Protein(ProteinBase):
         
         self._pdbf = f"{self._datadir}/protein.pdb"
         self._trajs = dict( [(num+1, f"{self._datadir}/traj_{num+1}.xtc") for num in range(len(self.trajs))] )
+        self._psff = self._pdbf.replace("pdb", "psf") if hasattr(self, "psf") else None
         
         if any([not os.path.isfile(f) for f in list(self._trajs.values()) + [self._pdbf]]):
             self._process_input(**kwargs)
@@ -151,6 +152,11 @@ class Protein(ProteinBase):
         self.u = mda.Universe(self._pdbf, *list(self._trajs.values()))
         
         self._bonded_cys = self._get_bonded_cys()
+        
+        _res_arrays = np.split(self.protein.residues.resindices, np.where(np.diff(self.protein.residues.resnums) != 1)[0]+1)
+        self._dihedral_residx = lambda end=-1: [elem for arr in _res_arrays for elem in arr[1:end]]
+        self._translate_ix = lambda mapper: lambda ix: tuple(mapper[_] for _ in ix) if isinstance(ix, tuple) else mapper[ix]
+    
 
 
     
@@ -237,7 +243,7 @@ class Protein(ProteinBase):
         pkgs = utils.pkgsl if pkg=="all" else pkg if isinstance(pkg, list) else [pkg]
         
         if any(["COM" in pkg for pkg in pkgs]):
-            self._get_COM_trajs(self)
+            self._get_COM_trajs()
             
         # if any([re.search("(carma|grinn)", pkg.lower()) for pkg in pkgs]):
         #     self._trajutils.get_dcd_trajs()

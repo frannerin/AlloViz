@@ -48,7 +48,7 @@ class correlationplus_Psi(Base):
     
     def _computation(self, xtc):#pdb, traj, xtc, pq):
         corr = _corrplus.calcMDsingleDihedralCC(self._pdbf, self._trajs[xtc], dihedralType = self._dih, saveMatrix = False) # outputs a n_res x n_res matrix nevertheless
-        return corr, xtc, self._d["_dihedral_residx"]()#[1, -1]
+        return corr, xtc, self._d["_dihedral_residx"]()
     
     
     
