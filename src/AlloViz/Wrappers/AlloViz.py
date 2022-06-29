@@ -1,8 +1,6 @@
 import numpy as np
 
-from .Base import lazy_import, Multicore, Use_COM, Combined_Dihs
-
-# from ..AlloViz.utils import lazy_import
+from .Base import lazy_import, Multicore, Combined_Dihs
 
 imports = {
 "_npeet_lnc": ".Packages.NPEET_LNC.lnc",
@@ -14,22 +12,33 @@ for key, val in imports.items():
     
     
     
+def _calculate_row(in_data, values, nres):
+    res, others = in_data
+    row = np.zeros((nres,))
+
+    for other in others:
+        row[other] = _npeet_lnc.MI.mi_LNC([values[res], values[other]])
+        
+    return res, row
+
+
 
 
     
 class AlloViz(Multicore):
     def __new__(cls, protein, d):
         new = super().__new__(cls, protein, d)
+        new._empties = 0
         return new
             
     
     def _computation(self, xtc):#pdb, traj, xtc, pq):
-        prot = self._d["protein"]
-        selected_res = self._d["_dihedral_residx"]()
+        prot = self._d["u"].atoms
+        selected_res = self.protein._dihedral_residx()
         
         select_dih = lambda res: eval(f"res.{self._dih.lower()}_selection()")
         selected = [select_dih(res) for res in prot.residues[selected_res]]
-
+        
         offset = 0
         
         if hasattr(self._d["u"].trajectory, "readers"):
@@ -44,48 +53,22 @@ class AlloViz(Multicore):
         corr = np.zeros((len(selected_res), len(selected_res)))
         print("prot.n_residues:", prot.n_residues, "len(selected_res)", len(selected_res), "dihedrals array shape:", values.shape, "empty corr array shape:", corr.shape)#
         
-        
-
-        from multiprocess import Queue, Process
-    
-        in_data = Queue()
-        out_data = Queue()
-        
-        
+        in_data = []
         iterator = set(range(len(selected_res)))
         for res1 in iterator:
-            others = []
-            for res2 in iterator - set(range(res1)) - {res1}:
-                others.append(res2)
+            others = list(iterator - set(range(res1)) - {res1})
+            if len(others) > 0:
+                in_data.append((res1, others))
                 
-            if len(others) > 0: 
-                in_data.put((res1, others))
-        
-        
-        def calculate_row(values, nres, in_data, out_data):
-             while not in_data.empty():
-                res, others = in_data.get()
-                row = np.zeros((nres,))
-                
-                for other in others:
-                    row[other] = _npeet_lnc.MI.mi_LNC([values[res], values[other]])
-                
-                out_data.put((res, row))
-                
-        
-        ps = []
-        for _ in range(self.taskcpus):
-            p = Process(target=calculate_row,
-                        args=(values, len(selected_res), in_data, out_data)) 
-            p.start()
-            ps.append(p)
-        
-        for _ in range(len(selected_res)-1):
-            res, row = out_data.get()
+        from concurrent.futures import ProcessPoolExecutor as Pool
+        from functools import partial
+        with Pool(self.taskcpus) as p:
+            results = list(p.map(partial(_calculate_row, values=values, nres=len(selected_res)), in_data, chunksize=self.taskcpus))
+            p.shutdown()
+            
+        for result in results:
+            res, row = result
             corr[res, :] = row
-        
-        for p in ps:
-            p.join()
             
             
         return corr, xtc, selected_res

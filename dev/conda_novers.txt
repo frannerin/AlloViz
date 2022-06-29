@@ -1,0 +1,42 @@
+# conda list -e | sed 's/\(.*\)\=/\1\&/;s/&.*//;s/\=/\=\=/;3s/.*/\#/' > conda.txt
+
+pip
+multiprocess
+lazyasd
+mdanalysis
+setuptools
+cython
+numpy
+pandas
+pyarrow
+networkx
+pymol-open-source
+
+# for downloading files
+beautifulsoup4
+certifi
+requests
+
+# jupyter and viz
+notebook
+nglview
+
+# pkgs and deps
+vmd-python # for getcontacts
+
+matplotlib # for MDTASK probably; ALSO FOR VIZ
+mdtraj # for MDTASK
+
+numba # for dynetan
+h5py # for dynetan
+python-louvain # for dynetan; imported as community
+
+ambertools # for pytraj and parmed
+
+prody # for correlationplus; prob 2.0.2 needed for a gRINN dep
+pyprind # for gRINN
+panedr # for gRINN
+natsort # for gRINN
+click # probably for gRINN too
+
+gxx_linux-64 # necessary for msmbuilder

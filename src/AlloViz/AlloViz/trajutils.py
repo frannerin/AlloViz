@@ -10,53 +10,6 @@ from . import utils
 
 
 
-def download_GPCRmd_files(Protein):
-    import sys, re
-    import tarfile, fileinput
-    from bs4 import BeautifulSoup
-    import urllib.request as pwget
-
-    web = "https://submission.gpcrmd.org"
-
-    html = requests.get(f"{web}/dynadb/dynamics/id/{Protein.GPCR}/")
-    soup = BeautifulSoup(html.text, features="html.parser").find_all('a')
-    links = [link.get('href') for link in soup if re.search("(xtc|pdb|psf|prm)", link.get('href'))]
-    get_name = lambda link: f"{Protein._path}/{link.rsplit('/')[-1]}"
-
-
-    mypool = Pool()
-    utils.pool = mypool        
-
-    for link in links:
-        fname = get_name(link)
-        print(f"downloading {fname}")
-        utils.get_pool().apply_async(pwget.urlretrieve, args=(f"{web}{link}", fname))
-
-    mypool.close()
-    mypool.join()
-    utils.pool = utils.dummypool()
-
-
-    fname = next(get_name(link) for link in links if "prm" in get_name(link))
-    with tarfile.open(fname) as tar:
-        tar.extractall(Protein._path)
-    os.remove(fname)
-
-    for line in fileinput.input(f"{Protein._path}/parameters", inplace=True):
-        if line.strip().startswith('HBOND'):
-            line = 'HBOND CUTHB 0.5\n'
-        elif line.strip().startswith('END'):
-            line = 'END\n'
-        sys.stdout.write(line)
-
-    return
-
-
-
-
-
-
-
 def standardize_resnames(protein, **kwargs):
     from Bio.SeqUtils import seq1, seq3
     from Bio.SeqUtils import IUPACData
@@ -119,6 +72,7 @@ def get_GPCRdb_numbering(protein):
         
         
         
+        
 def write_protein_trajs(whole, protein, trajs):
     def write_protein_traj(protein, reader, trajf):
         with mda.Writer(trajf, protein.n_atoms) as W:
@@ -138,87 +92,149 @@ def write_protein_trajs(whole, protein, trajs):
     mypool.join()
     utils.pool = utils.dummypool()
     
-        
+    
+    
+    
+    
 
 
-def process_input(Protein, **kwargs):
-    whole = mda.Universe(Protein.pdb)
-    protein = whole.select_atoms(Protein._protein_sel)
 
-    # Rename all residues in protein_sel to standard names
-    standardize_resnames(protein, **kwargs)
+class ProteinBase:
+    
+    def _download_GPCRmd_files(self):
+        import sys, re
+        import tarfile, fileinput
+        from bs4 import BeautifulSoup
+        import urllib.request as pwget
 
-    # Retrieve GPCRdb residue generic numbering if it's a GPCR
-    if Protein.GPCR:
-        get_GPCRdb_numbering(protein)
+        web = "https://submission.gpcrmd.org"
 
-    # Write protein pdb file
-    if not os.path.isfile(Protein._pdbf):
-        protein.write(Protein._pdbf)
+        html = requests.get(f"{web}/dynadb/dynamics/id/{self.GPCR}/")
+        soup = BeautifulSoup(html.text, features="html.parser").find_all('a')
+        links = [link.get('href') for link in soup if re.search("(xtc|pdb|psf|prm)", link.get('href'))]
+        get_name = lambda link: f"{self._path}/{link.rsplit('/')[-1]}"
 
-    # Write protein psf file if it exists
-    psff = Protein._pdbf.replace("pdb", "psf")
-    if "psf" in kwargs and not os.path.isfile(psff):
-        psf = parmed.load_file(kwargs["psf"])[protein.indices]
-        psf.title = psff
-        psf.write_psf(psff)
-        setattr(Protein, "_psff", psff)
 
-    # Write protein trajectory(ies) file(s)
-    if any([not os.path.isfile(f) for f in Protein._trajs.values()]):
-        whole.load_new(Protein.trajs)
-        write_protein_trajs(whole, protein, Protein._trajs)
+        mypool = Pool()
+        utils.pool = mypool        
+
+        for link in links:
+            fname = get_name(link)
+            print(f"downloading {fname}")
+            utils.get_pool().apply_async(pwget.urlretrieve, args=(f"{web}{link}", fname))
+
+        mypool.close()
+        mypool.join()
+        utils.pool = utils.dummypool()
+
+
+        fname = next(get_name(link) for link in links if "prm" in get_name(link))
+        with tarfile.open(fname) as tar:
+            tar.extractall(self._path)
+        os.remove(fname)
+
+        for line in fileinput.input(f"{self._path}/parameters", inplace=True):
+            if line.strip().startswith('HBOND'):
+                line = 'HBOND CUTHB 0.5\n'
+            elif line.strip().startswith('END'):
+                line = 'END\n'
+            sys.stdout.write(line)
+
+        return
+
+
+    
+
+    def _process_input(self, **kwargs):
+        whole = mda.Universe(self.pdb)
+        protein = whole.select_atoms(self._protein_sel)
+
+        # Rename all residues in protein_sel to standard names
+        standardize_resnames(protein, **kwargs)
+
+        # Retrieve GPCRdb residue generic numbering if it's a GPCR
+        if self.GPCR:
+            get_GPCRdb_numbering(protein)
+
+        # Write protein pdb file
+        if not os.path.isfile(self._pdbf):
+            protein.write(self._pdbf)
+
+        # Write protein psf file if it exists
+        psff = self._pdbf.replace("pdb", "psf")
+        if "psf" in kwargs and not os.path.isfile(psff):
+            psf = parmed.load_file(kwargs["psf"])[protein.indices]
+            psf.title = psff
+            psf.write_psf(psff)
+            setattr(self, "_psff", psff)
+
+        # Write protein trajectory(ies) file(s)
+        if any([not os.path.isfile(f) for f in self._trajs.values()]):
+            whole.load_new(self.trajs)
+            write_protein_trajs(whole, protein, self._trajs)
     
     
     
     
     
     
-def get_bonded_cys(Protein):
-    "Identify disulfide bond-forming cysteines' sulphur atoms"
-    bonded_cys = []
-    pdb = parmed.read_pdb(Protein._pdbf)
-    mask = parmed.amber.mask.AmberMask(pdb, ':CY?@SG')
-    for sel in mask.Selected():
-        atom = pdb.atoms[sel]
-        bonded = [a.name for a in atom.bond_partners]
-        if "SG" in bonded:
-            bonded_cys.append(atom.residue.idx)
+    def _get_bonded_cys(self):
+        "Identify disulfide bond-forming cysteines' sulphur atoms"
+        bonded_cys = []
+        pdb = parmed.read_pdb(self._pdbf)
+        mask = parmed.amber.mask.AmberMask(pdb, ':CY?@SG')
+        for sel in mask.Selected():
+            atom = pdb.atoms[sel]
+            bonded = [a.name for a in atom.bond_partners]
+            if "SG" in bonded:
+                bonded_cys.append(atom.residue.idx)
 
-    return bonded_cys
+        return bonded_cys
                     
                     
                     
                     
            
         
-def get_COM_trajs(Protein):
-    compath = f"{Protein._datadir}/COM_trajs"
-    if not os.path.isdir(compath): os.makedirs(compath, exist_ok=True)
+    def _get_COM_trajs(self):
+        compath = f"{self._datadir}/COM_trajs"
+        if not os.path.isdir(compath): os.makedirs(compath, exist_ok=True)
 
-    compdb = f"{compath}/ca.pdb"
-    if not os.path.isfile(compdb):
-        print(f"Making trajectories of residue COM for {Protein.name}")
-        prot = Protein.protein.select_atoms("name CA")
-        prot.write(compdb)
-    setattr(Protein, "_compdbf", compdb)
+        compdb = f"{compath}/ca.pdb"
+        if not os.path.isfile(compdb):
+            print(f"Making trajectories of residue COM for {self.name}")
+            prot = self.protein.select_atoms("name CA")
+            prot.write(compdb)
+        setattr(self, "_compdbf", compdb)
 
-    comtrajs = [f"{compath}/{xtc}.xtc" for xtc in Protein._trajs]
-    setattr(Protein, "_comtrajs", {num: traj for num, traj in enumerate(comtrajs, 1)})
+        comtrajs = [f"{compath}/{xtc}.xtc" for xtc in self._trajs]
+        setattr(self, "_comtrajs", {num: traj for num, traj in enumerate(comtrajs, 1)})
 
-    for xtc, comtraj in Protein._comtrajs.items():
-        if not os.path.isfile(comtraj):
-            prot = Protein.protein
-            traj = Protein.U.trajectory.readers[xtc-1] if hasattr(Protein.U.trajectory, "readers") else Protein.U.trajectory
-            # traj = next(traj for traj in Protein.mdau.trajectory.readers if traj.filename == Protein._trajs[xtc])
-            arr = np.empty((prot.n_residues, traj.n_frames, 3))
-            for ts in traj:
-                arr[:, ts.frame] = prot.center_of_mass(compound='residues')
+        for xtc, comtraj in self._comtrajs.items():
+            if not os.path.isfile(comtraj):
+                prot = self.protein
+                traj = self.U.trajectory.readers[xtc-1] if hasattr(self.U.trajectory, "readers") else self.U.trajectory
+                # traj = next(traj for traj in self.mdau.trajectory.readers if traj.filename == self._trajs[xtc])
+                arr = np.empty((prot.n_residues, traj.n_frames, 3))
+                for ts in traj:
+                    arr[:, ts.frame] = prot.center_of_mass(compound='residues')
 
-            cau = mda.Universe(compdb, arr, format=mda.coordinates.memory.MemoryReader, order='afc')
-            with mda.Writer(comtraj, cau.atoms.n_atoms) as W:
-                for ts in cau.trajectory:
-                    W.write(cau.atoms)
+                cau = mda.Universe(compdb, arr, format=mda.coordinates.memory.MemoryReader, order='afc')
+                with mda.Writer(comtraj, cau.atoms.n_atoms) as W:
+                    for ts in cau.trajectory:
+                        W.write(cau.atoms)
+                        
+    
+    
+    
+    def _translate_ix(self, mapper):
+        # self._translate_ix = lambda mapper: lambda ix: tuple(mapper[_] for _ in ix) if isinstance(ix, tuple) else mapper[ix]
+        return lambda ix: tuple(mapper[_] for _ in ix) if isinstance(ix, tuple) else mapper[ix]
+    
+    def _dihedral_residx(self, end=-1):
+        res_arrays = np.split(self.protein.residues.resindices, np.where(np.diff(self.protein.residues.resnums) != 1)[0]+1)
+        # dihedral_residx = lambda end=-1: [elem for arr in res_arrays for elem in arr[1:end]]
+        return [elem for arr in res_arrays for elem in arr[1:end]]
 
 
 

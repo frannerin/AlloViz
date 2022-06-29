@@ -6,6 +6,7 @@ import MDAnalysis as mda
 from .Analysis import Whole, Incontact, Intercontact
 from .Visualization import Edges, Nodes
 
+from .trajutils import ProteinBase
 from .utils import rgetattr, rhasattr, capitalize
 from . import utils
 #from . import trajutils
@@ -20,7 +21,7 @@ from .. import Wrappers
 class _Store:
     pass
 
-class Protein:
+class Protein(ProteinBase):
     r"""AlloViz main class.
 
     Objects of the class store the initialization information about the protein
@@ -96,8 +97,6 @@ class Protein:
     <Universe with 88651 atoms>
     """
     
-    from . import trajutils as _trajutils
-    
     def __init__(self, pdb="", trajs=[], GPCR=False, name=None, path=None, protein_sel=None, **kwargs): #psf=None, parameters=None
         self.GPCR = GPCR
         
@@ -107,7 +106,7 @@ class Protein:
             os.makedirs(self._path, exist_ok=True)
             
             if not any([re.search("(pdb$|psf$|xtc$|parameters$)", file) for file in os.listdir(self._path)]):
-                self._trajutils.download_GPCRmd_files(self)
+                self._download_GPCRmd_files()
             files = os.listdir(self._path)
             
             get_filename = lambda ext: self._path + '/' + next(file for file in files if re.search(f"{ext}$", file))
@@ -142,33 +141,18 @@ class Protein:
         self._datadir = f"{self._path}/data"
         os.makedirs(self._datadir, exist_ok=True)
         
-        self._pdbf = f"{self._datadir}/{self.name}.pdb"
-        self._trajs = dict( [(num+1, f"{self._datadir}/{num+1}.xtc") for num in range(len(self.trajs))] )
+        self._pdbf = f"{self._datadir}/protein.pdb"
+        self._trajs = dict( [(num+1, f"{self._datadir}/traj_{num+1}.xtc") for num in range(len(self.trajs))] )
         
         if any([not os.path.isfile(f) for f in list(self._trajs.values()) + [self._pdbf]]):
-            self._trajutils.process_input(self, **kwargs)
+            self._process_input(**kwargs)
         
         self.protein = mda.Universe(self._pdbf)
         self.u = mda.Universe(self._pdbf, *list(self._trajs.values()))
         
-        self._bonded_cys = self._trajutils.get_bonded_cys(self)
-        
-        
-        
-    def _translate_ix(self, mapper):
-        # self._translate_ix = lambda mapper: lambda ix: tuple(mapper[_] for _ in ix) if isinstance(ix, tuple) else mapper[ix]
-        return lambda ix: tuple(mapper[_] for _ in ix) if isinstance(ix, tuple) else mapper[ix]
-    
-    def _dihedral_residx(self, end=-1):
-        res_arrays = np.split(self.protein.residues.resindices, np.where(np.diff(self.protein.residues.resnums) != 1)[0]+1)
-        # dihedral_residx = lambda end=-1: [elem for arr in res_arrays for elem in arr[1:end]]
-        return [elem for arr in res_arrays for elem in arr[1:end]]
-    
-    
-            
-    
-    
-    
+        self._bonded_cys = self._get_bonded_cys()
+
+
     
     def __sub__(self, other):
         delta = _Store()
@@ -253,7 +237,7 @@ class Protein:
         pkgs = utils.pkgsl if pkg=="all" else pkg if isinstance(pkg, list) else [pkg]
         
         if any(["COM" in pkg for pkg in pkgs]):
-            self._trajutils.get_COM_trajs(self)
+            self._get_COM_trajs(self)
             
         # if any([re.search("(carma|grinn)", pkg.lower()) for pkg in pkgs]):
         #     self._trajutils.get_dcd_trajs()
@@ -439,7 +423,7 @@ class Protein:
     
     
 class Delta:
-    def __init__(self, refstate, state2, **kwargs):
+    def __init__(self, refstate, state2, **kwargs):            
         self.state1, self.state2 = refstate, state2
         self._states = [self.state1, self.state2]
         for state in self._states:
@@ -515,15 +499,21 @@ class Delta:
         from Bio import AlignIO
         from Bio.SeqUtils import seq1
         
-        aln_file = f"{self.state1._datadir}/{self.state1.name}_{self.state2.name}_alignment.aln"
-        
         with pymol2.PyMOL() as pymol:
-            pymol.cmd.load(self.state1._pdbf, self.state1.name)
-            pymol.cmd.load(self.state2._pdbf, self.state2.name)
-            pymol.cmd.align(self.state1.name, self.state2.name, object='aln')
-            pymol.cmd.save(aln_file, 'aln')
+            pymol.cmd.load(self.state1._pdbf, 'prot1')
+            pymol.cmd.load(self.state2._pdbf, 'prot2')
+            pymol.cmd.cealign('prot1', 'prot2', object='aln')
+            # pymol.cmd.save(aln_file, 'aln')
             
-        alignment = AlignIO.read(aln_file, "clustal")
+            # aln = pymol2.cmd2.pymol.exporting.get_alnstr('aln', _self=pymol.cmd)
+            # print(aln)
+
+            with pymol.cmd.lockcm:
+                aln = pymol2._cmd.get_seq_align_str(pymol.cmd._COb, 'aln',
+                        -1, 0, -1)
+        
+        with io.StringIO(aln) as f:
+            alignment = AlignIO.read(f, "clustal")
         
         for state, aln in zip(self._states, alignment):
             aas = [f"{res.resname}:{res.resid}" for res in state.protein.residues]
