@@ -12,3 +12,4 @@ ipython
 ipywidgets
 nbsphinx
 nbsphinx-link
+ParmEd

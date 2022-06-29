@@ -17,9 +17,7 @@
 AlloViz
 =======
 
-|Docs build|
-
-.. |Maintenance yes| image:: https://readthedocs.org/projects/alloviz/badge/?version=latest
+.. |Docs build| image:: https://readthedocs.org/projects/alloviz/badge/?version=latest
    :target: https://alloviz.readthedocs.io/en/latest/?badge=latest
    :alt: Documentation Status
 
@@ -79,7 +77,7 @@ installed with conda.
 Then go to the package folder (``cd AlloViz``) and install the package,
 preferably with ``pip install .``.
 
-   > If environment creation with `conda_explicit.txt` fails, the non-explicit requirements/dependencies file `conda_minimal.txt` can be used, providing the conda channel `conda-forge` (`-c conda-forge`).
+   If environment creation with `conda_explicit.txt` fails, the non-explicit requirements/dependencies file `conda_minimal.txt` can be used, providing the conda channel `conda-forge` (`-c conda-forge`).
 
 Quickstart
 ----------
