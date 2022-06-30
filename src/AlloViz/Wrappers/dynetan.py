@@ -25,7 +25,7 @@ class dynetan(Multicore):
         # for res in prot.residues:
         #     res.resname = seq3(seq1(res.resname, custom_map = self._d["_res_dict"])).upper()
         
-        protseg = list(prot.segments.segids)
+        protseg = list(obj.getU().segments.segids)
         obj.setSegIDs(protseg)
         obj.selectSystem(withSolvent=False)#, userSelStr=self._d["_protein_sel"])
 

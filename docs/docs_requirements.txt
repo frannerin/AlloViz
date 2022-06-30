@@ -1,4 +1,4 @@
-numpydoc
+#numpydoc
 pandas
 requests
 multiprocess
@@ -6,7 +6,7 @@ MDAnalysis
 numpy
 lazyasd
 networkx
-tabulate
+#tabulate
 #myst-nb
 ipython
 ipywidgets

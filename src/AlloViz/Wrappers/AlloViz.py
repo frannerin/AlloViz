@@ -63,7 +63,7 @@ class AlloViz(Multicore):
         from concurrent.futures import ProcessPoolExecutor as Pool
         from functools import partial
         with Pool(self.taskcpus) as p:
-            results = list(p.map(partial(_calculate_row, values=values, nres=len(selected_res)), in_data, chunksize=self.taskcpus))
+            results = list(p.map(partial(_calculate_row, values=values, nres=len(selected_res)), in_data))#, chunksize=len(in_data)/(self.taskcpus*2)))
             p.shutdown()
             
         for result in results:
