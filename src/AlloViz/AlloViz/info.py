@@ -61,8 +61,8 @@ wrappers = {
 inverse = {}
 
 for key, val in wrappers.items():
-	if "g_correlation" not in key and "dynetan_COM" not in key:
-    	inverse[val] = key
+    if "g_correlation" not in key and "dynetan_COM" not in key:
+        inverse[val] = key
 
 
 
