@@ -73,20 +73,24 @@ def get_GPCRdb_numbering(protein):
         
         
         
-def write_protein_trajs(whole, protein, trajs):
-    def write_protein_traj(protein, reader, trajf):
+def write_protein_trajs(whole, protein_sel, whole_trajs, protein_trajs):
+    
+    def write_protein_traj(whole, protein_sel, traj, trajf):
+        protein = whole.select_atoms(protein_sel)
+        whole.load_new(traj)
+        
         with mda.Writer(trajf, protein.n_atoms) as W:
-                for ts in reader:
-                    W.write(protein.atoms)
+            for ts in whole.trajectory:
+                W.write(protein.atoms)
     
     
     mypool = Pool()
     utils.pool = mypool
 
-    for num, trajf in trajs.items():
+    for num, trajf in protein_trajs.items():
         if not os.path.isfile(trajf):
-            reader = whole.trajectory.readers[num-1] if hasattr(whole.trajectory, "readers") else whole.trajectory
-            utils.get_pool().apply_async(write_protein_traj, args=(protein, reader, trajf))
+            traj = whole_trajs[num-1]
+            utils.get_pool().apply_async(write_protein_traj, args=(whole.copy(), protein_sel, traj, trajf))
 
     mypool.close()
     mypool.join()
@@ -168,8 +172,7 @@ class ProteinBase:
 
         # Write protein trajectory(ies) file(s)
         if any([not os.path.isfile(f) for f in self._trajs.values()]):
-            whole.load_new(self.trajs)
-            write_protein_trajs(whole, protein, self._trajs)
+            write_protein_trajs(whole, self._protein_sel, self.trajs, self._trajs)
     
     
     

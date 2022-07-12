@@ -26,12 +26,7 @@ def _calculate_row(in_data, values, nres):
 
     
 class AlloViz(Multicore):
-    def __new__(cls, protein, d):
-        new = super().__new__(cls, protein, d)
-        new._empties = 0
-        return new
-            
-    
+	
     def _computation(self, xtc):#pdb, traj, xtc, pq):
         prot = self._d["u"].atoms
         selected_res = self._d["_dihedral_residx"]()
