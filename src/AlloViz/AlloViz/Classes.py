@@ -145,7 +145,12 @@ class Protein(ProteinBase):
         self._trajs = dict( [(num+1, f"{self._datadir}/traj_{num+1}.xtc") for num in range(len(self.trajs))] )
         self._psff = self._pdbf.replace("pdb", "psf") if hasattr(self, "psf") else None
         
-        if any([not os.path.isfile(f) for f in list(self._trajs.values()) + [self._pdbf]]):
+        compath = f"{self._datadir}/COM_trajs"
+        os.makedirs(compath, exist_ok=True)
+        self._compdbf = f"{compath}/ca.pdb"
+        self._comtrajs = {num: f"{compath}/{num}.xtc" for num in self._trajs}
+        
+        if any([not os.path.isfile(f) for f in list(self._trajs.values()) + list(self._comtrajs.values()) + [self._pdbf]]):
             self._process_input(**kwargs)
         
         self.protein = mda.Universe(self._pdbf)
@@ -241,12 +246,6 @@ class Protein(ProteinBase):
         (41041, 5)
         """
         pkgs = utils.pkgsl if pkg=="all" else pkg if isinstance(pkg, list) else [pkg]
-        
-        if any(["COM" in pkg for pkg in pkgs]):
-            self._get_COM_trajs()
-            
-        # if any([re.search("(carma|grinn)", pkg.lower()) for pkg in pkgs]):
-        #     self._trajutils.get_dcd_trajs()
         
         d = self.__dict__.copy()
         d.update(kwargs)

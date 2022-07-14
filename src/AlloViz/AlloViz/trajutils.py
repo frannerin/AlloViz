@@ -73,24 +73,30 @@ def get_GPCRdb_numbering(protein):
         
         
         
-def write_protein_trajs(whole, protein_sel, whole_trajs, protein_trajs):
+def write_protein_trajs(whole, protein_sel, whole_trajs, protein_trajs, com_trajs, compdb):
     
-    def write_protein_traj(whole, protein_sel, traj, trajf):
+    def write_protein_traj(whole, protein_sel, traj, trajf, comf, compdb):
         protein = whole.select_atoms(protein_sel)
+        CAs = protein.select_atoms("name CA")
         whole.load_new(traj)
         
-        with mda.Writer(trajf, protein.n_atoms) as W:
+        with mda.Writer(trajf, protein.n_atoms) as proteinw, mda.Writer(comf, protein.select_atoms("name CA").n_atoms) as COMw:
             for ts in whole.trajectory:
-                W.write(protein.atoms)
-    
+                proteinw.write(protein.atoms)
+                
+                tsCAs = CAs.copy()
+                tsCAs.positions = protein.center_of_mass(compound='residues')
+                COMw.write(tsCAs)
+                
     
     mypool = Pool()
     utils.pool = mypool
 
     for num, trajf in protein_trajs.items():
-        if not os.path.isfile(trajf):
+        comf = com_trajs[num]
+        if not os.path.isfile(trajf) or not os.path.isfile(comf):
             traj = whole_trajs[num-1]
-            utils.get_pool().apply_async(write_protein_traj, args=(whole.copy(), protein_sel, traj, trajf))
+            utils.get_pool().apply_async(write_protein_traj, args=(whole.copy(), protein_sel, traj, trajf, comf, compdb))
 
     mypool.close()
     mypool.join()
@@ -163,16 +169,18 @@ class ProteinBase:
         # Write protein pdb file
         if not os.path.isfile(self._pdbf):
             protein.write(self._pdbf)
-
+        if not os.path.isfile(self._compdbf):
+            CAs.write(self._compdbf)
+        
         # Write protein psf file if it exists
         if self._psff and not os.path.isfile(self._psff):
             psf = parmed.load_file(self.psf)[protein.indices]
             psf.title = self._psff
             psf.write_psf(self._psff)
-
+        
         # Write protein trajectory(ies) file(s)
-        if any([not os.path.isfile(f) for f in self._trajs.values()]):
-            write_protein_trajs(whole, self._protein_sel, self.trajs, self._trajs)
+        if any([not os.path.isfile(f) for f in list(self._trajs.values()) + list(self._comtrajs.values())]):
+            write_protein_trajs(whole, self._protein_sel, self.trajs, self._trajs, self._comtrajs, self._compdbf)
     
     
     
@@ -197,33 +205,33 @@ class ProteinBase:
                     
            
         
-    def _get_COM_trajs(self):
-        compath = f"{self._datadir}/COM_trajs"
-        if not os.path.isdir(compath): os.makedirs(compath, exist_ok=True)
+    # def _get_COM_trajs(self):
+    #     compath = f"{self._datadir}/COM_trajs"
+    #     if not os.path.isdir(compath): os.makedirs(compath, exist_ok=True)
 
-        compdb = f"{compath}/ca.pdb"
-        if not os.path.isfile(compdb):
-            print(f"Making trajectories of residue COM for {self.name}")
-            prot = self.protein.select_atoms("name CA")
-            prot.write(compdb)
-        setattr(self, "_compdbf", compdb)
+    #     compdb = f"{compath}/ca.pdb"
+    #     if not os.path.isfile(compdb):
+    #         print(f"Making trajectories of residue COM for {self.name}")
+    #         prot = self.protein.select_atoms("name CA")
+    #         prot.write(compdb)
+    #     setattr(self, "_compdbf", compdb)
 
-        comtrajs = [f"{compath}/{xtc}.xtc" for xtc in self._trajs]
-        setattr(self, "_comtrajs", {num: traj for num, traj in enumerate(comtrajs, 1)})
+    #     comtrajs = [f"{compath}/{xtc}.xtc" for xtc in self._trajs]
+    #     setattr(self, "_comtrajs", {num: traj for num, traj in enumerate(comtrajs, 1)})
 
-        for xtc, comtraj in self._comtrajs.items():
-            if not os.path.isfile(comtraj):
-                prot = self.protein.atoms
-                traj = self.u.trajectory.readers[xtc-1] if hasattr(self.u.trajectory, "readers") else self.u.trajectory
-                # traj = next(traj for traj in self.mdau.trajectory.readers if traj.filename == self._trajs[xtc])
-                arr = np.empty((prot.n_residues, traj.n_frames, 3))
-                for ts in traj:
-                    arr[:, ts.frame] = prot.center_of_mass(compound='residues')
+    #     for xtc, comtraj in self._comtrajs.items():
+    #         if not os.path.isfile(comtraj):
+    #             prot = self.protein.atoms
+    #             traj = self.u.trajectory.readers[xtc-1] if hasattr(self.u.trajectory, "readers") else self.u.trajectory
+    #             # traj = next(traj for traj in self.mdau.trajectory.readers if traj.filename == self._trajs[xtc])
+    #             arr = np.empty((prot.n_residues, traj.n_frames, 3))
+    #             for ts in traj:
+    #                 arr[:, ts.frame] = prot.center_of_mass(compound='residues')
 
-                cau = mda.Universe(compdb, arr, format=mda.coordinates.memory.MemoryReader, order='afc')
-                with mda.Writer(comtraj, cau.atoms.n_atoms) as W:
-                    for ts in cau.trajectory:
-                        W.write(cau.atoms)
+    #             cau = mda.Universe(compdb, arr, format=mda.coordinates.memory.MemoryReader, order='afc')
+    #             with mda.Writer(comtraj, cau.atoms.n_atoms) as W:
+    #                 for ts in cau.trajectory:
+    #                     W.write(cau.atoms)
                         
     
     
