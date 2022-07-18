@@ -166,7 +166,8 @@ class Analysis: #(_Edges)
         largest_component = max(nx.connected_components(network), key=len)
         
         if len(largest_component) < network.number_of_nodes():
-            print("WARNING! Unconnected network:", self._pkg._name, self._name, elem, metricf.__name__, "\n", "Largest network component will be used for analysis")
+            print(f"WARNING! Unconnected network ({network.number_of_nodes()} nodes):", self._pkg._name, self._name, column.name, elem, metricf.__name__, "\n",
+            	f"Largest network component will be used for analysis. Sizes (number of nodes) of all components: {[len(comp) for comp in nx.connected_components(network)]}")
             network = network.subgraph(largest_component)
         
         try:

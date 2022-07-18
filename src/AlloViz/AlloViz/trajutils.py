@@ -21,6 +21,9 @@ def standardize_resnames(protein, **kwargs):
     if "special_res" in kwargs and isinstance(kwargs["special_res"], dict):
         res_d.update(kwargs["special_res"])
 
+    # Set all residues' segment to the same one to avoid PyInteraph2_Energy problems
+    protein.residues.segments = protein.segments[0]
+
     try:
         for res in protein.residues:
             res.resname = seq3(seq1(res.resname, custom_map = res_d)).upper()
