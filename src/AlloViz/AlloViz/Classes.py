@@ -428,7 +428,7 @@ class Protein(ProteinBase):
     
     
 class Delta:
-    def __init__(self, refstate, state2, **kwargs):            
+    def __init__(self, refstate, state2, pymol_aln="super"):            
         self.state1, self.state2 = refstate, state2
         self._states = [self.state1, self.state2]
         for state in self._states:
@@ -437,7 +437,7 @@ class Delta:
             # translate_ix = lambda ix: tuple(to_aln_pos[_] for _ in ix) if isinstance(ix, tuple) else to_aln_pos[ix]
             
             
-        self._aln = self._make_struct_aln(**kwargs)
+        self._aln = self._make_struct_aln(pymol_aln)
         
         # nodes_subset = self._add_nodes_subset()
         # self.sources_subset, self.targets_subset = nodes_subset.values()
@@ -499,15 +499,17 @@ class Delta:
 #             setattr(state, "_aln_mapper", aln_mapper)
         
 #         return alignment
-    def _make_struct_aln(self, **kwargs):
+    def _make_struct_aln(self, pymol_aln):
         import pymol2
         from Bio import AlignIO
         from Bio.SeqUtils import seq1
+
+
         
         with pymol2.PyMOL() as pymol:
             pymol.cmd.load(self.state1._pdbf, 'prot1')
             pymol.cmd.load(self.state2._pdbf, 'prot2')
-            pymol.cmd.cealign('prot1', 'prot2', object='aln')
+            eval(f"pymol.cmd.{pymol_aln}('prot1', 'prot2', object='aln')")
             # pymol.cmd.save(aln_file, 'aln')
             
             # aln = pymol2.cmd2.pymol.exporting.get_alnstr('aln', _self=pymol.cmd)

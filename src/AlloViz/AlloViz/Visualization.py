@@ -44,7 +44,7 @@ class Element:
         adds = [col for col in cols if "std" in col]
         add = pandas.DataFrame.add(selfdf[adds], otherdf[adds], axis=0, level="aln_pos").dropna() #fill_value = 0, axis=0, level="aln_pos"
         
-        return pandas.concat([add, sub], axis=1)
+        return pandas.concat([add, sub], axis=1).dropna()
     
     
     
