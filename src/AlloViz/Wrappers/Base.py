@@ -7,7 +7,7 @@ from contextlib import redirect_stdout, redirect_stderr
 from importlib import import_module
 from lazyasd import LazyObject
 
-from ..AlloViz.utils import get_pool, rgetattr, rhasattr, capitalize
+from ..AlloViz.utils import get_pool, rgetattr, rhasattr
 
 
 

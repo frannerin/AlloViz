@@ -12,7 +12,7 @@
 #
 import os
 import sys
-sys.path.insert(0, os.path.abspath('..'))#/..'), os.path.abspath('..'), os.path.abspath('../../src'), os.path.abspath('../../src/AlloViz'))
+sys.path.insert(0, os.path.abspath('..'))
 
 
 # -- Project information -----------------------------------------------------
@@ -31,47 +31,33 @@ release = '0.1'
 # extensions coming with Sphinx (named 'sphinx.ext.*') or your custom
 # ones.
 extensions = [
-	#'readthedocs_ext.readthedocs'
-    #'sphinx.ext.autodoc',
+    'sphinx.ext.autodoc',
+	'sphinx.ext.napoleon',
     'sphinx.ext.viewcode',
-    #'sphinx.ext.napoleon',
-    'sphinx.ext.napoleon',
-    #'numpydoc',
     'sphinx.ext.autosectionlabel',
-    #"myst_nb",
     "nbsphinx",
     "nbsphinx_link",
 ]
 
-# fixes for myst_nbs
-source_suffix = ['.rst', '.ipynb']
-autosummary_generate = ['api.rst']
-
-#nb_execution_mode = "off"
-#nb_kernel_rgx_aliases = {"develop.*": "python3"}
 nbsphinx_execute = 'never'
 nbsphinx_kernel_name = 'python3'
-
-
 
 # Make sure the target is unique
 autosectionlabel_prefix_document = True
 
 # autodoc
 autodoc_member_order = "bysource"
-numpydoc_show_class_members = False
 
 # Napoleon settings
+napoleon_google_docstring = False
 napoleon_include_special_with_doc = False
 napoleon_use_ivar = False # default
 napoleon_use_param = True # default
 napoleon_use_keyword = True # default
 # look into napoleon_type_aliases to put `Protein` as Delta parameters
 
-
-
 # Add any paths that contain templates here, relative to this directory.
-templates_path = ['_templates']
+#templates_path = ['_templates']
 
 # List of patterns, relative to source directory, that match files and
 # directories to ignore when looking for source files.
@@ -84,7 +70,7 @@ exclude_patterns = ['_build', '**.ipynb_checkpoints']
 # The theme to use for HTML and HTML Help pages.  See the documentation for
 # a list of builtin themes.
 #
-html_theme = 'sphinx_rtd_theme'
+#html_theme = 'sphinx_rtd_theme'
 
 # Add any paths that contain custom static files (such as style sheets) here,
 # relative to this directory. They are copied after the builtin static files,
@@ -98,28 +84,14 @@ from AlloViz.AlloViz import info
 
 df = info.df
 
-# with open("../../README.rst", "a") as f:
-# 	f.write(".. raw:: html\n\n")
-# 	for line in df.to_html(header=False).replace(' valign="top"', '').split("\n"):
-# 		f.write(f"\t{line}\n")
-
-# with open("../../table.html", "w") as f:
-# 	f.writelines(
-# 		df.reset_index().to_markdown(tablefmt="grid", index=False)
-# 		)
-
-
 header = "Available information sources for network generation\n----------------------------------------------------\n\n.. raw:: html\n\n"
 
 tabulated_table = ""
 for line in df.to_html(header=False).replace(' valign="top"', '').split("\n"):
 	tabulated_table += f"\t{line}\n"
 
+
 import fileinput, sys
-# for line in fileinput.input("../../README.rst", inplace=True):
-#     if line.startswith('Available information sources for network generation'):
-#     	line = header + tabulated_table
-#     sys.stdout.write(line)
 
 replace_line = False
 for line in fileinput.input("../../README.rst", inplace=True):
@@ -136,11 +108,4 @@ for line in fileinput.input("../../README.rst", inplace=True):
 	sys.stdout.write(line)
 
 
-# with open("../../README.rst", "r") as in_file:
-#     buf = in_file.readlines()
-
-# with open("../../README.rst", "w") as out_file:
-#     for line in buf:
-#         if line.startswith('Available information sources for network generation'):
-#         	line = header + tabulated_table
-#         out_file.write(line)
+sys.path.pop(0)

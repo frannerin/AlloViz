@@ -3,9 +3,6 @@ import os
 import pandas
 
 from .Base import lazy_import, Multicore
-from ..AlloViz.utils import rgetattr, rhasattr, capitalize
-
-# from ..AlloViz.utils import lazy_import
 
 imports = {
 "_getcontacts_contacts": ".Packages.getcontacts.get_dynamic_contacts",
@@ -49,7 +46,9 @@ class GetContacts(Multicore):
         if "GetContacts_threshold" in self._d:
             self.filter_contacts(self._d["GetContacts_threshold"])
     
-    
+    @staticmethod
+    def _filter_raw(raw, GetContacts_threshold):
+        return raw[raw["weight"] >= GetContacts_threshold]
     
     def filter_contacts(self, GetContacts_threshold:float):
         r"""Filter contacts below a frequency threshold.
@@ -75,14 +74,14 @@ class GetContacts(Multicore):
         print("Make sure to delete/have deleted all previous analysis attributes and files.")
         # message = True
         for filterby in utils.filterbysl:
-            if rhasattr(self, capitalize(filterby)):
+            if hasattr(self, filterby.capitalize()):
                 # if message:
                 #     print("It looks like you had already analyzed the network before this contacts filtering, please make sure you delete all analysis files so that the analysis is done again with the filtered network.")
                 # message = False
                 
-                delattr(self, capitalize(filterby))
+                delattr(self, filterby.capitalize())
         
         
-        self.raw = self.raw[self.raw["weight"] >= GetContacts_threshold]
+        self.raw = self._filter_raw(self.raw, GetContacts_threshold)
         
         

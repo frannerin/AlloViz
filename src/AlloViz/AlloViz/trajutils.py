@@ -28,11 +28,10 @@ def standardize_resnames(protein, **kwargs):
         for res in protein.residues:
             res.resname = seq3(seq1(res.resname, custom_map = res_d)).upper()
     except:
-        print(f"""
+        raise Exception(f"""
 resname(s) {[res for res in set(protein.residues.resnames) if res not in res_d]} could not be translated to a standard name.
 Please provide a mapping from 3/4-letter code to 1-letter code as a dictionary with keyword argument 'special_res' upon initialization.
               """)
-        raise
         
         
 def get_GPCRdb_numbering(protein):
@@ -73,41 +72,6 @@ def get_GPCRdb_numbering(protein):
 #     GPCRdb_nums = np.array([round(bfactor, 2) if bfactor>1 else round(-bfactor+0.001, 3) if bfactor<0 else 0 for bfactor in nums])
 #     protein.select_atoms("name CA").tempfactors = GPCRdb_nums
         
-        
-        
-        
-def write_protein_trajs(whole, protein_sel, whole_trajs, protein_trajs, com_trajs, compdb):
-    
-    def write_protein_traj(whole, protein_sel, traj, trajf, comf, compdb):
-        protein = whole.select_atoms(protein_sel)
-        CAs = protein.select_atoms("name CA")
-        whole.load_new(traj)
-        
-        with mda.Writer(trajf, protein.n_atoms) as proteinw, mda.Writer(comf, protein.select_atoms("name CA").n_atoms) as COMw:
-            for ts in whole.trajectory:
-                proteinw.write(protein.atoms)
-                
-                tsCAs = CAs.copy()
-                tsCAs.positions = protein.center_of_mass(compound='residues')
-                COMw.write(tsCAs)
-                
-    
-    mypool = Pool()
-    utils.pool = mypool
-
-    for num, trajf in protein_trajs.items():
-        comf = com_trajs[num]
-        if not os.path.isfile(trajf) or not os.path.isfile(comf):
-            traj = whole_trajs[num-1]
-            utils.get_pool().apply_async(write_protein_traj, args=(whole.copy(), protein_sel, traj, trajf, comf, compdb))
-
-    mypool.close()
-    mypool.join()
-    utils.pool = utils.dummypool()
-    
-    
-    
-    
     
 
 
@@ -128,17 +92,15 @@ class ProteinBase:
         get_name = lambda link: f"{self._path}/{link.rsplit('/')[-1]}"
 
 
-        mypool = Pool()
-        utils.pool = mypool        
+        mypool = Pool()  
 
         for link in links:
             fname = get_name(link)
             print(f"downloading {fname}")
-            utils.get_pool().apply_async(pwget.urlretrieve, args=(f"{web}{link}", fname))
+            mypool.apply_async(pwget.urlretrieve, args=(f"{web}{link}", fname))
 
         mypool.close()
         mypool.join()
-        utils.pool = utils.dummypool()
 
 
         fname = next(get_name(link) for link in links if "prm" in get_name(link))
@@ -161,6 +123,7 @@ class ProteinBase:
     def _process_input(self, **kwargs):
         whole = mda.Universe(self.pdb)
         protein = whole.select_atoms(self._protein_sel)
+        CAs = protein.select_atoms("name CA")
 
         # Rename all residues in protein_sel to standard names
         standardize_resnames(protein, **kwargs)
@@ -181,15 +144,30 @@ class ProteinBase:
             psf.title = self._psff
             psf.write_psf(self._psff)
         
-        # Write protein trajectory(ies) file(s)
+        # Write protein trajectory(ies) file(s): https://stackoverflow.com/a/73043849/14682935
         if any([not os.path.isfile(f) for f in list(self._trajs.values()) + list(self._comtrajs.values())]):
-            write_protein_trajs(whole, self._protein_sel, self.trajs, self._trajs, self._comtrajs, self._compdbf)
+            whole.load_new(self.trajs, continuous=False)
+            sf = whole.trajectory._start_frames # for 3 trajs of 2500 frames each looks like: array([   0, 2500, 5000, 7500])
+            iterator = enumerate(zip(sf[:-1], sf[1:]), 1) # looks like: (1, (0, 2500)), (2, (2500, 5000)), (3, (5000, 7500))
+            
+            
+            def write_protein_trajs(start, stop, t, comt):
+                if not os.path.isfile(t): protein.write(t, frames = whole.trajectory[start:stop])
+                if not os.path.isfile(comt): CAs.write(comt, frames = whole.trajectory[start:stop])
+            
+            # For each trajectory asynchronously (with `multiprocess` Pool), write the protein and residues' COM trajectories if the files don't already exist
+            mypool = Pool()
+            for i, frames in iterator:
+                mypool.apply_async(write_protein_trajs, args=(*frames, self._trajs[i], self._comtrajs[i]))
+            mypool.close()
+            mypool.join()
+   
     
     
     
-    
-    
-    
+        
+        
+        
     def _get_bonded_cys(self):
         "Identify disulfide bond-forming cysteines' sulphur atoms"
         bonded_cys = []

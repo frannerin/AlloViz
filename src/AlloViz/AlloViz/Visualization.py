@@ -106,7 +106,7 @@ class Element:
         nv, mdau_parent = self._get_nv(nv)
         #mdau = mdau_parent.mdau
         
-        indices = subset.index if isinstance(subset.index[0][0], str) else subset.index.map(mdau_parent._translate_ix(mdau_parent._aln_mapper))
+        indices = subset.index.map(mdau_parent._translate_ix(mdau_parent._aln_mapper)) if subset.index.name == "aln_pos" else subset.index
         
         for i in range(len(subset[metric])):
             self._add_element(nv, mdau_parent.protein, indices[i], colors[i], sizes[i])

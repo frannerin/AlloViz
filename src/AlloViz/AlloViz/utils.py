@@ -1,6 +1,16 @@
 from . import info
 pkgsl = list(info.wrappers.keys())
 
+def pkgname(pkg):
+    lowpkgsl = [p.lower() for p in pkgsl]
+    pkgname = pkgsl[lowpkgsl.index(pkg.lower())] if pkg.lower() in lowpkgsl else False
+    
+    if not pkgname:
+        raise Exception(f"{pkg} isn't a valid name of an AlloViz network construction method.")
+    else:
+        return pkgname
+    
+
 metricsl = ["cfb", "btw"]
 
 filterbysl = ["whole", "incontact", "intercontact"]
@@ -42,8 +52,8 @@ def get_pool():
 
 
 
-def capitalize(string):
-    return string[0].upper() + string[1:]
+# def capitalize(string):
+#     return string[0].upper() + string[1:]
 
 # def norm(normalize):
 #     return "norm" if normalize else "no_norm"
