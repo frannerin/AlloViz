@@ -51,6 +51,10 @@ intersphinx_mapping = {
 # Make sure the target is unique
 autosectionlabel_prefix_document = True
 
+#numpydoc
+autosummary_generate = True
+#numpydoc_show_class_members = False
+
 # autodoc
 autodoc_member_order = "bysource"
 
