@@ -1,5 +1,8 @@
 sphinx=>5
 sphinx_rtd_theme
+nbsphinx
+nbsphinx-link
+
 jupyterlab
 nb_conda_kernels
-tabulate
+

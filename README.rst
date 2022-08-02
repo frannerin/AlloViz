@@ -125,7 +125,7 @@ Available information sources for network generation
 	  </thead>
 	  <tbody>
 	    <tr>
-	      <th rowspan="9">Movement correlation</th>
+	      <th rowspan="8">Movement correlation</th>
 	      <th>MD-TASK</th>
 	      <th>Pearson's</th>
 	      <th>Carbon α</th>
@@ -142,14 +142,10 @@ Available information sources for network generation
 	      <td>pytraj_CB</td>
 	    </tr>
 	    <tr>
-	      <th rowspan="2">dynetan</th>
-	      <th rowspan="2">Mutual Information (MI)</th>
+	      <th>dynetan</th>
+	      <th>Mutual Information (MI)</th>
 	      <th>Whole residue</th>
 	      <td>dynetan</td>
-	    </tr>
-	    <tr>
-	      <th>Residue COM</th>
-	      <td>dynetan_COM</td>
 	    </tr>
 	    <tr>
 	      <th rowspan="4">correlationplus</th>
@@ -237,11 +233,17 @@ Available information sources for network generation
 	      <td>PyInteraph2_Contacts</td>
 	    </tr>
 	    <tr>
-	      <th>Interaction energy</th>
+	      <th rowspan="2">Interaction energy</th>
 	      <th>PyInteraph2</th>
 	      <th>-</th>
 	      <th>Whole residue</th>
 	      <td>PyInteraph2_Energy</td>
+	    </tr>
+	    <tr>
+	      <th>gRINN</th>
+	      <th>-</th>
+	      <th>Whole residue</th>
+	      <td>gRINN</td>
 	    </tr>
 	  </tbody>
 	</table>
