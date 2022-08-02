@@ -102,9 +102,9 @@ class Protein(ProteinBase):
     pdb
     trajs
     GPCR
-    protein : :ref:`mdanalysis:core.groups.AtomGroup`
+    protein : :class:`MDAnalysis.core.groups.AtomGroup`
         AtomGroup of the selected `protein_sel` string, taken from the pdb file.
-    u : :ref:`mdanalysis:core.Universe`
+    u : :class:`MDAnalysis.core.Universe`
         Universe of the pdb and trajectory files with only the `protein_sel` atoms.
     
     Raises
