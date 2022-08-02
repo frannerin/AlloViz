@@ -35,12 +35,17 @@ extensions = [
 	'sphinx.ext.napoleon',
     'sphinx.ext.viewcode',
     'sphinx.ext.autosectionlabel',
+    'sphinx.ext.intersphinx',
     "nbsphinx",
     "nbsphinx_link",
 ]
 
 nbsphinx_execute = 'never'
 nbsphinx_kernel_name = 'python3'
+
+intersphinx_mapping = {
+'MDAnalysis': ('https://docs.mdanalysis.org/stable/index.html', None),
+}
 
 # Make sure the target is unique
 autosectionlabel_prefix_document = True

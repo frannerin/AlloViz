@@ -102,9 +102,9 @@ class Protein(ProteinBase):
     pdb
     trajs
     GPCR
-    protein : :class:`MDAnalysis.core.groups.AtomGroup`
+    protein : :ref:`MDAnalysis:core.groups.AtomGroup`
         AtomGroup of the selected `protein_sel` string, taken from the pdb file.
-    u : :class:`MDAnalysis.core.Universe`
+    u : :ref:`MDAnalysis:core.Universe`
         Universe of the pdb and trajectory files with only the `protein_sel` atoms.
     
     Raises
@@ -125,6 +125,7 @@ class Protein(ProteinBase):
     <Universe with 88651 atoms>
     """
     
+    #: Class attribute used to select only protein atoms from the input files with :doc:`MDAnalysis selection syntax <MDAnalysis:selections>`.
     _protein_sel = "(same segid as protein) and (not segid LIG) and (not chainid L)"
     
     def __init__(self, pdb="", trajs=[], GPCR=False, name=None, path=None, protein_sel=None, **kwargs):
