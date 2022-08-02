@@ -4,11 +4,11 @@
 # =========================================================
 """Main AlloViz classes: `Protein` and `Delta` --- :mod:`AlloViz`
 
-The :class:`AlloViz.Protein` class is AlloViz's main class, processing a structure and
+The :class:`~AlloViz.Protein` class is AlloViz's main class, processing a structure and
 trajectory(ies) input files and allowing to calculate, analyze and visualize the
 allosteric communication networks with its associated methods.
 
-The :class:`AlloViz.Delta` class takes two :class:`AlloViz.Protein` objects as input to
+The :class:`~AlloViz.Delta` class takes two :class:`~AlloViz.Protein` objects as input to
 calculate the delta-network to highlight the differences in the allosteric communication
 between two systems.
 
@@ -390,7 +390,7 @@ class Protein(ProteinBase):
         Notes
         -----
         Method returns nothing, but analysis results are stored as nested attributes
-        "inside" each of the packages' attributes of the :class:`AlloViz.Protein` object,
+        "inside" each of the packages' attributes of the :class:`~AlloViz.Protein` object,
         first using the name of the filtering scheme (e.g., `.Package.filterby`) and
         lastly with the analyzed network element name (e.g., `.Package.filterby.element`). 
         If the `Protein` object was created providing more than one trajectory file, the
@@ -497,7 +497,7 @@ class Protein(ProteinBase):
         -----
         ``view`` method is also available in the Elements' attributes, e.g.,
         `AlloViz.Protein.Package.Analysis.Element.view` 
-        (see :mth:`AlloViz.Visualization.Element.view`).
+        (see :classmethod:`AlloViz.Visualization.Element.view`).
         
         Examples
         --------
