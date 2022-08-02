@@ -44,7 +44,7 @@ nbsphinx_execute = 'never'
 nbsphinx_kernel_name = 'python3'
 
 intersphinx_mapping = {
-'MDAnalysis': ('https://docs.mdanalysis.org/stable/', None),
+'mdanalysis': ('https://docs.mdanalysis.org/stable/', None),
 }
 
 # Make sure the target is unique
