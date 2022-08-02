@@ -497,7 +497,7 @@ class Protein(ProteinBase):
         -----
         ``view`` method is also available in the Elements' attributes, e.g.,
         `AlloViz.Protein.Package.Analysis.Element.view` 
-        (see :classmethod:`AlloViz.Visualization.Element.view`).
+        (see :meth:`AlloViz.Visualization.Element.view`).
         
         Examples
         --------
