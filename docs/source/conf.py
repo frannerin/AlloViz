@@ -33,6 +33,7 @@ release = '0.1'
 extensions = [
     'sphinx.ext.autodoc',
 	#'sphinx.ext.napoleon',
+	#'sphinx.ext.autosummary',
 	'numpydoc',
     'sphinx.ext.viewcode',
     'sphinx.ext.autosectionlabel',
@@ -53,7 +54,9 @@ autosectionlabel_prefix_document = True
 
 #numpydoc
 autosummary_generate = True
+#autosummary_imported_members = True
 numpydoc_show_class_members = False
+#numpydoc_class_members_toctree = False
 
 # autodoc
 autodoc_member_order = "bysource"
@@ -86,6 +89,25 @@ html_theme = 'pydata_sphinx_theme'
 # relative to this directory. They are copied after the builtin static files,
 # so a file named "default.css" will overwrite the builtin "default.css".
 #html_static_path = ['_static']
+
+html_theme_options = {
+	"show_prev_next": False,
+
+    "icon_links": [
+        {
+            "name": "GitHub",
+            "url": "https://github.com/frannerin/AlloViz",
+            "icon": "fab fa-github",
+            "type": "fontawesome",
+        }],
+
+    "logo": {
+        "text": "AlloViz",},
+}
+
+html_sidebars = {
+  "example": []
+}
 
 
 

@@ -11,13 +11,6 @@ allosteric communication networks with its associated methods.
 The :class:`~AlloViz.Delta` class takes two :class:`~AlloViz.Protein` objects as input to
 calculate the delta-network to highlight the differences in the allosteric communication
 between two systems.
-
-Classes
-=======
-.. autoclass:: Protein
-   :members:
-.. autoclass:: Delta
-   :members:
    
 Notes
 =====
