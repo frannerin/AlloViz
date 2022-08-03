@@ -1,13 +1,15 @@
-AlloViz
-=======
+AlloViz.Protein
+===============
 
-.. automodule:: AlloViz
+.. autoclass:: AlloViz.Protein
    :members:
    :undoc-members:
    :show-inheritance:
 
 .. toctree::
+   :caption: AlloViz
    :maxdepth: 2
    :hidden:
 
-   self
+   AlloViz.Protein <self>
+   AlloViz.Delta

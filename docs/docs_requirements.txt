@@ -1,4 +1,3 @@
-#numpydoc
 pandas
 requests
 multiprocess
@@ -6,12 +5,13 @@ MDAnalysis
 numpy
 lazyasd
 networkx
-#tabulate
-#myst-nb
+ParmEd
+
 ipython
 ipywidgets
+
 nbsphinx
 nbsphinx-link
-ParmEd
+
 numpydoc
 pydata-sphinx-theme

@@ -40,7 +40,11 @@ extensions = [
     'sphinx.ext.intersphinx',
     "nbsphinx",
     "nbsphinx_link",
+    #"autoapi.extension"
 ]
+
+autoapi_dirs = ["../../src/AlloViz/"]
+autoapi_ignore = ['*migrations*', '^.*', '*-checkpoint.py*']
 
 nbsphinx_execute = 'never'
 nbsphinx_kernel_name = 'python3'
@@ -53,7 +57,7 @@ intersphinx_mapping = {
 autosectionlabel_prefix_document = True
 
 #numpydoc
-autosummary_generate = True
+autosummary_generate = False
 #autosummary_imported_members = True
 numpydoc_show_class_members = False
 #numpydoc_class_members_toctree = False
