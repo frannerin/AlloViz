@@ -56,14 +56,23 @@ intersphinx_mapping = {
 # Make sure the target is unique
 autosectionlabel_prefix_document = True
 
-#numpydoc
-autosummary_generate = False
+# #numpydoc WITH AUTOMODULE
+# autosummary_generate = False
+# #autosummary_imported_members = True
+# numpydoc_show_class_members = False
+# #numpydoc_class_members_toctree = False
+
+#numpydoc WITHOUT AUTOMODULE
+autosummary_generate = ["API/generate"]
 #autosummary_imported_members = True
-numpydoc_show_class_members = False
+#numpydoc_show_class_members = False
 #numpydoc_class_members_toctree = False
+autosummary_imported_members = True
+#templates_path = ["_templates"]
 
 # autodoc
 autodoc_member_order = "bysource"
+# autosummary doesn't use this
 
 # Napoleon settings
 # napoleon_google_docstring = False
@@ -79,7 +88,7 @@ autodoc_member_order = "bysource"
 # List of patterns, relative to source directory, that match files and
 # directories to ignore when looking for source files.
 # This pattern also affects html_static_path and html_extra_path.
-exclude_patterns = ['_build', '**.ipynb_checkpoints']
+exclude_patterns = ['_build', '**.ipynb_checkpoints', '_unused_templates']
 
 
 # -- Options for HTML output -------------------------------------------------
