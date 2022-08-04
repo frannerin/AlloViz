@@ -68,7 +68,7 @@ autosummary_generate = ["API/generate"]
 #numpydoc_show_class_members = False
 #numpydoc_class_members_toctree = False
 autosummary_imported_members = True
-#templates_path = ["_templates"]
+templates_path = ["_templates"]
 
 # autodoc
 autodoc_member_order = "bysource"
