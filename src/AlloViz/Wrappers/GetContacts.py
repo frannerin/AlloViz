@@ -52,6 +52,8 @@ class GetContacts(Multicore):
     
     def filter_contacts(self, GetContacts_threshold:float):
         r"""Filter contacts below a frequency threshold.
+        
+        Method.
 
         Parameters
         ----------

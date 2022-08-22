@@ -7,7 +7,9 @@ from contextlib import redirect_stdout, redirect_stderr
 from importlib import import_module
 from lazyasd import LazyObject
 
+from ..AlloViz.Filtering import Filtering
 from ..AlloViz.utils import get_pool, rgetattr, rhasattr
+from ..AlloViz import utils
 
 
 
@@ -113,6 +115,78 @@ class Base:
         df = pandas.DataFrame({f"{xtc}": df.stack()})
         # if not len(df[f"{xtc}"].unique()) == 1:
         df.to_parquet(self._rawpq(xtc))
+    
+    
+    
+    
+    def filter(self, filterings="all", **kwargs):
+        r"""Filter network edges
+        
+        Filter the networks according to the selected criteria to perform analyses on
+        (all or) a subset of the edges. It calls
+        :meth:`AlloViz.Wrappers.Base.Base.filter` and results are stored in instances
+        of the :class:`AlloViz.AlloViz.Filtering.Filtering` class. The different filtering
+        options are detailed in the :mod:`~AlloViz.AlloViz.Filtering` module.
+
+        Parameters
+        ----------
+        filterings : str or list of strs and/or lists, default: "all"
+            Filtering scheme(s) with which to filter the list of network edges before
+            analysis. It can be a string, or a list of strings and/or lists: a list of
+            lists (also with or without strings) is used to filter with a combination of
+            criteria. All available (and combinable) filtering options are functions in
+            the :mod:`~AlloViz.AlloViz.Filtering` module: 
+            :func:`~AlloViz.AlloViz.Filtering.All`,
+            :func:`~AlloViz.AlloViz.Filtering.GetContacts_edges`,
+            :func:`~AlloViz.AlloViz.Filtering.No_Sequence_Neighbors`,
+            :func:`~AlloViz.AlloViz.Filtering.GPCR_Interhelix`. The default "all"
+            performs all the available filtering schemes (no combinations).
+        
+        Other Parameters
+        ----------------
+        GetContacts_threshold : float
+            Optional kwarg that can be passed to specify the minimum contact frequency
+            (0-1, default 0) threshold, which will be used to filter out contacts with a
+            frequency (average) lower than it before analysis.
+        Sequence_Neighbor_distance : int
+            Optional kwarg that can be passed to specify the minimum number of sequence
+            positions/distance between residues of a pair to retain in
+            `No_Sequence_Neighbors` filtering, which defaults to 5.
+
+        See Also
+        --------
+        AlloViz.AlloViz.Filtering.Filtering : Filtering class.
+        AlloViz.Protein.calculate : Class method to calculate the network(s) raw edge
+                                    weights with different network construction methods.
+        AlloViz.Protein.analyze : Class method to analyze the calculated raw edge weights
+                                  with graph theory-based methods.
+        AlloViz.Protein.view : Class method to visualize the network on the protein
+                               structure.
+        
+        Examples
+        --------
+        >>> opioidGPCR = AlloViz.Protein(GPCR=169)
+        >>> opioidGPCR.calculate(["getcontacts", "dynetan"], cores=6, taskcpus=2)
+        >>> opioidGPCR.dynetan.filter(["GetContacts_edges", ["GetContacts_edges", "GPCR_Interhelix"]])
+        >>> opioidGPCR.dynetan.GetContacts_edges_GPCR_Interhelix
+        <AlloViz.AlloViz.Filtering.Filtering at 0x7f892c3c0fa0>
+        """
+        # Calculate for all the passed Filterings
+        filterings = utils.make_list(
+            filterings,
+            if_all = [filt for filt in self.__dict__ if any([f in filt for f in utils.filteringsl])]
+        )
+        for filt in filterings:
+            name = filt if isinstance(filt, str) else "_".join(filt)
+            if not rgetattr(self, name):
+                setattr(
+                    self,
+                    name,
+                    Filtering(self, filt, name, **kwargs),
+                )
+        
+        return rgetattr(self, name) if len(filterings) == 1 else None
+        
 
     
     

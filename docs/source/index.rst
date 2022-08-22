@@ -6,4 +6,4 @@
 
    self
    example
-   API reference <API/index>
+   API reference <API>

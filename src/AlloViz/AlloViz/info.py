@@ -1,9 +1,19 @@
+"""Module containing variables and elements with AlloViz information
+
+The main member is the :data:`~AlloViz.AlloViz.info.wrappers` dictionary, which contains
+all the available network construction methods in AlloViz as keys and the kind of
+information they use as their respective values.
+
+"""
+
+# Atom/angle names
 alpha = "Carbon \u03B1"
 beta = "Carbon \u03B2"
 COM = "Residue COM"
 whole = "Whole residue"
 Dihs = "Backbone dihedrals (Phi, psi and omega)"
 
+# Package/Network construction method-level common information
 dynetani = ("Movement correlation", "dynetan", "Mutual Information (MI)")
 pytraji = ("Movement correlation", "pytraj", "Pearson's")
 correlationplusi = ("Movement correlation", "correlationplus")
@@ -14,7 +24,13 @@ g_correlationi = ("Movement correlation", "g_correlation")
 
 
 
-
+#: Dictionary with all the available network construction methods and their information
+#:
+#: All network construction methods available in AlloViz are the keys of the dictionary
+#: and each of the values is a 4-member tuple. In order, the tuple contains the kind of
+#: information it uses for network construction, the main package name (not the same as
+#: the AlloViz accession name of the wrapper), the correlaton metric they use if
+#: applicable, and the atom/angle whose information it uses.
 wrappers = {
     "MDTASK": ("Movement correlation", "MD-TASK", "Pearson's", alpha),
 
@@ -57,15 +73,17 @@ wrappers = {
 }
 
 
-
+# The inverse dictionary is used to construct and display a table with all the available network construction methods in the package documentation
+# In that case, the aim is to show the general, more wide-spread columns first and the AlloViz accession name (keys in 'wrappers') last
 inverse = {}
 
 for key, val in wrappers.items():
+    # g_correlation-related methods need local compilation of g_correlation and are only available locally; dynetan_COM is prohibitively slow
     if "g_correlation" not in key and "dynetan_COM" not in key:
         inverse[val] = key
 
 
-
+# The df variable of the processed inverse dictionary is used when this module is imported by the documentation's conf.py script to print the updated table in the README.rst file
 import pandas
 df = pandas.DataFrame.from_dict(inverse, orient="index", columns=["Name in AlloViz"])
 df.index = pandas.MultiIndex.from_tuples(list(df.index), names=["Residue information extracted from trajectories",

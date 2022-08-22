@@ -1,7 +1,9 @@
 sphinx=>5
-sphinx_rtd_theme
 nbsphinx
 nbsphinx-link
+numpydoc
+pydata-sphinx-theme
+black
 
 jupyterlab
 nb_conda_kernels

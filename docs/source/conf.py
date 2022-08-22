@@ -32,12 +32,15 @@ release = '0.1'
 # ones.
 extensions = [
     'sphinx.ext.autodoc',
+    'numpydoc',
+    'sphinx.ext.intersphinx',
+    'sphinx.ext.coverage',
+    'sphinx.ext.doctest',
+    'sphinx.ext.autosummary',
+    'sphinx.ext.autodoc',
 	#'sphinx.ext.napoleon',
-	#'sphinx.ext.autosummary',
-	'numpydoc',
     'sphinx.ext.viewcode',
     'sphinx.ext.autosectionlabel',
-    'sphinx.ext.intersphinx',
     "nbsphinx",
     "nbsphinx_link",
     #"autoapi.extension"
@@ -45,12 +48,19 @@ extensions = [
 
 autoapi_dirs = ["../../src/AlloViz/"]
 autoapi_ignore = ['*migrations*', '^.*', '*-checkpoint.py*']
+autoapi_add_toctree_entry = False
+autoapi_keep_files = True
 
 nbsphinx_execute = 'never'
 nbsphinx_kernel_name = 'python3'
 
 intersphinx_mapping = {
 'https://docs.mdanalysis.org/stable/': None,
+'https://biopython.org/docs/latest/api/': None,
+'http://nglviewer.org/nglview/latest/': None,
+'https://networkx.org/documentation/stable/': None,
+'https://pandas.pydata.org/docs/': None,
+'https://matplotlib.org/stable/': None,
 }
 
 # Make sure the target is unique
@@ -63,16 +73,25 @@ autosectionlabel_prefix_document = True
 # #numpydoc_class_members_toctree = False
 
 #numpydoc WITHOUT AUTOMODULE
-autosummary_generate = ["API/generate"]
+#autosummary_generate = ["API/public_api", "API/complete_api"]
 #autosummary_imported_members = True
-#numpydoc_show_class_members = False
+#numpydoc_show_class_members = True
 #numpydoc_class_members_toctree = False
-autosummary_imported_members = True
+numpydoc_attributes_as_param_list = True # this doesn't seem to be used
+#autosummary_imported_members = True
 templates_path = ["_templates"]
+#autosummary_mock_imports = ["AlloViz.Wrappers.GetContacts.filter_contacts"]
 
 # autodoc
-autodoc_member_order = "bysource"
+#autodoc_member_order = "bysource"
 # autosummary doesn't use this
+autodoc_default_options = {
+	'member_order': "bysource",
+	'private-members': True,
+	'undoc-members': True,
+	'show-inheritance': True,
+	'inherited-members': 'pandas.DataFrame',
+}
 
 # Napoleon settings
 # napoleon_google_docstring = False
@@ -88,7 +107,7 @@ autodoc_member_order = "bysource"
 # List of patterns, relative to source directory, that match files and
 # directories to ignore when looking for source files.
 # This pattern also affects html_static_path and html_extra_path.
-exclude_patterns = ['_build', '**.ipynb_checkpoints', '_unused_templates']
+exclude_patterns = ['_build', '**.ipynb_checkpoints']
 
 
 # -- Options for HTML output -------------------------------------------------
@@ -154,3 +173,26 @@ for line in fileinput.input("../../README.rst", inplace=True):
 
 
 sys.path.pop(0)
+
+
+
+
+
+
+
+"""
+protein : :class:`~MDAnalysis.core.universe.Universe`
+        Universe of the processed pdb with only the selected `protein_sel` atoms.
+    u : :class:`~MDAnalysis.core.universe.Universe`
+        Universe of the processed pdb and trajectory files with only the `protein_sel`
+        atoms.
+"""
+
+
+
+"""
+: str
+        Class attribute used to select only protein atoms from the input files with
+        :external:ref:`MDAnalysis selection syntax <selection-commands-label>`. It
+        defaults to "(same segid as protein) and (not segid LIG) and (not chainid L)".
+"""
