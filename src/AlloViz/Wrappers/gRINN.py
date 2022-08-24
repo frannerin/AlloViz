@@ -1,9 +1,15 @@
+"""gRINN wrapper
+
+It calculates interaction energies and the correlation between them.
+
+"""
+
 import os, time
 
 import pandas
 import numpy as np
 
-from .Base import lazy_import, Multicore#, Use_dcd
+from .Base import lazy_import, Multicore
 
 from ..AlloViz.utils import get_pool
 
@@ -21,7 +27,9 @@ for key, val in imports.items():
     
 
 
-class gRINN(Multicore): #Use_dcd
+class gRINN(Multicore):
+    """gRINN's interaction energies
+    """
     def __new__(cls, protein, d):
         new = super().__new__(cls, protein, d)
         
@@ -95,6 +103,8 @@ class gRINN(Multicore): #Use_dcd
     
     
 class gRINN_corr(gRINN):
+    """gRINN's interaction energies' correlation
+    """
     def __new__(cls, protein, d):
         new = super().__new__(cls, protein, d)
         

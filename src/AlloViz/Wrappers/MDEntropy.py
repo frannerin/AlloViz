@@ -1,8 +1,14 @@
+"""MDEntropy wrapper
+
+It calculates the Mutual Information (MI) of the combination of the backbone's dihedral angles, of
+the Alpha Angles (torsion angle defined by the i-1, i, i+1 and i+2 residues' CA atoms), and of the
+Contacts.
+
+"""
+
 import numpy as np
 
 from .Base import lazy_import, Multicore
-
-# from ..AlloViz.utils import lazy_import
 
 imports = {
 "_mdtraj": "mdtraj",
@@ -17,6 +23,8 @@ for key, val in imports.items():
 
 
 class MDEntropy(Multicore):
+    """MDEntropy base class
+    """
     def __new__(cls, protein, d):
         new = super().__new__(cls, protein, d)
         
@@ -40,6 +48,7 @@ class MDEntropy(Multicore):
         
         
     def _computation(self, xtc):#pdb, traj, xtc, pq, taskcpus):
+        """"""
         mytraj = _mdtraj.load(self._trajs[xtc], top=self._pdbf) # hopefully mdtraj is loaded from the Classes module
         mi = self._function(threads=self.taskcpus, **self._types) # n_bins=3, method='knn', normed=True
         corr = mi.partial_transform(traj=mytraj, shuffle=0, verbose=True)
@@ -50,6 +59,8 @@ class MDEntropy(Multicore):
 
     
 class MDEntropy_Contacts(MDEntropy):
+    """MDEntropy's MI of Contacts
+    """
     def __new__(cls, protein, d):
         new = super().__new__(cls, protein, d)
         new._function = _mdentropy.ContactMutualInformation
@@ -63,6 +74,8 @@ class MDEntropy_Contacts(MDEntropy):
         
         
 class MDEntropy_Dihs(MDEntropy):
+    """MDEntropy's MI of the backbone's dihedrals
+    """
     def __new__(cls, protein, d):
         new = super().__new__(cls, protein, d)        
         new._function = _mdentropy.DihedralMutualInformation
@@ -76,9 +89,7 @@ class MDEntropy_Dihs(MDEntropy):
     
 
 class MDEntropy_AlphaAngle(MDEntropy):
-    """
-    The alpha angle of residue `i` is the dihedral formed by the four CA atoms
-    of residues `i-1`, `i`, `i+1` and `i+2`.
+    """MDEntropy's MI of the Alpha Angles
     """
     def __new__(cls, protein, d):
         new = super().__new__(cls, protein, d)        
@@ -89,6 +100,7 @@ class MDEntropy_AlphaAngle(MDEntropy):
     
     
     def _computation(self, xtc):
+        """"""
         corr, xtc, dihedral_resl = super()._computation(xtc)
         
         length = corr.shape[0]

@@ -1,3 +1,9 @@
+"""GSAtools wrapper
+
+It calculates Mutual Information (MI).
+
+"""
+
 import os
 import numpy as np
 
@@ -8,7 +14,8 @@ from .Base import Base
 
 # only for local
 class GSAtools(Base):
-        
+    """GSAtools' MI
+    """        
     def _computation(self, xtc):# pdb, traj, xtc, pq, out):
         # Send gsatools
         out = f"{self._path}/{xtc}"

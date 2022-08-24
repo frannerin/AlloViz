@@ -90,6 +90,7 @@ autodoc_default_options = {
 	'private-members': True,
 	'undoc-members': True,
 	'show-inheritance': True,
+	#'inherited-members': 'pandas.DataFrame',
 }
 
 # Napoleon settings

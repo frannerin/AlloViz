@@ -1,3 +1,9 @@
+"""GetContacts wrapper
+
+It calculates contact frequencies.
+
+"""
+
 import os
 
 import pandas
@@ -17,8 +23,11 @@ for key, val in imports.items():
 
 
 class GetContacts(Multicore):
+    """GetContacts' contact frequencies
+    """
             
     def _computation(self, xtc):#pdb, traj, xtc, pq, ctcs, freqs, taskcpus):
+        """"""
         path = self._path
         ctcs = f"{path}/{xtc}.tsv"
         freqs = f"{path}/{xtc}_freqs.tsv"
@@ -48,6 +57,7 @@ class GetContacts(Multicore):
     
     @staticmethod
     def _filter_raw(raw, GetContacts_threshold):
+        """"""
         return raw[raw["weight"] >= GetContacts_threshold]
     
     def filter_contacts(self, GetContacts_threshold:float):

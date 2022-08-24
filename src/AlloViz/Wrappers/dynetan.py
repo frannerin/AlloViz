@@ -1,8 +1,12 @@
+"""dynetan wrapper
+
+It calculates the Mutual Information of the residues' movement and of their COMs.
+
+"""
+
 import numpy as np
 
 from .Base import lazy_import, Multicore, Use_COM
-
-# from ..AlloViz.utils import lazy_import
 
 imports = {
 "_dynetan": ".Packages.dynetan.dynetan.proctraj",
@@ -14,8 +18,9 @@ for key, val in imports.items():
     
 
 
-class dynetan(Multicore):    
-    
+class dynetan(Multicore):
+    """dyentan's MI of the residues
+    """    
     def _computation(self, xtc):
         obj = _dynetan.DNAproc()
         obj.loadSystem(self._pdbf, self._trajs[xtc])
@@ -44,4 +49,6 @@ class dynetan(Multicore):
 
 
 class dynetan_COM(Use_COM, dynetan):
+    """dyentan's MI of the residues' COM
+    """    
     pass

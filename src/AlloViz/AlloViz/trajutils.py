@@ -295,7 +295,7 @@ def process_input(
         psf.title = psff
         psf.write_psf(psff)
 
-    # Write protein trajectory(ies) file(s): https://stackoverflow.com/a/73043849/14682935
+    # Write protein trajectory(ies) file(s): https://stackoverflow.com/a/73043849
     if any(
         [
             not os.path.isfile(f)

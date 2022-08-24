@@ -1,6 +1,10 @@
-from .Base import lazy_import, Multicore
+"""MD-TASK wrapper
 
-# from ..AlloViz.utils import lazy_import
+It calculates the Pearson's correlation of the residues' CA atoms.
+
+"""
+
+from .Base import lazy_import, Multicore
 
 imports = {
 "_mdtask": ".Packages.MD-TASK.mdtask.calc_correlation",
@@ -13,6 +17,8 @@ for key, val in imports.items():
     
 
 class MDTASK(Multicore):
+    """MD-TASK's Pearson's correlation of CA atoms
+    """
     def __new__(cls, protein, d):
         new = super().__new__(cls, protein, d)        
         new._empties = 2
@@ -20,5 +26,6 @@ class MDTASK(Multicore):
     
     
     def _computation(self, xtc):#pdb, traj, xtc, pq):
+        """"""
         corr = _mdtask.correlate(_mdtask.parse_traj(traj = self._trajs[xtc], topology = self._pdbf))
         return corr, xtc

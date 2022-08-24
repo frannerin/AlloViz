@@ -6,6 +6,7 @@ numpy
 lazyasd
 networkx
 ParmEd
+nglview
 
 ipython
 ipywidgets

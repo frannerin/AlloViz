@@ -1,6 +1,10 @@
-from .Base import lazy_import, Base
+"""PyInteraph2 wrapper
 
-# from ..AlloViz.utils import lazy_import
+It calculates interaction energies and contact frequencies.
+
+"""
+
+from .Base import lazy_import, Base
 
 imports = {
 "_pyinteraph": "pyinteraph.main",
@@ -14,14 +18,18 @@ for key, val in imports.items():
     
 
 class PyInteraph2_Base(Base):
-    
+    """PyInteraph2 base class
+    """    
     def _computation(self, xtc):#pdb, traj, xtc, pq, CLIargs):
+        """"""
         corr = _pyinteraph.main(f"-s {self._pdbf} -t {self._trajs[xtc]} {self._CLIargs}".split())        
         return corr, xtc
     
     
     
 class PyInteraph2_Contacts(PyInteraph2_Base):
+    """PyInteraph2's contact frequencies
+    """
     def __new__(cls, protein, d):
         new = super().__new__(cls, protein, d)
         
@@ -34,6 +42,7 @@ class PyInteraph2_Contacts(PyInteraph2_Base):
                 
         
     def _computation(self, xtc):#pdb, traj, xtc, pq, CLIargs):
+        """"""
         corr, xtc = super()._computation(xtc)#corr = _pyinteraph.main(f"-s {self._pdbf} -t {self._trajs[xtc]} {self._CLIargs}".split()) / 100
         corr = corr / 100
         
@@ -50,6 +59,8 @@ class PyInteraph2_Contacts(PyInteraph2_Base):
     
     
 class PyInteraph2_Energy(PyInteraph2_Base):
+    """PyInteraph2's interaction energies
+    """
     def __new__(cls, protein, d):
         new = super().__new__(cls, protein, d)
         new._CLIargs = "-p --kbp-graph dummy"
