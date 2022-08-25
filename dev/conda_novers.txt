@@ -10,7 +10,7 @@ numpy
 pandas
 pyarrow
 networkx
-pymol-open-source # 2.4 is selected; 2.5 is available
+# pymol-open-source # 2.4 is selected; 2.5 is available
 
 # for downloading files
 beautifulsoup4
@@ -39,4 +39,4 @@ panedr # for gRINN
 natsort # for gRINN
 click # probably for gRINN too
 
-gxx_linux-64 # necessary for msmbuilder
+# gxx_linux-64 # necessary for msmbuilder
