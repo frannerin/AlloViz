@@ -156,7 +156,7 @@ class Base:
         capture the standard output and standard error of the calculation into a log
         file. The callback function to which the reuslts of the computation are passed is
         :meth:`~AlloViz.Wrappers.Base.Base._save_pq` to save the returned calculated
-        results. *args parameter is not used.
+        results. \*args parameter is not used.
         
         Parameters
         ----------

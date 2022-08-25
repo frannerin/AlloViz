@@ -180,7 +180,7 @@ def analyze(filtered, elements="edges", metrics="all", normalize=True, **kwargs)
             wait_analyze, args=(elem, data), callback=add_data
         )
 
-        return getattr(filtered, elem) if len(elements) == 1 else None
+    return getattr(filtered, elements[0]) if len(elements) == 1 else None
 
 def single_analysis(filtered, metric, metricf, elem, normalize, pq):
     r"""Analyze raw data with a single element-metric
