@@ -80,7 +80,7 @@ autosectionlabel_prefix_document = True
 numpydoc_attributes_as_param_list = True # this doesn't seem to be used
 #autosummary_imported_members = True
 templates_path = ["_templates"]
-autosummary_mock_imports = ["vmd-python"]
+autosummary_mock_imports = ["nglview", "vmd-python", "sklearn"]
 
 # autodoc
 #autodoc_member_order = "bysource"
