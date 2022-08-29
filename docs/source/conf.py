@@ -87,7 +87,8 @@ autosummary_mock_imports = [
 	"AlloViz.Packages.mdentropy.mdentropy.version",
 	"mdtraj",
 	"libinteract",
-	"prody"]
+	"prody", 
+	"numba"]
 
 # autodoc
 #autodoc_member_order = "bysource"
