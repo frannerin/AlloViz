@@ -85,7 +85,8 @@ autosummary_mock_imports = [
 	"vmd-python", 
 	"sklearn", 
 	"AlloViz.Packages.mdentropy.mdentropy.version",
-	"mdtraj"]
+	"mdtraj",
+	"libinteract"]
 
 # autodoc
 #autodoc_member_order = "bysource"
