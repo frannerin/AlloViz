@@ -88,7 +88,8 @@ autosummary_mock_imports = [
 	"mdtraj",
 	"libinteract",
 	"prody", 
-	"numba"]
+	"numba",
+	"pytraj"]
 
 # autodoc
 #autodoc_member_order = "bysource"
