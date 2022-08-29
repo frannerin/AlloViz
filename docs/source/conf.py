@@ -86,7 +86,8 @@ autosummary_mock_imports = [
 	"sklearn", 
 	"AlloViz.Packages.mdentropy.mdentropy.version",
 	"mdtraj",
-	"libinteract"]
+	"libinteract",
+	"prody"]
 
 # autodoc
 #autodoc_member_order = "bysource"
