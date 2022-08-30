@@ -51,17 +51,14 @@ def GetContacts_edges(pkg, data, **kwargs):
     """
     # Get GetContacts raw data if its calculation is available, else raise an Exception
     try:
-        # If GetContacts_threshold kwarg is passed, use it to filter the present data without affecting the saved GetContacts' Protein attribute
-        if "GetContacts_threshold" in kwargs:
-            gc = pkg.protein.GetContacts._filter_raw(
-                data, kwargs["GetContacts_threshold"]
-            )
-        else:
-            gc = pkg.protein.GetContacts.raw
-        
+        gc = pkg.protein.GetContacts.raw
     except:
         raise Exception("GetContacts results are needed first")
-
+    
+    # If GetContacts_threshold kwarg is passed, use it to filter the present data without affecting the saved GetContacts' Protein attribute
+    if "GetContacts_threshold" in kwargs:
+        gc = gc[gc["weight"] >= kwargs["GetContacts_threshold"]]
+        
     # Return the data filtered retaining only the indices that are in GetContacts data
     return data.filter(gc.index, axis=0)
 
@@ -135,6 +132,45 @@ def GPCR_Interhelix(pkg, data, **kwargs):
     indices = [idx for idx in data.index if are_interhelix(idx)]
     # Return the filtered data
     return data.filter(indices, axis=0)
+
+
+def Spatially_distant(pkg, data, **kwargs):
+    """Retain only edges between spatially distant residue pairs
+    
+    It only retains edges between residue pairs whose CA atoms are minimum a certain
+    number of angstroms away from each other in the initial PDB/structure (default 50 Å).
+    The relationship found between these residues can be considered purely allosteric, as
+    they are spatially distant and have no direct communication but can be found to be
+    interacting/correlated...
+    """
+    from MDAnalysis.analysis import distances
+    
+    # https://userguide.mdanalysis.org/1.1.1/examples/analysis/distances_and_contacts/distances_within_selection.html
+    # Create a triangular matrix with all inter-residue distances
+    CAs = pkg.protein.protein.select_atoms("name CA")
+    n_ca = len(CAs)
+    self_distances = distances.self_distance_array(CAs.positions)
+    sq_dist_arr = np.zeros((n_ca, n_ca))
+    triu = np.triu_indices_from(sq_dist_arr, k=1)
+    sq_dist_arr[triu] = self_distances
+    
+    # Transform the matrix into a pandas DataFrame
+    resnames = [f"{aa.resname}:{aa.resid}" for aa in pkg.protein.protein.residues]
+    df = pandas.DataFrame(sq_dist_arr, columns=resnames, index=resnames)
+    df = df.where( np.triu(np.ones(df.shape), k=1).astype(bool) )
+    df = pandas.DataFrame({"dist": df.stack()})
+    
+    # Define Interresidue_distance if it is in kwargs or with the default value
+    Interresidue_distance = (
+        kwargs["Interresidue_distance"]
+        if "Interresidue_distance" in kwargs
+        else 50
+    )
+    
+    indices = df[df["dist"] >= Interresidue_distance].index
+    # Return the filtered data
+    return data.filter(indices, axis=0)
+
 
 
 class Filtering:

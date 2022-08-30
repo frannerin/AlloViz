@@ -42,6 +42,12 @@ class AlloViz(Multicore):
     `NPEET_LNC <https://github.com/ViktorvdValk/NPEET_LNC>`_ for MI calculation.
     """
     
+    def __new__(cls, protein, d):
+        new = super().__new__(cls, protein, d)
+        if "stride" in d:
+            new.stride = d["stride"]
+        return new
+    
     def _computation(self, xtc):
         """"""
         # Establish the protein atoms and the indices of the residues included in the calculation (from the Protein's _dihedral_residx)
@@ -63,7 +69,8 @@ class AlloViz(Multicore):
         else:
             get_frames = lambda _: self._d["u"].trajectory.n_frames
 
-        values = _mda_dihedrals.Dihedral(selected).run(start=offset, stop=offset+get_frames(xtc-1)).results.angles.transpose()
+        step = {"step": self.stride} if hasattr(self, "stride") else {}
+        values = _mda_dihedrals.Dihedral(selected).run(start=offset, stop=offset+get_frames(xtc-1), **step).results.angles.transpose()
         
         # Create a numpy array to store results
         corr = np.zeros((len(selected_res), len(selected_res)))

@@ -21,9 +21,17 @@ for key, val in imports.items():
 class dynetan(Multicore):
     """dyentan's MI of the residues
     """    
+    def __new__(cls, protein, d):
+        new = super().__new__(cls, protein, d)
+        if "stride" in d:
+            new.stride = d["stride"]
+        return new
+    
     def _computation(self, xtc):
+        step = {"in_memory": True, "in_memory_step": self.stride} if hasattr(self, "stride") else {}
+        
         obj = _dynetan.DNAproc()
-        obj.loadSystem(self._pdbf, self._trajs[xtc])
+        obj.workU = _dynetan.mda.Universe(self._pdbf, self._trajs[xtc], **step)
         
         # prot = obj.getU().select_atoms(self._d["_protein_sel"])
         # from Bio.SeqUtils import seq1, seq3

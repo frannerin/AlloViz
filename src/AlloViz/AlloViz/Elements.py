@@ -54,7 +54,7 @@ class Element(pandas.DataFrame):
     
     @property
     def _constructor(self):
-        return self.__class__
+        return pandas.DataFrame
 
     @property
     def _constructor_sliced(self):

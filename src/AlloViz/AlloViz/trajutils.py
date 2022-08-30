@@ -10,6 +10,7 @@ import os
 
 import requests, parmed
 import MDAnalysis as mda
+from MDAnalysis.analysis.base import AnalysisFromFunction
 import numpy as np
 from multiprocess import Pool
 
@@ -314,7 +315,14 @@ def process_input(
             if not os.path.isfile(t):
                 protein.write(t, frames=whole.trajectory[start:stop])
             if not os.path.isfile(comt):
-                CAs.write(comt, frames=whole.trajectory[start:stop])
+                # Retrieve the residues' COM trajectory
+                COMs = AnalysisFromFunction(lambda atoms: atoms.center_of_mass(compound="residues"),
+                                            protein).run(start=start, stop=stop)
+                # Create a new universe with the CA atoms as topology and the COMs' trajectory
+                COMu = mda.Merge(CAs).load_new(COMs.results['timeseries'], 
+                                               format = mda.coordinates.memory.MemoryReader)
+                COMu.atoms.write(comt, frames="all")
+                
 
         # For each trajectory asynchronously (with `multiprocess` Pool), write the protein and residues' COM trajectories if the files don't already exist
         mypool = Pool()
@@ -326,6 +334,7 @@ def process_input(
         mypool.join()
 
     return pdbf, trajsf, psff
+
 
 
 def get_bonded_cys(pdbf):
@@ -385,17 +394,17 @@ def get_bonded_cys(pdbf):
 
     #     for xtc, comtraj in self._comtrajs.items():
     #         if not os.path.isfile(comtraj):
-    #             prot = self.protein.atoms
-    #             traj = self.u.trajectory.readers[xtc-1] if hasattr(self.u.trajectory, "readers") else self.u.trajectory
-    #             # traj = next(traj for traj in self.mdau.trajectory.readers if traj.filename == self._trajs[xtc])
-    #             arr = np.empty((prot.n_residues, traj.n_frames, 3))
-    #             for ts in traj:
-    #                 arr[:, ts.frame] = prot.center_of_mass(compound='residues')
+#                 prot = self.protein.atoms
+#                 traj = self.u.trajectory.readers[xtc-1] if hasattr(self.u.trajectory, "readers") else self.u.trajectory
+#                 # traj = next(traj for traj in self.mdau.trajectory.readers if traj.filename == self._trajs[xtc])
+#                 arr = np.empty((prot.n_residues, traj.n_frames, 3))
+#                 for ts in traj:
+#                     arr[:, ts.frame] = prot.center_of_mass(compound='residues')
 
-    #             cau = mda.Universe(compdb, arr, format=mda.coordinates.memory.MemoryReader, order='afc')
-    #             with mda.Writer(comtraj, cau.atoms.n_atoms) as W:
-    #                 for ts in cau.trajectory:
-    #                     W.write(cau.atoms)
+#                 cau = mda.Universe(compdb, arr, format=mda.coordinates.memory.MemoryReader, order='afc')
+#                 with mda.Writer(comtraj, cau.atoms.n_atoms) as W:
+#                     for ts in cau.trajectory:
+#                         W.write(cau.atoms)
 
 
 #     def _translate_ix(self, mapper):

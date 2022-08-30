@@ -292,33 +292,34 @@ class Protein:
             setattr(delta, pkg, _Store())
 
             # For each filtering scheme (taken from self's __dict__ with a valid name) for which results have been analyze in "self" and that are also in "other"
-            for filterby in (
+            for filtering in (
                 key
                 for key in getattr(self, pkg).__dict__
-                if key.lower() in utils.filteringsl
+                if any([f in key for f in utils.filteringsl])
                 and key in getattr(other, pkg).__dict__
-            ):
+            ):                
                 # Also set an attribute with the filtering name
-                setattr(getattr(delta, pkg), filterby, _Store())
+                setattr(getattr(delta, pkg), filtering, _Store())
 
                 # And finally for each Element (taken from self's __dict__ with a valid name) that is also in "other"
                 for elem in (
                     key
-                    for key in rgetattr(self, pkg, filterby).__dict__
+                    for key in rgetattr(self, pkg, filtering).__dict__
                     if key.lower() in ["nodes", "edges"]
-                    and key in rgetattr(other, pkg, filterby).__dict__
+                    and key in rgetattr(other, pkg, filtering).__dict__
                 ):
                     # Calculate the Elements' difference exploiting their custom subtraction special method definition
-                    dif = rgetattr(self, pkg, filterby, elem) - rgetattr(
-                        other, pkg, filterby, elem
+                    dif = rgetattr(self, pkg, filtering, elem) - rgetattr(
+                        other, pkg, filtering, elem
                     )
                     # And save the result as a new Element object (to exploit its view method)
                     elemclass = eval(elem.capitalize())
                     setattr(
-                        rgetattr(delta, pkg, filterby),
+                        rgetattr(delta, pkg, filtering),
                         elem,
-                        elemclass(self._delta, dif),
+                        elemclass(dif),
                     )
+                    rgetattr(delta, pkg, filtering, elem)._parent = self._delta
 
         return delta.__dict__
 
@@ -345,6 +346,10 @@ class Protein:
             Optional kwarg to specify the amount of cores that parallelizable network
             construction methods can use (i.e., AlloViz's method, getcontacts, dynetan,
             PyInteraph, MDEntropy and gRINN).
+        stride : int, optional
+            Optional kwarg to specify the striding to be done on the trajectory(ies) for
+            computationally-expensive network construction methods: i.e., dynetan and
+            AlloViz's own method. Default is no striding.
         namd : str, optional
             Optional kwarg pointing to the namd2 executable location; if the `namd`
             command is accessible through the CLI it is automatically retrieved with the
@@ -384,6 +389,7 @@ class Protein:
         """
         # Calculate for "all" packages or the ones passed as parameter (check that they are on the list of available packages and retrieve their case-sensitive names, else raise an Exception)
         pkgs = utils.make_list(pkgs, if_all=utils.pkgsl, apply=utils.pkgname)
+        combined_dihs = ["AlloViz_Dihs", "correlationplus_Dihs"]
 
         # Objects from the classes in the Wrappers module need to be passed a dictionary "d" containing all the attributes of the source Protein object and the passed kwargs
         d = self.__dict__.copy()
@@ -398,7 +404,7 @@ class Protein:
         utils.pool = mypool
         print(utils.pool)
 
-        for pkg in pkgs:
+        for pkg in set(pkgs) - set(combined_dihs):
             # Establish the corresponding Wrappers' class
             pkgclass = eval(f"Wrappers.{utils.pkgname(pkg)}")
 
@@ -409,7 +415,22 @@ class Protein:
         # Close the pool
         mypool.close()
         mypool.join()
-        mypool = utils.dummypool()
+        
+        combined_in_pkgs = [p in pkgs for p in combined_dihs]
+        if any(combined_in_pkgs):
+            # Calculate now the combination of dihedrals, which is just a combination of the already-calculated data
+            if cores > 1:
+                mypool = Pool(cores)
+            else:
+                mypool = utils.dummypool()
+            utils.pool = mypool
+            for pkg in combined_in_pkgs:
+                pkgclass = eval(f"Wrappers.{utils.pkgname(pkg)}")
+                if not hasattr(self, pkgclass.__name__):
+                    setattr(self, pkgclass.__name__, pkgclass(self, d))
+            mypool.close()
+            mypool.join()
+            mypool = utils.dummypool()
         
         return getattr(self, pkgclass.__name__) if len(pkgs) == 1 else None
     
