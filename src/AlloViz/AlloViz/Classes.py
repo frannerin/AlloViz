@@ -358,6 +358,14 @@ class Protein:
             Optional kwarg to specify the minimum contact frequency (0-1, default 0)
             threshold for GetContacts results, which will be used to filter out contacts
             with a frequency (average) lower than it.
+        chis : int, optional
+            Optional kwarg to specify the number of side-chain chi dihedral angles (up to
+            5) to combine when sending the calculation of a child of the Combined_Dihs
+            Wrappers' base class that includes chi dihedrals in its calculation.
+        MDEntropy_method : str, optional, {"knn", "grassberger", "chaowangjost"}
+            Optional kwarg to specify the method to calculate the entropy of the
+            variables for Mutual Information estimation when using one of the
+            MDEntropy network construction methods (default: "knn").
 
         See Also
         --------

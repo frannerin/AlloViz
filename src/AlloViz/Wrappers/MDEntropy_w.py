@@ -28,6 +28,8 @@ class MDEntropy(Multicore):
     def __new__(cls, protein, d):
         new = super().__new__(cls, protein, d)
         
+        new.method = d["MDEntropy_method"] if "MDEntropy_method" in d else "grassberger"
+        
         # # Opción si las necesidades de memoria incrementan con taskcpus
         # extra_taskcpus = int((self.taskcpus/4 - 1) * 4) if self.taskcpus>=4 else 0
         # taskcpus = 1 + extra_taskcpus # Minimum 4*2000 of memory (this taskcpus is like that to use 4 cpus-2000 mem in .sh files)
@@ -50,7 +52,7 @@ class MDEntropy(Multicore):
     def _computation(self, xtc):#pdb, traj, xtc, pq, taskcpus):
         """"""
         mytraj = _mdtraj.load(self._trajs[xtc], top=self._pdbf) # hopefully mdtraj is loaded from the Classes module
-        mi = self._function(threads=self.taskcpus, **self._types) # n_bins=3, method='knn', normed=True
+        mi = self._function(threads=self.taskcpus, normed=True, method=self.method, **self._types) # n_bins=3, method='knn', normed=True
         corr = mi.partial_transform(traj=mytraj, shuffle=0, verbose=True)
         return corr, xtc, self._resl
     

@@ -9,16 +9,38 @@ inheritance).
 
 """
 
-from .AlloViz import AlloViz_Psi, AlloViz_Phi, AlloViz_Omega, AlloViz_Dihs
-from .correlationplus import correlationplus_CA_Pear, correlationplus_CA_LMI
-from .correlationplus import correlationplus_COM_Pear, correlationplus_COM_LMI
-from .correlationplus import correlationplus_Phi, correlationplus_Psi, correlationplus_Omega, correlationplus_Dihs
-from .dynetan import dynetan, dynetan_COM
-# from .g_correlation import g_correlation_CA_MI, g_correlation_COM_MI, g_correlation_CA_LMI, g_correlation_COM_LMI
-from .GetContacts import GetContacts
-from .gRINN import gRINN
-# from .GSAtools import GSAtools
-from .MDEntropy import MDEntropy_Contacts, MDEntropy_Dihs, MDEntropy_AlphaAngle
-from .MDTASK import MDTASK
-from .PyInteraph2 import PyInteraph2_Contacts, PyInteraph2_Energy
-from .pytraj import pytraj_CA, pytraj_CB
+from .AlloViz_w import AlloViz_Psi, AlloViz_Phi, AlloViz_Omega
+from .AlloViz_w import AlloViz_Backbone_Dihs_Avg, AlloViz_Backbone_Dihs_Max
+
+from .AlloViz_w import AlloViz_Chi1, AlloViz_Chi2, AlloViz_Chi3, AlloViz_Chi4, AlloViz_Chi5
+from .AlloViz_w import AlloViz_Sidechain_Dihs_Avg, AlloViz_Sidechain_Dihs_Max
+
+from .AlloViz_w import AlloViz_Dihs_Avg, AlloViz_Dihs_Max
+
+
+
+from .correlationplus_w import correlationplus_CA_Pear, correlationplus_CA_LMI
+from .correlationplus_w import correlationplus_COM_Pear, correlationplus_COM_LMI
+
+from .correlationplus_w import correlationplus_Phi, correlationplus_Psi, correlationplus_Omega
+from .correlationplus_w import correlationplus_Backbone_Dihs_Avg, correlationplus_Backbone_Dihs_Max
+
+
+
+from .dynetan_w import dynetan, dynetan_COM
+
+# from .g_correlation_w import g_correlation_CA_MI, g_correlation_COM_MI, g_correlation_CA_LMI, g_correlation_COM_LMI
+
+from .GetContacts_w import GetContacts
+
+from .gRINN_w import gRINN
+
+# from .GSAtools_w import GSAtools
+
+from .MDEntropy_w import MDEntropy_Contacts, MDEntropy_Dihs, MDEntropy_AlphaAngle
+
+from .MDTASK_w import MDTASK
+
+from .PyInteraph2_w import PyInteraph2_Contacts, PyInteraph2_Energy
+
+from .pytraj_w import pytraj_CA, pytraj_CB

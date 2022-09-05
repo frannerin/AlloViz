@@ -25,6 +25,7 @@ for key, val in imports.items():
 class GetContacts(Multicore):
     """GetContacts' contact frequencies
     """
+    
     def __new__(cls, protein, d):
         new = super().__new__(cls, protein, d)
         if "GetContacts_threshold" in d:
@@ -40,6 +41,7 @@ class GetContacts(Multicore):
             
             
     def _computation(self, xtc):
+        """"""
         path = self._path
         ctcs = f"{path}/{xtc}.tsv"
         freqs = f"{path}/{xtc}_freqs.tsv"

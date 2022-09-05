@@ -28,6 +28,7 @@ class dynetan(Multicore):
         return new
     
     def _computation(self, xtc):
+        """"""
         step = {"in_memory": True, "in_memory_step": self.stride} if hasattr(self, "stride") else {}
         
         obj = _dynetan.DNAproc()
