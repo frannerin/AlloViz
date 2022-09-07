@@ -397,7 +397,7 @@ class Protein:
         """
         # Calculate for "all" packages or the ones passed as parameter (check that they are on the list of available packages and retrieve their case-sensitive names, else raise an Exception)
         pkgs = utils.make_list(pkgs, if_all=utils.pkgsl, apply=utils.pkgname)
-        combined_dihs = ["AlloViz_Dihs", "correlationplus_Dihs"]
+        combined_dihs = [pkg for pkg in pkgs if "Dihs" in pkg]
 
         # Objects from the classes in the Wrappers module need to be passed a dictionary "d" containing all the attributes of the source Protein object and the passed kwargs
         d = self.__dict__.copy()
@@ -425,14 +425,14 @@ class Protein:
         mypool.join()
         
         combined_in_pkgs = [p in pkgs for p in combined_dihs]
-        if any(combined_in_pkgs):
+        if len(combined_dihs) > 0:
             # Calculate now the combination of dihedrals, which is just a combination of the already-calculated data
             if cores > 1:
                 mypool = Pool(cores)
             else:
                 mypool = utils.dummypool()
             utils.pool = mypool
-            for pkg in combined_in_pkgs:
+            for pkg in combined_dihs:
                 pkgclass = eval(f"Wrappers.{utils.pkgname(pkg)}")
                 if not hasattr(self, pkgclass.__name__):
                     setattr(self, pkgclass.__name__, pkgclass(self, d))
@@ -480,6 +480,10 @@ class Protein:
             Optional kwarg that can be passed to specify the minimum number of sequence
             positions/distance between residues of a pair to retain in
             `No_Sequence_Neighbors` filtering, which defaults to 5.
+        Interresidue_distance : int or float
+            Optional kwarg that can be passed to specify the minimum number of angstroms
+            that the CA atoms of residue pairs should have between each other in the initial
+             PDB/structure (default 10 Å) to be considered spatially distant.
 
         See Also
         --------
