@@ -43,11 +43,12 @@ class GetContacts(Multicore):
     def _computation(self, xtc):
         """"""
         path = self._path
-        ctcs = f"{path}/{xtc}.tsv"
+        #ctcs = f"{path}/{xtc}.tsv"
+        ctcs = f"/home/{os.environ.get('USER')}/{self._d['name']}/{xtc}.tsv"
         freqs = f"{path}/{xtc}_freqs.tsv"
         
         if not os.path.isfile(freqs):# or ow:
-            _getcontacts_contacts.main(f"--topology {self._pdbf} --trajectory {self._trajs[xtc]} --output {ctcs} --itypes all --cores {self.taskcpus}".split())
+            #_getcontacts_contacts.main(f"--topology {self._pdbf} --trajectory {self._trajs[xtc]} --output {ctcs} --itypes all --cores {self.taskcpus}".split())
             _getcontacts_freqs.main(f"--input_files {ctcs} --output_file {freqs}".split())
         return freqs, xtc
         

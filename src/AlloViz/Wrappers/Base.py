@@ -170,9 +170,19 @@ class Base:
         """
         # Function to send the _computation and capture stdout and stderr to a log file
         def send_and_log(xtc, *args):
+            t = datetime.datetime.now()
+            
             with open(f"{self._path}/{self._name}.log", "a+") as f:
                 with redirect_stdout(f), redirect_stderr(f):
-                    return self._computation(xtc, *args)
+                    result = self._computation(xtc, *args)
+                
+            with open(f"{self._d['name']}.times", "a") as f:
+                cpus = self.taskcpus if hasattr(self, "taskcpus") else 1
+                frames = self._d["u"].trajectory.readers[xtc-1].n_frames if hasattr(self._d["u"].trajectory, "readers") else self._d["u"].trajectory.n_frames
+                residues = self._d['protein'].residues.n_residues
+                f.write(f"{self._name},{cpus},{xtc},{frames},{residues},{datetime.datetime.now() - t}\n")
+            
+            return result
         
         # Send the computation of the trajectory file to the pool with _save_pq as callback
         get_pool().apply_async(send_and_log,
@@ -370,7 +380,7 @@ class Multicore(Base):
 
 
         
-class Combined_Dihs(Base):
+class Combined_Dihs_Base(Base):
     """Class for combination of dihedral angle data
     
     This class' child classes are used to combine the information from multiple dihedral
@@ -400,7 +410,7 @@ class Combined_Dihs(Base):
         
         
         
-class Combined_Dihs_Avg(Combined_Dihs):
+class Combined_Dihs_Avg(Combined_Dihs_Base):
     """Class for combination of dihedral angle data by averaging
     
     This class' child classes are used to combine the information from multiple dihedral
@@ -426,7 +436,7 @@ class Combined_Dihs_Avg(Combined_Dihs):
 
         
         
-class Combined_Dihs_Max(Combined_Dihs):
+class Combined_Dihs_Max(Combined_Dihs_Base):
     """Class for combination of dihedral angle data by taking the maximum value
     
     This class' child classes are used to combine the information from multiple dihedral

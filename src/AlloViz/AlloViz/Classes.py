@@ -364,8 +364,9 @@ class Protein:
             with a frequency (average) lower than it.
         chis : int, optional
             Optional kwarg to specify the number of side-chain chi dihedral angles (up to
-            5) to combine when sending the calculation of a child of the Combined_Dihs
-            Wrappers' base class that includes chi dihedrals in its calculation.
+            5, default) to combine when sending the calculation of a child of the 
+            Combined_Dihs Wrappers' base class that includes chi dihedrals in its
+            calculation.
         MDEntropy_method : str, optional, {"knn", "grassberger", "chaowangjost"}
             Optional kwarg to specify the method to calculate the entropy of the
             variables for Mutual Information estimation when using one of the
@@ -483,6 +484,10 @@ class Protein:
             Optional kwarg that can be passed to specify the minimum number of sequence
             positions/distance between residues of a pair to retain in
             `No_Sequence_Neighbors` filtering, which defaults to 5.
+        Interresidue_distance : int or float
+            Optional kwarg that can be passed to specify the minimum number of angstroms
+            that the CA atoms of residue pairs should have between each other in the initial
+            PDB/structure (default 10 Å) to be considered spatially distant.
 
         See Also
         --------

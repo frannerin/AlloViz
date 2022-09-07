@@ -33,13 +33,13 @@ from .PyInteraph2_w import PyInteraph2_Energy
 
 
 
-from .dynetan_w import dynetan, dynetan_COM
+from .dynetan_w import dynetan#, dynetan_COM
 
-# from .g_correlation_w import g_correlation_CA_MI, g_correlation_COM_MI, g_correlation_CA_LMI, g_correlation_COM_LMI
+from .g_correlation_w import g_correlation_CA_MI, g_correlation_COM_MI, g_correlation_CA_LMI, g_correlation_COM_LMI
 
 from .GetContacts_w import GetContacts
 
-from .gRINN_w import gRINN
+# from .gRINN_w import gRINN
 
 # from .GSAtools_w import GSAtools
 

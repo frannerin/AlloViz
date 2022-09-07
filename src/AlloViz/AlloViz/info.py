@@ -11,7 +11,7 @@ alpha = "Carbon \u03B1"
 beta = "Carbon \u03B2"
 COM = "Residue COM"
 whole = "Whole residue"
-Dihs = "Backbone dihedrals (Phi, psi and omega)"
+Dihs = "All backbone dihedrals"
 
 # Package/Network construction method-level common information
 dynetani = ("Movement correlation", "dynetan", "Mutual Information (MI)")
@@ -38,7 +38,7 @@ wrappers = {
     "pytraj_CB": pytraji + (beta,),
 
     "dynetan": dynetani + (whole,),
-    "dynetan_COM": dynetani + (COM,),
+    #"dynetan_COM": dynetani + (COM,),
     
     "g_correlation_CA_MI": g_correlationi + ("MI", alpha), 
     "g_correlation_COM_MI": g_correlationi + ("MI", COM), 
@@ -54,29 +54,29 @@ wrappers = {
     "correlationplus_Psi": correlationplusdihsi + ("Psi",),
     "correlationplus_Omega": correlationplusdihsi + ("Omega",),
 
-    "correlationplus_Backbone_Dihs_Avg": correlationplusdihsi + ("Pearson's (average)", Dihs),
-    "correlationplus_Backbone_Dihs_Max": correlationplusdihsi + ("Pearson's (max. value)", Dihs),
+    "correlationplus_Backbone_Dihs_Avg": correlationplusdihsi + ("Pearson's", Dihs + " (average)"),
+    "correlationplus_Backbone_Dihs_Max": correlationplusdihsi + ("Pearson's", Dihs + " (max. value)"),
     
     "AlloViz_Phi": AlloVizi + ("Phi",),
     "AlloViz_Psi": AlloVizi + ("Psi",),
     "AlloViz_Omega": AlloVizi + ("Omega",),
-    "AlloViz_Backbone_Dihs_Avg": AlloVizi + ("MI (average)", Dihs),
-    "AlloViz_Backbone_Dihs_Max": AlloVizi + ("MI (max. value)", Dihs),
+    "AlloViz_Backbone_Dihs_Avg": AlloVizi + ("MI", Dihs + " (average)"),
+    "AlloViz_Backbone_Dihs_Max": AlloVizi + ("MI", Dihs + " (max. value)"),
 
     "AlloViz_Chi1": AlloVizi + ("Chi1",),
     "AlloViz_Chi2": AlloVizi + ("Chi2",),
     "AlloViz_Chi3": AlloVizi + ("Chi3",),
     "AlloViz_Chi4": AlloVizi + ("Chi4",),
     "AlloViz_Chi5": AlloVizi + ("Chi5",),
-    "AlloViz_Sidechain_Dihs_Avg": AlloVizi + ("MI (average)", "Sidechain dihedrals"),
-    "AlloViz_Sidechain_Dihs_Max": AlloVizi + ("MI (max. value)", "Sidechain dihedrals"),
+    "AlloViz_Sidechain_Dihs_Avg": AlloVizi + ("MI", "All side-chain dihedrals (average)"),
+    "AlloViz_Sidechain_Dihs_Max": AlloVizi + ("MI", "All side-chain dihedrals (max. value)"),
 
-    "AlloViz_Dihs_Avg": AlloVizi + ("MI (average)", "All dihedrals"),
-    "AlloViz_Dihs_Max": AlloVizi + ("MI (max. value)", "All dihedrals"),
+    "AlloViz_Dihs_Avg": AlloVizi + ("MI", "All dihedrals (average)"),
+    "AlloViz_Dihs_Max": AlloVizi + ("MI", "All dihedrals (max. value)"),
     
     "MDEntropy_Dihs": ("Dihedral correlation",) + MDEntropyi + (Dihs,),
     "MDEntropy_AlphaAngle": ("Dihedral correlation",) + MDEntropyi + ("Alpha angle",),
-    "MDEntropy_Contacts": ("Contact frequency",) + MDEntropyi + (whole,),
+    #"MDEntropy_Contacts": ("Contact frequency",) + MDEntropyi + (whole,),
     
     "GetContacts": ("Contact frequency", "GetContacts", "-", whole),
     
@@ -87,8 +87,8 @@ wrappers = {
 
     "PyInteraph2_Energy": ("Interaction energy", "PyInteraph2", "-", whole),
     
-    "gRINN": ("Interaction energy", "gRINN", "-", whole),
-    "gRINN_corr": ("Interaction energy", "gRINN", "Pearson's", whole),
+    #"gRINN": ("Interaction energy", "gRINN", "-", whole),
+    #"gRINN_corr": ("Interaction energy", "gRINN", "Pearson's", whole),
 }
 
 
