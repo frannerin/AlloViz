@@ -54,25 +54,25 @@ wrappers = {
     "correlationplus_Psi": correlationplusdihsi + ("Psi",),
     "correlationplus_Omega": correlationplusdihsi + ("Omega",),
 
-    "correlationplus_Backbone_Dihs_Avg": correlationplusdihsi + ("Pearson's (average)", Dihs),
-    "correlationplus_Backbone_Dihs_Max": correlationplusdihsi + ("Pearson's (max. value)", Dihs),
+    "correlationplus_Backbone_Dihs_Avg": correlationplusdihsi + ("Pearson's", Dihs + " (average)"),
+    "correlationplus_Backbone_Dihs_Max": correlationplusdihsi + ("Pearson's", Dihs + " (max. value)"),
     
     "AlloViz_Phi": AlloVizi + ("Phi",),
     "AlloViz_Psi": AlloVizi + ("Psi",),
     "AlloViz_Omega": AlloVizi + ("Omega",),
-    "AlloViz_Backbone_Dihs_Avg": AlloVizi + ("MI (average)", Dihs),
-    "AlloViz_Backbone_Dihs_Max": AlloVizi + ("MI (max. value)", Dihs),
+    "AlloViz_Backbone_Dihs_Avg": AlloVizi + ("MI", Dihs + " (average)"),
+    "AlloViz_Backbone_Dihs_Max": AlloVizi + ("MI", Dihs + " (max. value)"),
 
     "AlloViz_Chi1": AlloVizi + ("Chi1",),
     "AlloViz_Chi2": AlloVizi + ("Chi2",),
     "AlloViz_Chi3": AlloVizi + ("Chi3",),
     "AlloViz_Chi4": AlloVizi + ("Chi4",),
     "AlloViz_Chi5": AlloVizi + ("Chi5",),
-    "AlloViz_Sidechain_Dihs_Avg": AlloVizi + ("MI (average)", "Sidechain dihedrals"),
-    "AlloViz_Sidechain_Dihs_Max": AlloVizi + ("MI (max. value)", "Sidechain dihedrals"),
+    "AlloViz_Sidechain_Dihs_Avg": AlloVizi + ("MI", "All side-chain dihedrals (average)"),
+    "AlloViz_Sidechain_Dihs_Max": AlloVizi + ("MI", "All side-chain dihedrals (max. value)"),
 
-    "AlloViz_Dihs_Avg": AlloVizi + ("MI (average)", "All dihedrals"),
-    "AlloViz_Dihs_Max": AlloVizi + ("MI (max. value)", "All dihedrals"),
+    "AlloViz_Dihs_Avg": AlloVizi + ("MI", "All dihedrals (average)"),
+    "AlloViz_Dihs_Max": AlloVizi + ("MI", "All dihedrals (max. value)"),
     
     "MDEntropy_Dihs": ("Dihedral correlation",) + MDEntropyi + (Dihs,),
     "MDEntropy_AlphaAngle": ("Dihedral correlation",) + MDEntropyi + ("Alpha angle",),

@@ -194,10 +194,10 @@ class AlloViz_Chi2(AlloViz_Base):
         new = super().__new__(cls, protein, d)
         new._dih = "chi1"
         # dihedral atomnames from: http://www.mlb.co.jp/linux/science/garlic/doc/commands/dihedrals.html
-        new._dih_atoms = {n_name: "CA",
-                          ca_name: "CB",
-                          cb_name: "CG CG1",
-                          cg_name: "CD OD1 ND1 CD1 SD"}
+        new._dih_atoms = {"n_name": "CA",
+                          "ca_name": "CB",
+                          "cb_name": "CG CG1",
+                          "cg_name": "CD OD1 ND1 CD1 SD"}
         return new
 
                           
@@ -211,10 +211,10 @@ class AlloViz_Chi3(AlloViz_Base):
     def __new__(cls, protein, d):
         new = super().__new__(cls, protein, d)
         new._dih = "chi1"
-        new._dih_atoms = {n_name: "CB",
-                          ca_name: "CG",
-                          cb_name: "CD SD",
-                          cg_name: "NE OE1 CE"}
+        new._dih_atoms = {"n_name": "CB",
+                          "ca_name": "CG",
+                          "cb_name": "CD SD",
+                          "cg_name": "NE OE1 CE"}
         return new
 
     
@@ -227,10 +227,10 @@ class AlloViz_Chi4(AlloViz_Base):
     def __new__(cls, protein, d):
         new = super().__new__(cls, protein, d)
         new._dih = "chi1"
-        new._dih_atoms = {n_name: "CG",
-                          ca_name: "CD",
-                          cb_name: "CE NE",
-                          cg_name: "CZ NZ"}
+        new._dih_atoms = {"n_name": "CG",
+                          "ca_name": "CD",
+                          "cb_name": "CE NE",
+                          "cg_name": "CZ NZ"}
         return new
     
     
@@ -243,10 +243,10 @@ class AlloViz_Chi5(AlloViz_Base):
     def __new__(cls, protein, d):
         new = super().__new__(cls, protein, d)
         new._dih = "chi1"
-        new._dih_atoms = {n_name: "CD",
-                          ca_name: "NE",
-                          cb_name: "CZ",
-                          cg_name: "NH1"}
+        new._dih_atoms = {"n_name": "CD",
+                          "ca_name": "NE",
+                          "cb_name": "CZ",
+                          "cg_name": "NH1"}
         return new
     
     
