@@ -129,8 +129,8 @@ class Base:
             flist = map(lambda pq: pandas.read_parquet(pq), pqs)
             df = pandas.concat(flist, axis=1)
             
-            # Perform min-max normalization (to range 0-1) on data coming from AlloViz or MDEntropy related methods (their MI values are low)
-            if "AlloViz" in self._name or "MDEntropy" in self._name:
+            # Perform min-max normalization (to range 0-1) on data coming from AlloViz or MDEntropy related methods (their MI values are low) or PyInteraph2_Atomic_Contacts_Strength
+            if "AlloViz" in self._name or "MDEntropy" in self._name or "PyInteraph2_Atomic_Contacts_Strength" in self._name:
                 df = (df-df.min())/(df.max()-df.min())
             
             # If there are more than 1 trajectory, calculate the average and standard error of the trajectories' raw data

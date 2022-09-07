@@ -22,7 +22,7 @@ for key, val in imports.items():
     
 
 
-class MDEntropy(Multicore):
+class MDEntropy_Base(Multicore):
     """MDEntropy base class
     """
     def __new__(cls, protein, d):
@@ -60,7 +60,7 @@ class MDEntropy(Multicore):
     
 
     
-class MDEntropy_Contacts(MDEntropy):
+class MDEntropy_Contacts(MDEntropy_Base):
     """MDEntropy's MI of Contacts
     """
     def __new__(cls, protein, d):
@@ -75,7 +75,7 @@ class MDEntropy_Contacts(MDEntropy):
         
         
         
-class MDEntropy_Dihs(MDEntropy):
+class MDEntropy_Dihs(MDEntropy_Base):
     """MDEntropy's MI of the backbone's dihedrals
     """
     def __new__(cls, protein, d):
@@ -90,7 +90,7 @@ class MDEntropy_Dihs(MDEntropy):
     
     
 
-class MDEntropy_AlphaAngle(MDEntropy):
+class MDEntropy_AlphaAngle(MDEntropy_Base):
     """MDEntropy's MI of the Alpha Angles
     """
     def __new__(cls, protein, d):

@@ -70,7 +70,7 @@ class gRINN(Multicore):
             return
         
         corrclass = eval("gRINN_corr")
-        add_corr = lambda _: setattr(self.protein, gRINN_corr, corrclass(self.protein, self._d))
+        add_corr = lambda _: setattr(self.protein, "gRINN_corr", corrclass(self.protein, self._d))
         get_pool().apply_async(wait_calculate,
                                args=(pqs,),
                                callback=add_corr)

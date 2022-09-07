@@ -27,6 +27,12 @@ from .correlationplus_w import correlationplus_Backbone_Dihs_Avg, correlationplu
 
 
 
+from .PyInteraph2_w import PyInteraph2_COM_Contacts, PyInteraph2_COM_Contacts_Corrected
+from .PyInteraph2_w import PyInteraph2_Atomic_Contacts_Strength, PyInteraph2_Atomic_Contacts_Occurrence
+from .PyInteraph2_w import PyInteraph2_Energy
+
+
+
 from .dynetan_w import dynetan, dynetan_COM
 
 # from .g_correlation_w import g_correlation_CA_MI, g_correlation_COM_MI, g_correlation_CA_LMI, g_correlation_COM_LMI
@@ -40,7 +46,5 @@ from .gRINN_w import gRINN
 from .MDEntropy_w import MDEntropy_Contacts, MDEntropy_Dihs, MDEntropy_AlphaAngle
 
 from .MDTASK_w import MDTASK
-
-from .PyInteraph2_w import PyInteraph2_Contacts, PyInteraph2_Energy
 
 from .pytraj_w import pytraj_CA, pytraj_CB
