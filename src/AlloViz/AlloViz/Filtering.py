@@ -112,18 +112,27 @@ def GPCR_Interhelix(pkg, data, **kwargs):
     if not pkg.protein.GPCR:
         raise Exception("GPCR_Interhelix filtering is only available for GPCR systems.")
     
-    # Create a dictionary mapping the residue numbers to their corresponding TM or ICL/ECL (or 0)
-    mapper = dict(zip(
-        pkg.protein.protein.select_atoms("name CA").resnums,
-        np.floor(pkg.protein.protein.select_atoms("name CA").tempfactors)
-    ))
+#     # Create a dictionary mapping the residue numbers to their corresponding TM or ICL/ECL (or 0)
+#     mapper = dict(zip(
+#         pkg.protein.protein.select_atoms("name CA").resnums,
+#         np.floor(pkg.protein.protein.select_atoms("name CA").tempfactors)
+#     ))
     
-    # Define a function to retrieve the residue number from the residue nomenclature used (chainID:)RES:resnum
-    resnum = lambda res: int(res.rsplit(":")[-1])
+#     # Define a function to retrieve the residue number from the residue nomenclature used (chainID:)RES:resnum
+#     resnum = lambda res: int(res.rsplit(":")[-1])
+#     def are_interhelix(idx):
+#         # Make a list of the residue pair's TMs
+#         TMs = [mapper[resnum(idx[0])], mapper[resnum(idx[1])]]
+#         # Then, check that (1) none of the retrieved TMs are 0 (residue with no generic numbering) and that (2) they are different TMs/ICLs/ECLs 
+#         return all([
+#                     all(TMs),
+#                     len(set(TMs)) > 1
+#                    ])
+    mapper = self._pkg.protein.GPCR
+            
+    get_TM = lambda res: mapper[res].split("x")[0] if res in mapper else False
     def are_interhelix(idx):
-        # Make a list of the residue pair's TMs
-        TMs = [mapper[resnum(idx[0])], mapper[resnum(idx[1])]]
-        # Then, check that (1) none of the retrieved TMs are 0 (residue with no generic numbering) and that (2) they are different TMs/ICLs/ECLs 
+        TMs = [get_TM(idx[0]), get_TM(idx[1])]
         return all([
                     all(TMs),
                     len(set(TMs)) > 1
@@ -164,7 +173,7 @@ def Spatially_distant(pkg, data, **kwargs):
     Interresidue_distance = (
         kwargs["Interresidue_distance"]
         if "Interresidue_distance" in kwargs
-        else 50
+        else 10
     )
     
     indices = df[df["dist"] >= Interresidue_distance].index
