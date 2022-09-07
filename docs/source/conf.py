@@ -82,7 +82,7 @@ numpydoc_attributes_as_param_list = True # this doesn't seem to be used
 templates_path = ["_templates"]
 autosummary_mock_imports = [
 	"nglview", 
-	"vmd-python", 
+	"vmd-python", "getcontacts",
 	"sklearn", 
 	"AlloViz.Packages.mdentropy.mdentropy.version",
 	"mdtraj",
