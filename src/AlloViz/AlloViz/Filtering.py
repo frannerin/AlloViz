@@ -147,7 +147,7 @@ def Spatially_distant(pkg, data, **kwargs):
     """Retain only edges between spatially distant residue pairs
     
     It only retains edges between residue pairs whose CA atoms are minimum a certain
-    number of angstroms away from each other in the initial PDB/structure (default 50 Å).
+    number of angstroms away from each other in the initial PDB/structure (default 10 Å).
     The relationship found between these residues can be considered purely allosteric, as
     they are spatially distant and have no direct communication but can be found to be
     interacting/correlated...
@@ -223,9 +223,13 @@ class Filtering:
         frequency (0-1, default 0) threshold, which will be used to filter out
         contacts with a frequency (average) lower than it before analysis.
     Intercontact_distance : int
-        Optional kwarg that can be passed to
-        specify the minimum number of sequence positions/distance between residues of
-        a pair to retain in Intercontact filtering, which defaults to 5.
+        Optional kwarg that can be passed to specify the minimum number of sequence
+        positions/distance between residues of a pair to retain in Intercontact
+        filtering, which defaults to 5.
+    Interresidue_distance : int or float
+        Optional kwarg that can be passed to specify the minimum number of angstroms
+        that the CA atoms of residue pairs should have between each other in the initial
+         PDB/structure (default 10 Å) to be considered spatially distant.
 
     See Also
     --------

@@ -258,6 +258,10 @@ class Base:
             Optional kwarg that can be passed to specify the minimum number of sequence
             positions/distance between residues of a pair to retain in
             `No_Sequence_Neighbors` filtering, which defaults to 5.
+        Interresidue_distance : int or float
+            Optional kwarg that can be passed to specify the minimum number of angstroms
+            that the CA atoms of residue pairs should have between each other in the initial
+             PDB/structure (default 10 Å) to be considered spatially distant.
 
         See Also
         --------
