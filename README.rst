@@ -169,41 +169,97 @@ Available information sources for network generation
 	      <td>correlationplus_COM_LMI</td>
 	    </tr>
 	    <tr>
-	      <th rowspan="10">Dihedral correlation</th>
-	      <th rowspan="4">correlationplus</th>
-	      <th rowspan="4">Pearson's</th>
+	      <th rowspan="21">Dihedral correlation</th>
+	      <th rowspan="5">correlationplus</th>
 	      <th>Phi</th>
+	      <th>NaN</th>
 	      <td>correlationplus_Phi</td>
 	    </tr>
 	    <tr>
 	      <th>Psi</th>
+	      <th>NaN</th>
 	      <td>correlationplus_Psi</td>
 	    </tr>
 	    <tr>
 	      <th>Omega</th>
+	      <th>NaN</th>
 	      <td>correlationplus_Omega</td>
 	    </tr>
 	    <tr>
-	      <th>Backbone dihedrals (Phi, psi and omega)</th>
-	      <td>correlationplus_Dihs</td>
+	      <th rowspan="2">Pearson's</th>
+	      <th>Backbone dihedrals (Phi, psi and omega) (average)</th>
+	      <td>correlationplus_Backbone_Dihs_Avg</td>
 	    </tr>
 	    <tr>
-	      <th rowspan="4">AlloViz</th>
-	      <th rowspan="4">MI</th>
+	      <th>Backbone dihedrals (Phi, psi and omega) (max. value)</th>
+	      <td>correlationplus_Backbone_Dihs_Max</td>
+	    </tr>
+	    <tr>
+	      <th rowspan="14">AlloViz</th>
 	      <th>Phi</th>
+	      <th>NaN</th>
 	      <td>AlloViz_Phi</td>
 	    </tr>
 	    <tr>
 	      <th>Psi</th>
+	      <th>NaN</th>
 	      <td>AlloViz_Psi</td>
 	    </tr>
 	    <tr>
 	      <th>Omega</th>
+	      <th>NaN</th>
 	      <td>AlloViz_Omega</td>
 	    </tr>
 	    <tr>
-	      <th>Backbone dihedrals (Phi, psi and omega)</th>
-	      <td>AlloViz_Dihs</td>
+	      <th rowspan="2">MI</th>
+	      <th>Backbone dihedrals (Phi, psi and omega) (average)</th>
+	      <td>AlloViz_Backbone_Dihs_Avg</td>
+	    </tr>
+	    <tr>
+	      <th>Backbone dihedrals (Phi, psi and omega) (max. value)</th>
+	      <td>AlloViz_Backbone_Dihs_Max</td>
+	    </tr>
+	    <tr>
+	      <th>Chi1</th>
+	      <th>NaN</th>
+	      <td>AlloViz_Chi1</td>
+	    </tr>
+	    <tr>
+	      <th>Chi2</th>
+	      <th>NaN</th>
+	      <td>AlloViz_Chi2</td>
+	    </tr>
+	    <tr>
+	      <th>Chi3</th>
+	      <th>NaN</th>
+	      <td>AlloViz_Chi3</td>
+	    </tr>
+	    <tr>
+	      <th>Chi4</th>
+	      <th>NaN</th>
+	      <td>AlloViz_Chi4</td>
+	    </tr>
+	    <tr>
+	      <th>Chi5</th>
+	      <th>NaN</th>
+	      <td>AlloViz_Chi5</td>
+	    </tr>
+	    <tr>
+	      <th rowspan="4">MI</th>
+	      <th>All side-chain dihedrals (average)</th>
+	      <td>AlloViz_Sidechain_Dihs_Avg</td>
+	    </tr>
+	    <tr>
+	      <th>All side-chain dihedrals (max. value)</th>
+	      <td>AlloViz_Sidechain_Dihs_Max</td>
+	    </tr>
+	    <tr>
+	      <th>All dihedrals (average)</th>
+	      <td>AlloViz_Dihs_Avg</td>
+	    </tr>
+	    <tr>
+	      <th>All dihedrals (max. value)</th>
+	      <td>AlloViz_Dihs_Max</td>
 	    </tr>
 	    <tr>
 	      <th rowspan="2">MDEntropy</th>
@@ -216,7 +272,7 @@ Available information sources for network generation
 	      <td>MDEntropy_AlphaAngle</td>
 	    </tr>
 	    <tr>
-	      <th rowspan="3">Contact frequency</th>
+	      <th rowspan="4">Contact frequency</th>
 	      <th>MDEntropy</th>
 	      <th>MI</th>
 	      <th>Whole residue</th>
@@ -229,23 +285,32 @@ Available information sources for network generation
 	      <td>GetContacts</td>
 	    </tr>
 	    <tr>
-	      <th>PyInteraph2</th>
-	      <th>-</th>
-	      <th>Whole residue</th>
-	      <td>PyInteraph2_Contacts</td>
+	      <th rowspan="2">PyInteraph2</th>
+	      <th rowspan="2">-</th>
+	      <th>Residue COM</th>
+	      <td>PyInteraph2_COM_Contacts_Corrected</td>
 	    </tr>
 	    <tr>
-	      <th rowspan="2">Interaction energy</th>
+	      <th>Side-chain atomic contacts</th>
+	      <td>PyInteraph2_Atomic_Contacts_Occurrence</td>
+	    </tr>
+	    <tr>
+	      <th rowspan="3">Interaction energy</th>
 	      <th>PyInteraph2</th>
 	      <th>-</th>
 	      <th>Whole residue</th>
 	      <td>PyInteraph2_Energy</td>
 	    </tr>
 	    <tr>
-	      <th>gRINN</th>
+	      <th rowspan="2">gRINN</th>
 	      <th>-</th>
 	      <th>Whole residue</th>
 	      <td>gRINN</td>
+	    </tr>
+	    <tr>
+	      <th>Pearson's</th>
+	      <th>Whole residue</th>
+	      <td>gRINN_corr</td>
 	    </tr>
 	  </tbody>
 	</table>

@@ -37,7 +37,7 @@ def _calculate_row(in_data, values, nres):
 class AlloViz_Base(Multicore):
     """AlloViz network construction method base class
 
-    :meth:`~AlloViz.Wrappers.AlloViz.AlloViz._computation` uses
+    :meth:`~AlloViz.Wrappers.AlloViz.AlloViz_w._computation` uses
     :mod:`MDAnalysis.analysis.dihedrals` to extract data and 
     `NPEET_LNC <https://github.com/ViktorvdValk/NPEET_LNC>`_ for MI calculation.
     """
@@ -57,8 +57,13 @@ class AlloViz_Base(Multicore):
         # Establish the atoms that form the desired dihedral (if they are not the default ones from the selection function and are provided) 
         # and the selection function itself, and then retrieve the selected AtomGroups
         dih_atoms = self._dih_atoms if hasattr(self, "_dih_atoms") else {}
-        select_dih = lambda res: eval(f"res.{self._dih.lower()}_selection(**dih_atoms)")
-        selected = [select_dih(res) for res in prot.residues]
+        # select_dih = lambda res: eval(f"res.{self._dih.lower()}_selection(**dih_atoms)")
+        # selected = [select_dih(res) for res in prot.residues]
+        # selected = eval(f"prot.residues.{self._dih.lower()}_selections(**dih_atoms)")
+        selected = []
+        for res in prot.residues:
+            ag = eval(f"res.{self._dih.lower()}_selection(**dih_atoms)")
+            selected.append(ag)
         
         # Save the residue indices of the protein for which an AtomGroup forming the desired dihedral could be found, and also make a list of the AtomGroups without Nones
         selected_res, selected = zip(*[(i, ag) for i, ag in enumerate(selected) if ag])
@@ -107,7 +112,7 @@ class AlloViz_Base(Multicore):
             corr[res, :] = row
             
             
-        return corr, xtc, selected_res
+        return corr, xtc, list(selected_res)
     
     
     
