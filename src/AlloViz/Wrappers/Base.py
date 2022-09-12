@@ -295,7 +295,7 @@ class Base:
         # Calculate for all the passed Filterings
         filterings = utils.make_list(
             filterings,
-            if_all = [filt for filt in self.__dict__ if any([f in filt for f in utils.filteringsl])]
+            if_all = utils.filteringsl
         )
         for filt in filterings:
             # Name used to store as attribute will be that of the filtering scheme chosen or the combination's names joined by "_"
