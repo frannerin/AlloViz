@@ -171,81 +171,69 @@ Available information sources for network generation
 	    <tr>
 	      <th rowspan="21">Dihedral correlation</th>
 	      <th rowspan="5">correlationplus</th>
+	      <th rowspan="5">Pearson's</th>
 	      <th>Phi</th>
-	      <th>NaN</th>
 	      <td>correlationplus_Phi</td>
 	    </tr>
 	    <tr>
 	      <th>Psi</th>
-	      <th>NaN</th>
 	      <td>correlationplus_Psi</td>
 	    </tr>
 	    <tr>
 	      <th>Omega</th>
-	      <th>NaN</th>
 	      <td>correlationplus_Omega</td>
 	    </tr>
 	    <tr>
-	      <th rowspan="2">Pearson's</th>
-	      <th>Backbone dihedrals (Phi, psi and omega) (average)</th>
+	      <th>All backbone dihedrals (Phi, psi and omega) (average)</th>
 	      <td>correlationplus_Backbone_Dihs_Avg</td>
 	    </tr>
 	    <tr>
-	      <th>Backbone dihedrals (Phi, psi and omega) (max. value)</th>
+	      <th>All backbone dihedrals (Phi, psi and omega) (max. value)</th>
 	      <td>correlationplus_Backbone_Dihs_Max</td>
 	    </tr>
 	    <tr>
 	      <th rowspan="14">AlloViz</th>
+	      <th rowspan="14">MI</th>
 	      <th>Phi</th>
-	      <th>NaN</th>
 	      <td>AlloViz_Phi</td>
 	    </tr>
 	    <tr>
 	      <th>Psi</th>
-	      <th>NaN</th>
 	      <td>AlloViz_Psi</td>
 	    </tr>
 	    <tr>
 	      <th>Omega</th>
-	      <th>NaN</th>
 	      <td>AlloViz_Omega</td>
 	    </tr>
 	    <tr>
-	      <th rowspan="2">MI</th>
-	      <th>Backbone dihedrals (Phi, psi and omega) (average)</th>
+	      <th>All backbone dihedrals (Phi, psi and omega) (average)</th>
 	      <td>AlloViz_Backbone_Dihs_Avg</td>
 	    </tr>
 	    <tr>
-	      <th>Backbone dihedrals (Phi, psi and omega) (max. value)</th>
+	      <th>All backbone dihedrals (Phi, psi and omega) (max. value)</th>
 	      <td>AlloViz_Backbone_Dihs_Max</td>
 	    </tr>
 	    <tr>
 	      <th>Chi1</th>
-	      <th>NaN</th>
 	      <td>AlloViz_Chi1</td>
 	    </tr>
 	    <tr>
 	      <th>Chi2</th>
-	      <th>NaN</th>
 	      <td>AlloViz_Chi2</td>
 	    </tr>
 	    <tr>
 	      <th>Chi3</th>
-	      <th>NaN</th>
 	      <td>AlloViz_Chi3</td>
 	    </tr>
 	    <tr>
 	      <th>Chi4</th>
-	      <th>NaN</th>
 	      <td>AlloViz_Chi4</td>
 	    </tr>
 	    <tr>
 	      <th>Chi5</th>
-	      <th>NaN</th>
 	      <td>AlloViz_Chi5</td>
 	    </tr>
 	    <tr>
-	      <th rowspan="4">MI</th>
 	      <th>All side-chain dihedrals (average)</th>
 	      <td>AlloViz_Sidechain_Dihs_Avg</td>
 	    </tr>
@@ -264,7 +252,7 @@ Available information sources for network generation
 	    <tr>
 	      <th rowspan="2">MDEntropy</th>
 	      <th rowspan="2">MI</th>
-	      <th>Backbone dihedrals (Phi, psi and omega)</th>
+	      <th>All backbone dihedrals (Phi, psi and omega)</th>
 	      <td>MDEntropy_Dihs</td>
 	    </tr>
 	    <tr>
@@ -272,27 +260,37 @@ Available information sources for network generation
 	      <td>MDEntropy_AlphaAngle</td>
 	    </tr>
 	    <tr>
-	      <th rowspan="4">Contact frequency</th>
+	      <th rowspan="6">Contacts</th>
 	      <th>MDEntropy</th>
 	      <th>MI</th>
-	      <th>Whole residue</th>
+	      <th>Contact frequency</th>
 	      <td>MDEntropy_Contacts</td>
 	    </tr>
 	    <tr>
 	      <th>GetContacts</th>
 	      <th>-</th>
-	      <th>Whole residue</th>
+	      <th>Contact frequency</th>
 	      <td>GetContacts</td>
 	    </tr>
 	    <tr>
-	      <th rowspan="2">PyInteraph2</th>
-	      <th rowspan="2">-</th>
-	      <th>Residue COM</th>
-	      <td>PyInteraph2_COM_Contacts_Corrected</td>
+	      <th rowspan="3">PyInteraph2</th>
+	      <th rowspan="3">-</th>
+	      <th>Contact frequency</th>
+	      <td>PyInteraph2_Atomic_Contacts_Occurrence</td>
 	    </tr>
 	    <tr>
-	      <th>Side-chain atomic contacts</th>
-	      <td>PyInteraph2_Atomic_Contacts_Occurrence</td>
+	      <th>Contact strength</th>
+	      <td>PyInteraph2_Atomic_Contacts_Strength</td>
+	    </tr>
+	    <tr>
+	      <th>Residue COM contacts</th>
+	      <td>PyInteraph2_COM_Contacts</td>
+	    </tr>
+	    <tr>
+	      <th>PyInteraph2 (with Rg correction)</th>
+	      <th>-</th>
+	      <th>Residue COM contacts</th>
+	      <td>PyInteraph2_COM_Contacts_Corrected</td>
 	    </tr>
 	    <tr>
 	      <th rowspan="3">Interaction energy</th>
