@@ -304,9 +304,12 @@ def process_input(
         ]
     ):
         whole.load_new(trajs, continuous=False)
-        sf = (
-            whole.trajectory._start_frames
-        )  # for 3 trajs of 2500 frames each looks like: array([   0, 2500, 5000, 7500])
+        if hasattr(whole.trajectory, "readers"):
+            sf = (
+                whole.trajectory._start_frames
+            )  # for 3 trajs of 2500 frames each looks like: array([   0, 2500, 5000, 7500])
+        else:
+            sf = [0, 2500]
         iterator = enumerate(
             zip(sf[:-1], sf[1:]), 1
         )  # looks like: (1, (0, 2500)), (2, (2500, 5000)), (3, (5000, 7500))

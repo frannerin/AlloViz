@@ -4,11 +4,13 @@ It calculates contact frequencies.
 
 """
 
-import os
+import os, time
 
 import pandas
 
 from .Base import lazy_import, Multicore
+
+from ..AlloViz.utils import get_pool
 
 imports = {
 "_getcontacts_contacts": ".Packages.getcontacts.get_dynamic_contacts",
@@ -37,7 +39,21 @@ class GetContacts(Multicore):
         
         # Filter dataset according to GetContacts_threshold optional kwarg
         if hasattr(self, "GetContacts_threshold"):
-            self.raw = self.raw[self.raw["weight"] >= self.GetContacts_threshold]
+            # Define the list of .pq files that we expect are going to be saved (or be retrieved) and a function to check which of them already exist
+            pqs = [self._rawpq(xtc) for xtc in self._trajs]
+            no_exist = lambda pqs: [not os.path.isfile(pq) for pq in pqs]
+
+            # Function to wait for the calculations to finish in the background; returns the .pq files to be read and added as attributes when they do
+            def wait_calculate(pqs):
+                while any(no_exist(pqs)):
+                    time.sleep(5)
+                return pqs
+            
+            # Wait asynchronously for analysis to end and then add the filter data
+            filter_raw = lambda _: setattr(self, "raw", self.raw[self.raw["weight"] >= self.GetContacts_threshold])
+            get_pool().apply_async(wait_calculate,
+                                   args=(pqs,),
+                                   callback=filter_raw)
             
             
     def _computation(self, xtc):
@@ -58,5 +74,6 @@ class GetContacts(Multicore):
         
         df = pandas.read_csv(freqs, sep="\t", skiprows=2,
                              index_col = (0, 1), names = [f"{xtc}"])
-        df.index = df.index.map(lambda idx: tuple(sorted([res.split(":", 1)[-1] for res in idx], key = lambda res: int(res.split(":")[-1]))))
+        # df.index = df.index.map(lambda idx: tuple(sorted([res.split(":", 1)[-1] for res in idx], key = lambda res: int(res.split(":")[-1]))))
+        df.index = df.index.map(lambda idx: tuple(sorted(idx, key = lambda res: int(res.split(":")[-1]))))
         df.to_parquet(self._rawpq(xtc))

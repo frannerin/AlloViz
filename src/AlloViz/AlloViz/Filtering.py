@@ -128,7 +128,7 @@ def GPCR_Interhelix(pkg, data, **kwargs):
 #                     all(TMs),
 #                     len(set(TMs)) > 1
 #                    ])
-    mapper = self._pkg.protein.GPCR
+    mapper = pkg.protein.GPCR
             
     get_TM = lambda res: mapper[res].split("x")[0] if res in mapper else False
     def are_interhelix(idx):
@@ -164,14 +164,14 @@ def Spatially_distant(pkg, data, **kwargs):
     sq_dist_arr[triu] = self_distances
     
     # Transform the matrix into a pandas DataFrame
-    resnames = [f"{aa.resname}:{aa.resid}" for aa in pkg.protein.protein.residues]
+    resnames = [f"{aa.atoms[0].chainID}:{aa.resname}:{aa.resid}" for aa in pkg.protein.protein.residues]
     df = pandas.DataFrame(sq_dist_arr, columns=resnames, index=resnames)
     df = df.where( np.triu(np.ones(df.shape), k=1).astype(bool) )
     df = pandas.DataFrame({"dist": df.stack()})
     
     # Define Interresidue_distance if it is in kwargs or with the default value
     Interresidue_distance = (
-        kwargs["Interresidue_distance"]
+        int(kwargs["Interresidue_distance"])
         if "Interresidue_distance" in kwargs
         else 10
     )
@@ -290,24 +290,34 @@ class Filtering:
         weights = (
             column[column != 0].dropna().abs().rename("weight").reset_index()
         )  # btw calculations fail with 0 value weights and cfb prob with negative
-        # Create the NetworkX's Graph
+        # Create the NetworkX's Graph and a list of its components
         network = networkx.from_pandas_edgelist(weights, "level_0", "level_1", "weight")
-
-        # Check that the largest connected component has the same size as the total number of nodes, else select the largest component to return as the Graph to be analyzed
-        largest_component = max(networkx.connected_components(network), key=len)
-
-        if len(largest_component) < network.number_of_nodes():
+        components = list(networkx.connected_components(network))
+        
+        if len(components) == 0:
             print(
-                f"WARNING! Unconnected network ({network.number_of_nodes()} nodes):",
+                f"WARNING! No connected components in network ({network.number_of_nodes()} nodes):",
                 self._pkg._name,
                 self._name,
                 column.name,
-                "\n",
-                f"Largest network component will be used for analysis. Sizes (number of nodes) of all components: {[len(comp) for comp in networkx.connected_components(network)]}",
             )
-            network = network.subgraph(largest_component)
+            return
+        else:
+            # Check that the largest connected component has the same size as the total number of nodes, else select the largest component to return as the Graph to be analyzed
+            largest_component = max(components, key=len)
 
-        return network
+            if len(largest_component) < network.number_of_nodes():
+                print(
+                    f"WARNING! Unconnected network ({network.number_of_nodes()} nodes):",
+                    self._pkg._name,
+                    self._name,
+                    column.name,
+                    "\n",
+                    f"Largest network component will be used for analysis. Sizes (number of nodes) of all components: {[len(comp) for comp in components]}",
+                )
+                network = network.subgraph(largest_component)
+
+            return network
     
     def analyze(self, elements="edges", metrics="all", normalize=True, cores=1, **kwargs):
         r"""Analyze the filtered network

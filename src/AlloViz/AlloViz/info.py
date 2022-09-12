@@ -76,14 +76,14 @@ wrappers = {
     
     "MDEntropy_Dihs": ("Dihedral correlation",) + MDEntropyi + (Dihs,),
     "MDEntropy_AlphaAngle": ("Dihedral correlation",) + MDEntropyi + ("Alpha angle",),
-    #"MDEntropy_Contacts": ("Contact frequency",) + MDEntropyi + (whole,),
+    #"MDEntropy_Contacts": ("Contacts",) + MDEntropyi + ("Contact frequency",),
     
-    "GetContacts": ("Contact frequency", "GetContacts", "-", whole),
+    "GetContacts": ("Contacts", "GetContacts", "-", "Contact frequency"),
     
-    "PyInteraph2_COM_Contacts": ("Contact frequency", "PyInteraph2", "-", COM),
-    "PyInteraph2_COM_Contacts_Corrected": ("Contact frequency", "PyInteraph2", "-", COM),
-    "PyInteraph2_Atomic_Contacts_Strength": ("Contact frequency", "PyInteraph2", "-", "Side-chain atomic contacts"),
-    "PyInteraph2_Atomic_Contacts_Occurrence": ("Contact frequency", "PyInteraph2", "-", "Side-chain atomic contacts"),
+    "PyInteraph2_Atomic_Contacts_Occurrence": ("Contacts", "PyInteraph2", "-", "Contact frequency"),
+    "PyInteraph2_Atomic_Contacts_Strength": ("Contacts", "PyInteraph2", "-", "Contact strength"),
+    "PyInteraph2_COM_Contacts": ("Contacts", "PyInteraph2", "-", "Residue COM contacts"),
+    "PyInteraph2_COM_Contacts_Corrected": ("Contacts", "PyInteraph2 (with Rg correction)", "-", "Residue COM contacts"),
 
     "PyInteraph2_Energy": ("Interaction energy", "PyInteraph2", "-", whole),
     

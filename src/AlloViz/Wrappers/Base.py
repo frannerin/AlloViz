@@ -13,7 +13,7 @@ to create child classes with multiple inheritance for specific uses.
 
 """
 
-import os, time
+import os, time, datetime
 
 import pandas
 import numpy as np
@@ -223,7 +223,8 @@ class Base:
             resl = slice(0, corr.shape[0])
         
         # Make a list of residue names selecting the appropriate residues with resl
-        resnames = [f"{aa.resname}:{aa.resid}" for aa in self._d["protein"].residues[resl]]
+        # resnames = [f"{aa.resname}:{aa.resid}" for aa in self._d["protein"].residues[resl]]
+        resnames = [f"{aa.atoms[0].chainID}:{aa.resname}:{aa.resid}" for aa in self._d["protein"].residues[resl]]
         
         # Transform the square, symmetric corr matrix into a DataFrame and select only the upper triangle (without the diagonal: k=1) and stack it into a tabular format for saving
         df = pandas.DataFrame(corr, columns=resnames, index=resnames)
@@ -395,14 +396,14 @@ class Combined_Dihs_Base(Base):
         pkg = self._name.split("_")[0]
         
         # If any of the dihedral calculations don't exist, raise error
-        attr_exist = {attr: rhasattr(self, "protein", f"{pkg}{Dih}") for Dih in self._dihs}
-        if any([not file_exist for file_exist in files_exist.values()]):
+        attrs_exist = {f"{pkg}_{Dih}": rhasattr(self, "protein", f"{pkg}_{Dih}") for Dih in self._dihs}
+        if any([not attr_exist for attr_exist in attrs_exist.values()]):
             raise Exception(
-                f"Individual dihedrals calculations are needed first: {attr_exist}"
+                f"Individual dihedrals calculations are needed first: {attrs_exist}"
             )
             
         # Function to get the name of the files that we aim to retrieve
-        get_rawpq = lambda Dih: rgetattr(self, "protein", f"{pkg}{Dih}", "_rawpq")(xtc)
+        get_rawpq = lambda Dih: rgetattr(self, "protein", f"{pkg}_{Dih}", "_rawpq")(xtc)
         pqs = [get_rawpq(Dih) for Dih in self._dihs]
         
         self._save_pq(pqs, xtc)
