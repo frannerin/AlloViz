@@ -37,7 +37,7 @@ def _calculate_row(in_data, values, nres):
 class AlloViz_Base(Multicore):
     """AlloViz network construction method base class
 
-    :meth:`~AlloViz.Wrappers.AlloViz.AlloViz._computation` uses
+    :meth:`~AlloViz.Wrappers.AlloViz.AlloViz_w._computation` uses
     :mod:`MDAnalysis.analysis.dihedrals` to extract data and 
     `NPEET_LNC <https://github.com/ViktorvdValk/NPEET_LNC>`_ for MI calculation.
     """
