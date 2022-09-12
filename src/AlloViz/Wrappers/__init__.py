@@ -37,14 +37,14 @@ from .dynetan_w import dynetan, dynetan_COM
 
 # from .g_correlation_w import g_correlation_CA_MI, g_correlation_COM_MI, g_correlation_CA_LMI, g_correlation_COM_LMI
 
-from .GetContacts_w import GetContacts
+from .GetContacts import GetContacts
 
 from .gRINN_w import gRINN
 
-# from .GSAtools_w import GSAtools
+# from .GSAtools import GSAtools
 
 from .MDEntropy_w import MDEntropy_Contacts, MDEntropy_Dihs, MDEntropy_AlphaAngle
 
-from .MDTASK_w import MDTASK
+from .MDTASK import MDTASK
 
 from .pytraj_w import pytraj_CA, pytraj_CB

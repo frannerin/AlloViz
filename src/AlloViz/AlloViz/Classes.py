@@ -604,8 +604,12 @@ class Protein:
             
             for filtering in filterings:
                 filtered = rgetattr(self, utils.pkgname(pkg), filtering)
+                
                 if not filtered:
                     print(f"{utils.pkgname(pkg)} {filtering} results are needed first")
+                    continue
+                elif filtered._filtdata.size == 0:
+                    print(f"{utils.pkgname(pkg)} {filtering} is not a connected network (or subnetwork)")
                     continue
                 result = Analysis.analyze(filtered, elements, metrics, normalize, **kwargs)
                 # filtered.analyze(elements, metrics, normalize, **kwargs)
