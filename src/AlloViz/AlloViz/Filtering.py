@@ -377,9 +377,9 @@ class Filtering:
         utils.pool = mypool
         print(utils.pool)       
         
-        elif self._filtdata.size == 0:
+        if self._filtdata.size == 0:
             print(f"{self._pkg._name} {self._name} is not a connected network (or subnetwork)")
-            continue
+            return
         result = Analysis.analyze(self, elements, metrics, normalize, **kwargs)
                 
         # Close the pool

@@ -14,13 +14,14 @@ whole = "Whole residue"
 Dihs = "All backbone dihedrals"
 
 # Package/Network construction method-level common information
-dynetani = ("Movement correlation", "dynetan", "Mutual Information (MI)")
-pytraji = ("Movement correlation", "pytraj", "Pearson's")
-correlationplusi = ("Movement correlation", "correlationplus")
-correlationplusdihsi = ("Dihedral correlation", "correlationplus")
-AlloVizi = ("Dihedral correlation", "AlloViz")
+dynetani = ("Atoms' movement correlation", "dynetan", "Mutual Information (MI)")
+pytraji = ("Atoms' movement correlation", "pytraj", "Pearson's")
+correlationplusi = ("Atoms' movement correlation", "correlationplus")
+correlationplusdihsi = ("Dihedrals' movement correlation", "correlationplus", "Pearson's")
+AlloVizi = ("Dihedrals' movement correlation", "AlloViz", "MI")
 MDEntropyi = ("MDEntropy", "MI")
-g_correlationi = ("Movement correlation", "g_correlation")
+g_correlationi = ("Atoms' movement correlation", "g_correlation")
+pyinteraphi = ("Contacts", "PyInteraph2", "-")
 
 
 
@@ -32,13 +33,13 @@ g_correlationi = ("Movement correlation", "g_correlation")
 #: the AlloViz accession name of the wrapper), the correlaton metric they use if
 #: applicable, and the atom/angle whose information it uses.
 wrappers = {
-    "MDTASK": ("Movement correlation", "MD-TASK", "Pearson's", alpha),
+    "MDTASK": ("Atoms' movement correlation", "MD-TASK", "Pearson's", alpha),
 
     "pytraj_CA": pytraji + (alpha,),
     "pytraj_CB": pytraji + (beta,),
 
     "dynetan": dynetani + (whole,),
-    #"dynetan_COM": dynetani + (COM,),
+    # "dynetan_COM": dynetani + (COM,),
     
     "g_correlation_CA_MI": g_correlationi + ("MI", alpha), 
     "g_correlation_COM_MI": g_correlationi + ("MI", COM), 
@@ -54,41 +55,41 @@ wrappers = {
     "correlationplus_Psi": correlationplusdihsi + ("Psi",),
     "correlationplus_Omega": correlationplusdihsi + ("Omega",),
 
-    "correlationplus_Backbone_Dihs_Avg": correlationplusdihsi + ("Pearson's", Dihs + " (average)"),
-    "correlationplus_Backbone_Dihs_Max": correlationplusdihsi + ("Pearson's", Dihs + " (max. value)"),
+    "correlationplus_Backbone_Dihs_Avg": correlationplusdihsi + (Dihs + " (average)",),
+    "correlationplus_Backbone_Dihs_Max": correlationplusdihsi + (Dihs + " (max. value)",),
     
     "AlloViz_Phi": AlloVizi + ("Phi",),
     "AlloViz_Psi": AlloVizi + ("Psi",),
     "AlloViz_Omega": AlloVizi + ("Omega",),
-    "AlloViz_Backbone_Dihs_Avg": AlloVizi + ("MI", Dihs + " (average)"),
-    "AlloViz_Backbone_Dihs_Max": AlloVizi + ("MI", Dihs + " (max. value)"),
+    "AlloViz_Backbone_Dihs_Avg": AlloVizi + (Dihs + " (average)",),
+    "AlloViz_Backbone_Dihs_Max": AlloVizi + (Dihs + " (max. value)",),
 
     "AlloViz_Chi1": AlloVizi + ("Chi1",),
     "AlloViz_Chi2": AlloVizi + ("Chi2",),
     "AlloViz_Chi3": AlloVizi + ("Chi3",),
     "AlloViz_Chi4": AlloVizi + ("Chi4",),
     "AlloViz_Chi5": AlloVizi + ("Chi5",),
-    "AlloViz_Sidechain_Dihs_Avg": AlloVizi + ("MI", "All side-chain dihedrals (average)"),
-    "AlloViz_Sidechain_Dihs_Max": AlloVizi + ("MI", "All side-chain dihedrals (max. value)"),
+    "AlloViz_Sidechain_Dihs_Avg": AlloVizi + ("All side-chain dihedrals (average)",),
+    "AlloViz_Sidechain_Dihs_Max": AlloVizi + ("All side-chain dihedrals (max. value)",),
 
-    "AlloViz_Dihs_Avg": AlloVizi + ("MI", "All dihedrals (average)"),
-    "AlloViz_Dihs_Max": AlloVizi + ("MI", "All dihedrals (max. value)"),
+    "AlloViz_Dihs_Avg": AlloVizi + ("All dihedrals (average)",),
+    "AlloViz_Dihs_Max": AlloVizi + ("All dihedrals (max. value)",),
     
-    "MDEntropy_Dihs": ("Dihedral correlation",) + MDEntropyi + (Dihs,),
-    "MDEntropy_AlphaAngle": ("Dihedral correlation",) + MDEntropyi + ("Alpha angle",),
-    #"MDEntropy_Contacts": ("Contacts",) + MDEntropyi + ("Contact frequency",),
+    "MDEntropy_Dihs": ("Dihedrals' movement correlation",) + MDEntropyi + (Dihs + " (average)",),
+    "MDEntropy_AlphaAngle": ("Dihedrals' movement correlation",) + MDEntropyi + ("Alpha angle",),
+    # "MDEntropy_Contacts": ("Contacts",) + MDEntropyi + ("Contact frequency",),
     
     "GetContacts": ("Contacts", "GetContacts", "-", "Contact frequency"),
     
-    "PyInteraph2_Atomic_Contacts_Occurrence": ("Contacts", "PyInteraph2", "-", "Contact frequency"),
-    "PyInteraph2_Atomic_Contacts_Strength": ("Contacts", "PyInteraph2", "-", "Contact strength"),
-    "PyInteraph2_COM_Contacts": ("Contacts", "PyInteraph2", "-", "Residue COM contacts"),
+    "PyInteraph2_Atomic_Contacts_Occurrence": pyinteraphi + ("Contact frequency",),
+    "PyInteraph2_Atomic_Contacts_Strength": pyinteraphi + ("Contact strength",),
+    "PyInteraph2_COM_Contacts": pyinteraphi + ("Residue COM contacts",),
     "PyInteraph2_COM_Contacts_Corrected": ("Contacts", "PyInteraph2 (with Rg correction)", "-", "Residue COM contacts"),
 
     "PyInteraph2_Energy": ("Interaction energy", "PyInteraph2", "-", whole),
     
-    #"gRINN": ("Interaction energy", "gRINN", "-", whole),
-    #"gRINN_corr": ("Interaction energy", "gRINN", "Pearson's", whole),
+    # "gRINN": ("Interaction energy", "gRINN", "-", whole),
+    # "gRINN_corr": ("Interaction energy", "gRINN", "Pearson's", whole),
 }
 
 
