@@ -90,7 +90,7 @@ autosummary_mock_imports = [
 	"prody", 
 	"numba",
 	"pytraj",
-	"cython", "h5py", "python-louvain", "community", #dynetan deps
+	"cython", "h5py", "python-louvain", "community", "colorama", #dynetan deps
 	"pyprind", "panedr", "natsort", "click"
 ]
 
