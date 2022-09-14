@@ -200,7 +200,8 @@ class Filtering:
         :func:`~AlloViz.AlloViz.Filtering.All`,
         :func:`~AlloViz.AlloViz.Filtering.GetContacts_edges`,
         :func:`~AlloViz.AlloViz.Filtering.No_Sequence_Neighbors`,
-        :func:`~AlloViz.AlloViz.Filtering.GPCR_Interhelix`.
+        :func:`~AlloViz.AlloViz.Filtering.GPCR_Interhelix`,
+        :func:`~AlloViz.AlloViz.Filtering.Spatially_distant`.
     name : str
         Name of the filtering scheme. It will be the same name as the passed filtering
         option if it is a single string, or the names of the filtering options joined by
@@ -221,6 +222,10 @@ class Filtering:
         Optional kwarg that can be passed to specify the minimum number of angstroms
         that the CA atoms of residue pairs should have between each other in the initial
          PDB/structure (default 10 Å) to be considered spatially distant.
+         
+    Attributes
+    ----------
+    graphs : dict of external:ref:`Graph <graph>` objects
 
     See Also
     --------
@@ -252,9 +257,14 @@ class Filtering:
             data = filtfunc(self._pkg, data, **kwargs)
         self._filtdata = data
 
-        # For each column in the filtered data that is not a standard error, create an analyzable NetworkX's graph and save it as an attribute
+        # # For each column in the filtered data that is not a standard error, create an analyzable NetworkX's graph and save it as an attribute
+        # for col in [c for c in self._filtdata if "std" not in c]:
+        #     setattr(self, f"_{col}_G", self._get_G(self._filtdata[col]))
+        
+        # For each column in the filtered data that is not a standard error, create an analyzable NetworkX's graph and save it
+        self.graphs = {}
         for col in [c for c in self._filtdata if "std" not in c]:
-            setattr(self, f"_{col}_G", self._get_G(self._filtdata[col]))
+            self.graphs[col] = self._get_G(self._filtdata[col])
 
         # # Send the desired analyses
         # self.add_metrics(elements, metrics, normalize, **kwargs)
@@ -368,17 +378,17 @@ class Filtering:
         utils.pool = mypool
         print(utils.pool)       
         
-        elif self._filtdata.size == 0:
+        if self._filtdata.size == 0:
             print(f"{self._pkg._name} {self._name} is not a connected network (or subnetwork)")
-            continue
-        result = Analysis.analyze(self, elements, metrics, normalize, **kwargs)
+        else:
+            Analysis.analyze(self, elements, metrics, normalize, **kwargs)
+            print("filtering", self._pkg._name, self._name)
                 
         # Close the pool
         mypool.close()
         mypool.join()
         mypool = utils.dummypool()
         
-        return result
         
         
         

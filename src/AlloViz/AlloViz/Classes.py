@@ -505,10 +505,10 @@ class Protein:
         """
         # Filter "all" packages (all the available packages that have been previously calculated and are in __dict__)
         # or the ones passed as parameter (check that they are on the list of available packages and retrieve their case-sensitive names, else raise an Exception)
-        pkgs = utils.make_list(pkgs, if_all=utils.pkgsl, apply=utils.pkgname)
+        pkgs = utils.make_list(pkgs, if_all = [key for key in utils.pkgsl if key in self.__dict__], apply = utils.pkgname)
         
-        for pkg in pkgs:
-            pkg = rgetattr(self, pkg)
+        for pkgn in pkgs:
+            pkg = rgetattr(self, pkgn)
             if not pkg:
                 print(f"{pkgn} calculation results are needed first")
                 continue
@@ -583,16 +583,16 @@ class Protein:
         """
         # Analyze "all" packages (all the available packages that have been previously calculated and are in __dict__)
         # or the ones passed as parameter (check that they are on the list of available packages and retrieve their case-sensitive names, else raise an Exception)
-        pkgs = utils.make_list(pkgs, if_all=utils.pkgsl, apply=utils.pkgname)
+        pkgs = utils.make_list(pkgs, if_all = [key for key in utils.pkgsl if key in self.__dict__], apply = utils.pkgname)
         
-        # Depending on the desired cores, use a dummypool (synchronous calculations) or a `multiprocess` Pool
-        # Changing it inside the `utils` module allows to share the same one between modules
-        if cores > 1:
-            mypool = Pool(cores)
-        else:
-            mypool = utils.dummypool()
-        utils.pool = mypool
-        print(utils.pool)       
+        # # Depending on the desired cores, use a dummypool (synchronous calculations) or a `multiprocess` Pool
+        # # Changing it inside the `utils` module allows to share the same one between modules
+        # if cores > 1:
+        #     mypool = Pool(cores)
+        # else:
+        #     mypool = utils.dummypool()
+        # utils.pool = mypool
+        # print(utils.pool)       
         
         for pkg in pkgs:
             # Analyze for "all" filterings or the ones passed as parameter
@@ -605,21 +605,23 @@ class Protein:
             for filtering in filterings:
                 filtered = rgetattr(self, utils.pkgname(pkg), filtering)
                 
-                if not filtered:
-                    print(f"{utils.pkgname(pkg)} {filtering} results are needed first")
-                    continue
-                elif filtered._filtdata.size == 0:
-                    print(f"{utils.pkgname(pkg)} {filtering} is not a connected network (or subnetwork)")
-                    continue
-                result = Analysis.analyze(filtered, elements, metrics, normalize, **kwargs)
-                # filtered.analyze(elements, metrics, normalize, **kwargs)
+                # if not filtered:
+                #     print(f"{utils.pkgname(pkg)} {filtering} results are needed first")
+                #     continue
+                # elif filtered._filtdata.size == 0:
+                #     print(f"{utils.pkgname(pkg)} {filtering} is not a connected network (or subnetwork)")
+                #     continue
+                # # result = 
+                # Analysis.analyze(filtered, elements, metrics, normalize, **kwargs)
+                filtered.analyze(elements, metrics, normalize, cores, **kwargs)
+                print(pkg, filtering)
                 
-        # Close the pool
-        mypool.close()
-        mypool.join()
-        mypool = utils.dummypool()
+        # # Close the pool
+        # mypool.close()
+        # mypool.join()
+        # mypool = utils.dummypool()
             
-        return result if (len(pkgs) == 1 and len(filterings) == 1) else None
+        #return #result if (len(pkgs) == 1 and len(filterings) == 1) else None
     
 
 #     def analyze(
