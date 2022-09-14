@@ -91,7 +91,7 @@ autosummary_mock_imports = [
 	"numba",
 	"pytraj",
 	"cython", "h5py", "python-louvain", "community", "colorama", #dynetan deps
-	"pyprind", "panedr", "natsort", "click"
+	"pyprind", "panedr", "natsort", "click", "PyQt5"
 ]
 
 # autodoc
