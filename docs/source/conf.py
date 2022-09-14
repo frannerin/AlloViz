@@ -90,7 +90,8 @@ autosummary_mock_imports = [
 	"prody", 
 	"numba",
 	"pytraj",
-	"cython"]
+	"cython", "h5py", #dynetan deps
+]
 
 # autodoc
 #autodoc_member_order = "bysource"
