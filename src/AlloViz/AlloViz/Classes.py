@@ -407,10 +407,10 @@ class Protein:
         # Changing it inside the `utils` module allows to share the same one between modules
         if cores > 1:
             mypool = Pool(cores)
-        else:
-            mypool = utils.dummypool()
-        utils.pool = mypool
-        print(utils.pool)
+        # else:
+        #     mypool = utils.dummypool()
+            utils.pool = mypool
+            print(utils.pool)
 
         for pkg in set(pkgs) - set(combined_dihs):
             # Establish the corresponding Wrappers' class
@@ -419,26 +419,28 @@ class Protein:
             # Setting the class as a new attribute will initialize all calculations asynchronously (synchronously if a dummypool is used)
             if not hasattr(self, pkgclass.__name__):
                 setattr(self, pkgclass.__name__, pkgclass(self, d))
-
-        # Close the pool
-        mypool.close()
-        mypool.join()
+        
+        if cores > 1:
+            # Close the pool
+            mypool.close()
+            mypool.join()
         
         combined_in_pkgs = [p in pkgs for p in combined_dihs]
         if len(combined_dihs) > 0:
             # Calculate now the combination of dihedrals, which is just a combination of the already-calculated data
             if cores > 1:
                 mypool = Pool(cores)
-            else:
-                mypool = utils.dummypool()
-            utils.pool = mypool
+            # else:
+            #     mypool = utils.dummypool()
+                utils.pool = mypool
             for pkg in combined_dihs:
                 pkgclass = eval(f"Wrappers.{utils.pkgname(pkg)}")
                 if not hasattr(self, pkgclass.__name__):
                     setattr(self, pkgclass.__name__, pkgclass(self, d))
-            mypool.close()
-            mypool.join()
-            mypool = utils.dummypool()
+            if cores > 1:
+                mypool.close()
+                mypool.join()
+                mypool = utils.dummypool()
         
         return getattr(self, pkgclass.__name__) if len(pkgs) == 1 else None
     
@@ -593,6 +595,10 @@ class Protein:
         #     mypool = utils.dummypool()
         # utils.pool = mypool
         # print(utils.pool)       
+        if cores > 1:
+            mypool = Pool(cores)
+            utils.pool = mypool
+            print(utils.pool)   
         
         for pkg in pkgs:
             # Analyze for "all" filterings or the ones passed as parameter
@@ -613,13 +619,17 @@ class Protein:
                 #     continue
                 # # result = 
                 # Analysis.analyze(filtered, elements, metrics, normalize, **kwargs)
-                filtered.analyze(elements, metrics, normalize, cores, **kwargs)
-                print(pkg, filtering)
+                filtered.analyze(elements, metrics, normalize, cores=1, **kwargs)
                 
         # # Close the pool
         # mypool.close()
         # mypool.join()
         # mypool = utils.dummypool()
+        if cores > 1:
+            # Close the pool
+            mypool.close()
+            mypool.join()
+            mypool = utils.dummypool()
             
         #return #result if (len(pkgs) == 1 and len(filterings) == 1) else None
     

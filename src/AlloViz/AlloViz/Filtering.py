@@ -373,21 +373,22 @@ class Filtering:
         # Changing it inside the `utils` module allows to share the same one between modules
         if cores > 1:
             mypool = Pool(cores)
-        else:
-            mypool = utils.dummypool()
-        utils.pool = mypool
-        print(utils.pool)       
+        # else:
+        #     mypool = utils.dummypool()
+            utils.pool = mypool
+            print(utils.pool)       
         
         if self._filtdata.size == 0:
             print(f"{self._pkg._name} {self._name} is not a connected network (or subnetwork)")
         else:
             Analysis.analyze(self, elements, metrics, normalize, **kwargs)
             print("filtering", self._pkg._name, self._name)
-                
-        # Close the pool
-        mypool.close()
-        mypool.join()
-        mypool = utils.dummypool()
+        
+        if cores > 1:
+            # Close the pool
+            mypool.close()
+            mypool.join()
+            mypool = utils.dummypool()
         
         
         

@@ -89,7 +89,8 @@ autosummary_mock_imports = [
 	"libinteract",
 	"prody", 
 	"numba",
-	"pytraj"]
+	"pytraj",
+	"cython"]
 
 # autodoc
 #autodoc_member_order = "bysource"
