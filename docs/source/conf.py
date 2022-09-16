@@ -43,6 +43,7 @@ extensions = [
     'sphinx.ext.autosectionlabel',
     "nbsphinx",
     "nbsphinx_link",
+    "matplotlib.sphinxext.plot_directive",
     #"autoapi.extension"
 ]
 
@@ -104,6 +105,14 @@ autodoc_default_options = {
 	'show-inheritance': True,
 	#'inherited-members': 'pandas.DataFrame',
 }
+
+# matplotlib plot directive # copied from pandas docs conf.py
+plot_include_source = True
+plot_formats = [("png", 90)]
+plot_html_show_formats = False
+plot_html_show_source_link = False
+plot_pre_code = """import numpy as np
+import pandas as pd"""
 
 # Napoleon settings
 # napoleon_google_docstring = False

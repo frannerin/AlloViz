@@ -21,9 +21,10 @@ from functools import partial
 # from importlib import import_module
 
 # from .Visualization import Edges, Nodes
-from .Elements import Edges, Nodes
-from .utils import rgetattr, rhasattr
+from . import Elements #import Edges, Nodes
 from . import utils
+from .utils import rgetattr, rhasattr
+
 
 
 nodes_dict = {
@@ -388,7 +389,7 @@ def add_data(pqs, elem, data, filtered):
         data = pandas.concat([data, out], axis=1)
 
     # Retrieve the Element's class from the Visualization module and (re-)set it with the data
-    elemclass = eval(elem.capitalize())
+    elemclass = eval(f"Elements.{elem.capitalize()}")
     setattr(filtered, elem, elemclass(data))
     getattr(filtered, elem)._parent = filtered._pkg.protein
     
@@ -444,7 +445,6 @@ def analyze(filtered, elements, metrics, normalize, **kwargs):
         # Else, retrieve the Element's attribute DataFrame to add columns to it
         else:
             data = rgetattr(filtered, elem)
-        print("retrieved existing data")
             
         # Retrieve the element's dictionary and if necessary update it with the one passed in kwargs
         d = eval(f"{elem}_dict").copy()
@@ -456,7 +456,7 @@ def analyze(filtered, elements, metrics, normalize, **kwargs):
         elem_metrics = [
             metric for metric in metrics if (metric in d and metric not in data)
         ]
-        print("established d and metrics to calculate")
+        
         # Define the list of .pq files that we expect are going to be saved (or be retrieved) and a function to check which of them already exist
         pqs = lambda elem: [filtered._datapq(elem, metric) for metric in elem_metrics]
         no_exist = lambda pqs: [not os.path.isfile(pq) for pq in pqs]
@@ -467,7 +467,6 @@ def analyze(filtered, elements, metrics, normalize, **kwargs):
                 for metric in elem_metrics
                 if no_exist(pqs(elem))[pqs(elem).index(filtered._datapq(elem, metric))]
             ):
-                print(metric)
                 utils.get_pool().apply_async(
                     single_analysis,
                     args=(
@@ -479,10 +478,7 @@ def analyze(filtered, elements, metrics, normalize, **kwargs):
                         filtered._datapq(elem, metric),
                     ),
                 )
-        else:
-            print("pqs exist:", pqs(elem), no_exist(pqs(elem)))
-            
-        print("sending wait analyze", utils.get_pool())
+                
         # Wait asynchronously for analysis to end and then add the data
         utils.get_pool().apply_async(
             wait_analyze, args=(pqs(elem),), callback=partial(add_data, elem=elem, data=data, filtered=filtered)

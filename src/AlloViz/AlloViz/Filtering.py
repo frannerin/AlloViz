@@ -162,7 +162,7 @@ def Spatially_distant(pkg, data, **kwargs):
     
     # Define Interresidue_distance if it is in kwargs or with the default value
     Interresidue_distance = (
-        kwargs["Interresidue_distance"]
+        float(kwargs["Interresidue_distance"])
         if "Interresidue_distance" in kwargs
         else 10
     )
@@ -221,7 +221,7 @@ class Filtering:
     Interresidue_distance : int or float
         Optional kwarg that can be passed to specify the minimum number of angstroms
         that the CA atoms of residue pairs should have between each other in the initial
-         PDB/structure (default 10 Å) to be considered spatially distant.
+        PDB/structure (default 10 Å) to be considered spatially distant.
          
     Attributes
     ----------
@@ -382,7 +382,6 @@ class Filtering:
             print(f"{self._pkg._name} {self._name} is not a connected network (or subnetwork)")
         else:
             Analysis.analyze(self, elements, metrics, normalize, **kwargs)
-            print("filtering", self._pkg._name, self._name)
         
         if cores > 1:
             # Close the pool

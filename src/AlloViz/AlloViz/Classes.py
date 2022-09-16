@@ -25,7 +25,7 @@ import numpy as np
 #from .Filtering import Filtering#Whole, Incontact, Intercontact
 # from .Visualization import Edges, Nodes
 from . import Analysis
-from .Elements import Edges, Nodes
+from . import Elements# import Edges, Nodes
 
 
 from .utils import rgetattr, rhasattr
@@ -313,7 +313,7 @@ class Protein:
                         other, pkg, filtering, elem
                     )
                     # And save the result as a new Element object (to exploit its view method)
-                    elemclass = eval(elem.capitalize())
+                    elemclass = eval(f"Elements.{elem.capitalize()}")
                     setattr(
                         rgetattr(delta, pkg, filtering),
                         elem,
@@ -365,7 +365,7 @@ class Protein:
         MDEntropy_method : str, optional, {"knn", "grassberger", "chaowangjost"}
             Optional kwarg to specify the method to calculate the entropy of the
             variables for Mutual Information estimation when using one of the
-            MDEntropy network construction methods (default: "knn").
+            MDEntropy network construction methods (default: "grassberger").
 
         See Also
         --------
@@ -485,7 +485,7 @@ class Protein:
         Interresidue_distance : int or float
             Optional kwarg that can be passed to specify the minimum number of angstroms
             that the CA atoms of residue pairs should have between each other in the initial
-             PDB/structure (default 10 Å) to be considered spatially distant.
+            PDB/structure (default 10 Å) to be considered spatially distant.
 
         See Also
         --------
@@ -868,7 +868,7 @@ class Protein:
         get_element = lambda element: rgetattr(
             self, pkg, filtering.capitalize(), element.lower()
         )
-        if not get_element(elements[0]):
+        if isinstance(get_element(elements[0]), bool):
             raise Exception(
                 f"{elements[0]} analysis with {filtering} filtering needs to be sent first."
             )
@@ -1071,8 +1071,8 @@ class Delta:
         self,
         pkg,
         metric,
-        filterby="Whole",
-        element: list = ["edges"],
+        filtering="Whole",
+        element="edges",
         num=20,
         colors=["orange", "turquoise"],
         nv=None,
@@ -1095,7 +1095,7 @@ class Delta:
             Package/Network construction method for which to show the delta-network.
         metric : str, default: "all"
             Network metric for which to show the delta-network.
-        filterby : str, {"Whole", "Incontact", "Intercontact"}
+        filtering : str, {"Whole", "Incontact", "Intercontact"}
             Filtering scheme for which to show the delta-network.
         element : str or list, {"edges", "nodes"}
             Delta-network element or elements to show on the protein structure
