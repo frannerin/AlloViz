@@ -14,13 +14,13 @@ whole = "Whole residue"
 Dihs = "All backbone dihedrals (Phi, psi and omega)"
 
 # Package/Network construction method-level common information
-dynetani = ("Movement correlation", "dynetan", "Mutual Information (MI)")
-pytraji = ("Movement correlation", "pytraj", "Pearson's")
-correlationplusi = ("Movement correlation", "correlationplus")
-correlationplusdihsi = ("Dihedral correlation", "correlationplus", "Pearson's")
-AlloVizi = ("Dihedral correlation", "AlloViz", "MI")
+dynetani = ("Atoms' movement correlation", "dynetan", "Mutual Information (MI)")
+pytraji = ("Atoms' movement correlation", "pytraj", "Pearson's")
+correlationplusi = ("Atoms' movement correlation", "correlationplus")
+correlationplusdihsi = ("Dihedrals' movement correlation", "correlationplus", "Pearson's")
+AlloVizi = ("Dihedrals' movement correlation", "AlloViz", "MI")
 MDEntropyi = ("MDEntropy", "MI")
-g_correlationi = ("Movement correlation", "g_correlation")
+g_correlationi = ("Atoms' movement correlation", "g_correlation")
 pyinteraphi = ("Contacts", "PyInteraph2", "-")
 
 
@@ -33,7 +33,7 @@ pyinteraphi = ("Contacts", "PyInteraph2", "-")
 #: the AlloViz accession name of the wrapper), the correlaton metric they use if
 #: applicable, and the atom/angle whose information it uses.
 wrappers = {
-    "MDTASK": ("Movement correlation", "MD-TASK", "Pearson's", alpha),
+    "MDTASK": ("Atoms' movement correlation", "MD-TASK", "Pearson's", alpha),
 
     "pytraj_CA": pytraji + (alpha,),
     "pytraj_CB": pytraji + (beta,),
@@ -75,8 +75,8 @@ wrappers = {
     "AlloViz_Dihs_Avg": AlloVizi + ("All dihedrals (average)",),
     "AlloViz_Dihs_Max": AlloVizi + ("All dihedrals (max. value)",),
     
-    "MDEntropy_Dihs": ("Dihedral correlation",) + MDEntropyi + (Dihs,),
-    "MDEntropy_AlphaAngle": ("Dihedral correlation",) + MDEntropyi + ("Alpha angle",),
+    "MDEntropy_Dihs": ("Dihedrals' movement correlation",) + MDEntropyi + (Dihs,),
+    "MDEntropy_AlphaAngle": ("Dihedrals' movement correlation",) + MDEntropyi + ("Alpha angle",),
     "MDEntropy_Contacts": ("Contacts",) + MDEntropyi + ("Contact frequency",),
     
     "GetContacts": ("Contacts", "GetContacts", "-", "Contact frequency"),
