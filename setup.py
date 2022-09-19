@@ -1,5 +1,4 @@
 import os, sys, numpy
-from distutils.sysconfig import get_python_lib
 from setuptools import setup, Extension
 
 
@@ -29,8 +28,7 @@ if not on_rtd:
 
 
 
-
-
+  from distutils.sysconfig import get_python_lib
   mdtrajdir = get_python_lib() + "/mdtraj/core/lib"
   mdtraj_capi = {'include_dir': mdtrajdir, 'lib_dir': mdtrajdir}
 
@@ -48,7 +46,54 @@ if not on_rtd:
 
 
 
-  ext_modules = [libinteract, libdistance]
+  # import platform
+  # import distutils.ccompiler
+
+  # # this code checks for OS. If OS is OSx then it checks for GCC as default compiler
+  # #if GCC is the default compiler adds -fopenmp to linker and compiler args.
+  # if 'darwin' in platform.system().lower():
+  # 	if 'gcc' in  distutils.ccompiler.get_default_compiler():
+  # 		use_openmp = True
+  # 	else:
+  # 		use_openmp = False
+  # else:
+  # 	use_openmp = True
+
+  # extra_compile_args = ['-Wno-unreachable-code']
+  # extra_link_args = []
+
+  # if use_openmp:
+  # 	extra_compile_args += ['-fopenmp']
+  # 	extra_link_args = ['-fopenmp']
+
+
+
+
+
+  ensara_extensions = [
+    Extension(
+        "enspara.info_theory.libinfo",
+        ["src/Packages/enspara/enspara/info_theory/libinfo.pyx"],
+        #extra_compile_args=extra_compile_args,
+        #extra_link_args=extra_link_args,
+        include_dirs=[numpy.get_include()],
+    ), Extension(
+        "enspara.geometry.libdist",
+        ["src/Packages/enspara/enspara/geometry/libdist.pyx"],
+        #extra_compile_args=extra_compile_args,
+        #extra_link_args=extra_link_args,
+        include_dirs=[numpy.get_include()],
+    ), Extension(
+        "enspara.msm.libmsm",
+        ["src/Packages/enspara/enspara/msm/libmsm.pyx"],
+        #extra_compile_args=extra_compile_args,
+        #extra_link_args=extra_link_args,
+        include_dirs=[numpy.get_include()],
+    )]
+
+
+  #from Cython.Build import cythonize
+  ext_modules = [libinteract, libdistance] + ensara_extensions #cythonize()
 
 
 
