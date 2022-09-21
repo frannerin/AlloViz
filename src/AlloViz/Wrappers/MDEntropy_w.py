@@ -22,11 +22,13 @@ for key, val in imports.items():
     
 
 
-class MDEntropy(Multicore):
+class MDEntropy_Base(Multicore):
     """MDEntropy base class
     """
     def __new__(cls, protein, d):
         new = super().__new__(cls, protein, d)
+        
+        new.method = d["MDEntropy_method"] if "MDEntropy_method" in d else "grassberger"
         
         # # Opción si las necesidades de memoria incrementan con taskcpus
         # extra_taskcpus = int((self.taskcpus/4 - 1) * 4) if self.taskcpus>=4 else 0
@@ -50,7 +52,7 @@ class MDEntropy(Multicore):
     def _computation(self, xtc):#pdb, traj, xtc, pq, taskcpus):
         """"""
         mytraj = _mdtraj.load(self._trajs[xtc], top=self._pdbf) # hopefully mdtraj is loaded from the Classes module
-        mi = self._function(threads=self.taskcpus, **self._types) # n_bins=3, method='knn', normed=True
+        mi = self._function(threads=self.taskcpus, normed=True, method=self.method, **self._types) # n_bins=3, method='knn', normed=True
         corr = mi.partial_transform(traj=mytraj, shuffle=0, verbose=True)
         return corr, xtc, self._resl
     
@@ -58,7 +60,7 @@ class MDEntropy(Multicore):
     
 
     
-class MDEntropy_Contacts(MDEntropy):
+class MDEntropy_Contacts(MDEntropy_Base):
     """MDEntropy's MI of Contacts
     """
     def __new__(cls, protein, d):
@@ -73,7 +75,7 @@ class MDEntropy_Contacts(MDEntropy):
         
         
         
-class MDEntropy_Dihs(MDEntropy):
+class MDEntropy_Dihs(MDEntropy_Base):
     """MDEntropy's MI of the backbone's dihedrals
     """
     def __new__(cls, protein, d):
@@ -88,7 +90,7 @@ class MDEntropy_Dihs(MDEntropy):
     
     
 
-class MDEntropy_AlphaAngle(MDEntropy):
+class MDEntropy_AlphaAngle(MDEntropy_Base):
     """MDEntropy's MI of the Alpha Angles
     """
     def __new__(cls, protein, d):

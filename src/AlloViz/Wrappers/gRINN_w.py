@@ -70,14 +70,10 @@ class gRINN(Multicore):
             return
         
         corrclass = eval("gRINN_corr")
-        add_corr = lambda _: setattr(self.protein, gRINN_corr, corrclass(self.protein, self._d))
+        add_corr = lambda _: setattr(self.protein, "gRINN_corr", corrclass(self.protein, self._d))
         get_pool().apply_async(wait_calculate,
                                args=(pqs,),
                                callback=add_corr)
-        
-        
-
-
         
         
     def _computation(self, xtc):
@@ -114,6 +110,19 @@ class gRINN_corr(gRINN):
         #     new._auto_send = False
         
         return new
+    
+    def _computation(self, xtc):#pdb, out, xtc, pq, taskcpus):
+        out = f"{self._path}/{xtc}"
+        logFile = f"{out}/grinncorr.log"
+        os.makedirs(out, exist_ok=True)
+        open(logFile, 'w').close()
+        outf = f"{out}/energies_resCorr.dat"
+        
+        if not os.path.isfile(outf):
+            _grinn_corr.getResIntCorr(_grinn_args.arg_parser(f"-corr --pdb {self._pdbf} --corrinfile {out.replace('GRINN_corr', 'GRINN')}/energies_intEnTotal.csv --corrprefix {out}/energies --numcores {self.taskcpus}".split()), logFile=logFile)
+            
+        corr = np.loadtxt(outf) 
+        return corr, xtc
     
     
 #     def _calculate(self, xtc):
@@ -173,15 +182,3 @@ class gRINN_corr(gRINN):
         
     
         
-    def _computation(self, xtc):#pdb, out, xtc, pq, taskcpus):
-        out = f"{self._path}/{xtc}"
-        logFile = f"{out}/grinncorr.log"
-        os.makedirs(out, exist_ok=True)
-        open(logFile, 'w').close()
-        outf = f"{out}/energies_resCorr.dat"
-        
-        if not os.path.isfile(outf):
-            _grinn_corr.getResIntCorr(_grinn_args.arg_parser(f"-corr --pdb {self._pdbf} --corrinfile {out.replace('GRINN_corr', 'GRINN')}/energies_intEnTotal.csv --corrprefix {out}/energies --numcores {self.taskcpus}".split()), logFile=logFile)
-            
-        corr = np.loadtxt(outf) 
-        return corr, xtc

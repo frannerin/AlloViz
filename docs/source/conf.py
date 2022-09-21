@@ -43,6 +43,7 @@ extensions = [
     'sphinx.ext.autosectionlabel',
     "nbsphinx",
     "nbsphinx_link",
+    "matplotlib.sphinxext.plot_directive",
     #"autoapi.extension"
 ]
 
@@ -80,7 +81,19 @@ autosectionlabel_prefix_document = True
 numpydoc_attributes_as_param_list = True # this doesn't seem to be used
 #autosummary_imported_members = True
 templates_path = ["_templates"]
-autosummary_mock_imports = ["vmd-python"]
+autosummary_mock_imports = [
+	"nglview", 
+	"vmd-python", "getcontacts",
+	"sklearn", 
+	"AlloViz.Packages.mdentropy.mdentropy.version",
+	"mdtraj",
+	"libinteract",
+	"prody", 
+	"numba",
+	"pytraj",
+	"cython", "h5py", "python-louvain", "community", "colorama", #dynetan deps
+	"pyprind", "panedr", "natsort", "click", "PyQt5"
+]
 
 # autodoc
 #autodoc_member_order = "bysource"
@@ -92,6 +105,14 @@ autodoc_default_options = {
 	'show-inheritance': True,
 	#'inherited-members': 'pandas.DataFrame',
 }
+
+# matplotlib plot directive # copied from pandas docs conf.py
+plot_include_source = True
+plot_formats = [("png", 90)]
+plot_html_show_formats = False
+plot_html_show_source_link = False
+plot_pre_code = """import numpy as np
+import pandas as pd"""
 
 # Napoleon settings
 # napoleon_google_docstring = False

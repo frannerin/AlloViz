@@ -25,7 +25,7 @@ import numpy as np
 #from .Filtering import Filtering#Whole, Incontact, Intercontact
 # from .Visualization import Edges, Nodes
 from . import Analysis
-from .Elements import Edges, Nodes
+from . import Elements# import Edges, Nodes
 
 
 from .utils import rgetattr, rhasattr
@@ -292,33 +292,34 @@ class Protein:
             setattr(delta, pkg, _Store())
 
             # For each filtering scheme (taken from self's __dict__ with a valid name) for which results have been analyze in "self" and that are also in "other"
-            for filterby in (
+            for filtering in (
                 key
                 for key in getattr(self, pkg).__dict__
-                if key.lower() in utils.filteringsl
+                if any([f in key for f in utils.filteringsl])
                 and key in getattr(other, pkg).__dict__
-            ):
+            ):                
                 # Also set an attribute with the filtering name
-                setattr(getattr(delta, pkg), filterby, _Store())
+                setattr(getattr(delta, pkg), filtering, _Store())
 
                 # And finally for each Element (taken from self's __dict__ with a valid name) that is also in "other"
                 for elem in (
                     key
-                    for key in rgetattr(self, pkg, filterby).__dict__
+                    for key in rgetattr(self, pkg, filtering).__dict__
                     if key.lower() in ["nodes", "edges"]
-                    and key in rgetattr(other, pkg, filterby).__dict__
+                    and key in rgetattr(other, pkg, filtering).__dict__
                 ):
                     # Calculate the Elements' difference exploiting their custom subtraction special method definition
-                    dif = rgetattr(self, pkg, filterby, elem) - rgetattr(
-                        other, pkg, filterby, elem
+                    dif = rgetattr(self, pkg, filtering, elem) - rgetattr(
+                        other, pkg, filtering, elem
                     )
                     # And save the result as a new Element object (to exploit its view method)
-                    elemclass = eval(elem.capitalize())
+                    elemclass = eval(f"Elements.{elem.capitalize()}")
                     setattr(
-                        rgetattr(delta, pkg, filterby),
+                        rgetattr(delta, pkg, filtering),
                         elem,
-                        elemclass(self._delta, dif),
+                        elemclass(dif),
                     )
+                    rgetattr(delta, pkg, filtering, elem)._parent = self._delta
 
         return delta.__dict__
 
@@ -345,6 +346,10 @@ class Protein:
             Optional kwarg to specify the amount of cores that parallelizable network
             construction methods can use (i.e., AlloViz's method, getcontacts, dynetan,
             PyInteraph, MDEntropy and gRINN).
+        stride : int, optional
+            Optional kwarg to specify the striding to be done on the trajectory(ies) for
+            computationally-expensive network construction methods: i.e., dynetan and
+            AlloViz's own method. Default is no striding.
         namd : str, optional
             Optional kwarg pointing to the namd2 executable location; if the `namd`
             command is accessible through the CLI it is automatically retrieved with the
@@ -353,6 +358,14 @@ class Protein:
             Optional kwarg to specify the minimum contact frequency (0-1, default 0)
             threshold for GetContacts results, which will be used to filter out contacts
             with a frequency (average) lower than it.
+        chis : int, optional
+            Optional kwarg to specify the number of side-chain chi dihedral angles (up to
+            5) to combine when sending the calculation of a child of the Combined_Dihs
+            Wrappers' base class that includes chi dihedrals in its calculation.
+        MDEntropy_method : str, optional, {"knn", "grassberger", "chaowangjost"}
+            Optional kwarg to specify the method to calculate the entropy of the
+            variables for Mutual Information estimation when using one of the
+            MDEntropy network construction methods (default: "grassberger").
 
         See Also
         --------
@@ -384,6 +397,7 @@ class Protein:
         """
         # Calculate for "all" packages or the ones passed as parameter (check that they are on the list of available packages and retrieve their case-sensitive names, else raise an Exception)
         pkgs = utils.make_list(pkgs, if_all=utils.pkgsl, apply=utils.pkgname)
+        combined_dihs = [pkg for pkg in pkgs if "Dihs" in pkg]
 
         # Objects from the classes in the Wrappers module need to be passed a dictionary "d" containing all the attributes of the source Protein object and the passed kwargs
         d = self.__dict__.copy()
@@ -393,23 +407,40 @@ class Protein:
         # Changing it inside the `utils` module allows to share the same one between modules
         if cores > 1:
             mypool = Pool(cores)
-        else:
-            mypool = utils.dummypool()
-        utils.pool = mypool
-        print(utils.pool)
+        # else:
+        #     mypool = utils.dummypool()
+            utils.pool = mypool
+            print(utils.pool)
 
-        for pkg in pkgs:
+        for pkg in set(pkgs) - set(combined_dihs):
             # Establish the corresponding Wrappers' class
             pkgclass = eval(f"Wrappers.{utils.pkgname(pkg)}")
 
             # Setting the class as a new attribute will initialize all calculations asynchronously (synchronously if a dummypool is used)
             if not hasattr(self, pkgclass.__name__):
                 setattr(self, pkgclass.__name__, pkgclass(self, d))
-
-        # Close the pool
-        mypool.close()
-        mypool.join()
-        mypool = utils.dummypool()
+        
+        if cores > 1:
+            # Close the pool
+            mypool.close()
+            mypool.join()
+        
+        combined_in_pkgs = [p in pkgs for p in combined_dihs]
+        if len(combined_dihs) > 0:
+            # Calculate now the combination of dihedrals, which is just a combination of the already-calculated data
+            if cores > 1:
+                mypool = Pool(cores)
+            # else:
+            #     mypool = utils.dummypool()
+                utils.pool = mypool
+            for pkg in combined_dihs:
+                pkgclass = eval(f"Wrappers.{utils.pkgname(pkg)}")
+                if not hasattr(self, pkgclass.__name__):
+                    setattr(self, pkgclass.__name__, pkgclass(self, d))
+            if cores > 1:
+                mypool.close()
+                mypool.join()
+                mypool = utils.dummypool()
         
         return getattr(self, pkgclass.__name__) if len(pkgs) == 1 else None
     
@@ -451,6 +482,10 @@ class Protein:
             Optional kwarg that can be passed to specify the minimum number of sequence
             positions/distance between residues of a pair to retain in
             `No_Sequence_Neighbors` filtering, which defaults to 5.
+        Interresidue_distance : int or float
+            Optional kwarg that can be passed to specify the minimum number of angstroms
+            that the CA atoms of residue pairs should have between each other in the initial
+            PDB/structure (default 10 Å) to be considered spatially distant.
 
         See Also
         --------
@@ -472,10 +507,10 @@ class Protein:
         """
         # Filter "all" packages (all the available packages that have been previously calculated and are in __dict__)
         # or the ones passed as parameter (check that they are on the list of available packages and retrieve their case-sensitive names, else raise an Exception)
-        pkgs = utils.make_list(pkgs, if_all=utils.pkgsl, apply=utils.pkgname)
+        pkgs = utils.make_list(pkgs, if_all = [key for key in utils.pkgsl if key in self.__dict__], apply = utils.pkgname)
         
-        for pkg in pkgs:
-            pkg = rgetattr(self, pkg)
+        for pkgn in pkgs:
+            pkg = rgetattr(self, pkgn)
             if not pkg:
                 print(f"{pkgn} calculation results are needed first")
                 continue
@@ -550,16 +585,20 @@ class Protein:
         """
         # Analyze "all" packages (all the available packages that have been previously calculated and are in __dict__)
         # or the ones passed as parameter (check that they are on the list of available packages and retrieve their case-sensitive names, else raise an Exception)
-        pkgs = utils.make_list(pkgs, if_all=utils.pkgsl, apply=utils.pkgname)
+        pkgs = utils.make_list(pkgs, if_all = [key for key in utils.pkgsl if key in self.__dict__], apply = utils.pkgname)
         
-        # Depending on the desired cores, use a dummypool (synchronous calculations) or a `multiprocess` Pool
-        # Changing it inside the `utils` module allows to share the same one between modules
+        # # Depending on the desired cores, use a dummypool (synchronous calculations) or a `multiprocess` Pool
+        # # Changing it inside the `utils` module allows to share the same one between modules
+        # if cores > 1:
+        #     mypool = Pool(cores)
+        # else:
+        #     mypool = utils.dummypool()
+        # utils.pool = mypool
+        # print(utils.pool)       
         if cores > 1:
             mypool = Pool(cores)
-        else:
-            mypool = utils.dummypool()
-        utils.pool = mypool
-        print(utils.pool)       
+            utils.pool = mypool
+            print(utils.pool)   
         
         for pkg in pkgs:
             # Analyze for "all" filterings or the ones passed as parameter
@@ -571,18 +610,28 @@ class Protein:
             
             for filtering in filterings:
                 filtered = rgetattr(self, utils.pkgname(pkg), filtering)
-                if not filtered:
-                    print(f"{utils.pkgname(pkg)} {filtering} results are needed first")
-                    continue
-                result = Analysis.analyze(filtered, elements, metrics, normalize, **kwargs)
-                # filtered.analyze(elements, metrics, normalize, **kwargs)
                 
-        # Close the pool
-        mypool.close()
-        mypool.join()
-        mypool = utils.dummypool()
+                # if not filtered:
+                #     print(f"{utils.pkgname(pkg)} {filtering} results are needed first")
+                #     continue
+                # elif filtered._filtdata.size == 0:
+                #     print(f"{utils.pkgname(pkg)} {filtering} is not a connected network (or subnetwork)")
+                #     continue
+                # # result = 
+                # Analysis.analyze(filtered, elements, metrics, normalize, **kwargs)
+                filtered.analyze(elements, metrics, normalize, cores=1, **kwargs)
+                
+        # # Close the pool
+        # mypool.close()
+        # mypool.join()
+        # mypool = utils.dummypool()
+        if cores > 1:
+            # Close the pool
+            mypool.close()
+            mypool.join()
+            mypool = utils.dummypool()
             
-        return result if (len(pkgs) == 1 and len(filterings) == 1) else None
+        #return #result if (len(pkgs) == 1 and len(filterings) == 1) else None
     
 
 #     def analyze(
@@ -819,7 +868,7 @@ class Protein:
         get_element = lambda element: rgetattr(
             self, pkg, filtering.capitalize(), element.lower()
         )
-        if not get_element(elements[0]):
+        if isinstance(get_element(elements[0]), bool):
             raise Exception(
                 f"{elements[0]} analysis with {filtering} filtering needs to be sent first."
             )
@@ -1022,8 +1071,8 @@ class Delta:
         self,
         pkg,
         metric,
-        filterby="Whole",
-        element: list = ["edges"],
+        filtering="Whole",
+        element="edges",
         num=20,
         colors=["orange", "turquoise"],
         nv=None,
@@ -1046,7 +1095,7 @@ class Delta:
             Package/Network construction method for which to show the delta-network.
         metric : str, default: "all"
             Network metric for which to show the delta-network.
-        filterby : str, {"Whole", "Incontact", "Intercontact"}
+        filtering : str, {"Whole", "Incontact", "Intercontact"}
             Filtering scheme for which to show the delta-network.
         element : str or list, {"edges", "nodes"}
             Delta-network element or elements to show on the protein structure

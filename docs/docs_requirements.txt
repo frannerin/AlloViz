@@ -6,7 +6,6 @@ numpy
 lazyasd
 networkx
 ParmEd
-nglview
 
 ipython
 ipywidgets
@@ -15,4 +14,4 @@ nbsphinx
 nbsphinx-link
 
 numpydoc
-pydata-sphinx-theme
+pydata-sphinx-theme<0.10

@@ -45,7 +45,7 @@ metricsl = ["cfb", "btw"]
 #: List of the available network filterings that can be performed for analysis
 #:
 #: To be used when the filterby="all" parameter is used in a function
-filteringsl = ["All", "GetContacts_edges", "No_Sequence_Neighbors", "GPCR_Interhelix"]
+filteringsl = ["All", "GetContacts_edges", "No_Sequence_Neighbors", "GPCR_Interhelix", "Spatially_distant"]
 
 
 def make_list(obj, if_all, apply=lambda x: x):

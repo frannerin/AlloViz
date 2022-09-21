@@ -6,7 +6,7 @@ CA atoms and COMs, and also the Pearson's correlation of the residues' backbone 
 
 """
 
-from .Base import lazy_import, Base, Use_COM, Combined_Dihs
+from .Base import lazy_import, Base, Use_COM, Combined_Dihs_Avg, Combined_Dihs_Max
 
 imports = {
 "_corrplus": ".Packages.correlationplus.correlationplus.calculate",
@@ -87,10 +87,21 @@ class correlationplus_Omega(correlationplus_Psi):
 
         
         
-class correlationplus_Dihs(Combined_Dihs, correlationplus_CA_Pear):
-    """correlationplus' combination of the backbone dihedrals' Pearson's correlations
+class correlationplus_Backbone_Dihs_Avg(Combined_Dihs_Avg, correlationplus_CA_Pear):
+    """correlationplus' combination of the backbone dihedrals' Pearson's correlations by
+    averaging
     """
-    _Phi = correlationplus_Phi
-    _Psi = correlationplus_Psi
-    _Omega = correlationplus_Omega
-    pass
+    def __new__(cls, protein, d):
+        new = super().__new__(cls, protein, d)
+        new._dihs = ["Phi", "Psi", "Omega"]
+        return new
+    
+    
+class correlationplus_Backbone_Dihs_Max(Combined_Dihs_Max, correlationplus_CA_Pear):
+    """correlationplus' combination of the backbone dihedrals' Pearson's correlations by
+    taking the max value
+    """
+    def __new__(cls, protein, d):
+        new = super().__new__(cls, protein, d)
+        new._dihs = ["Phi", "Psi", "Omega"]
+        return new

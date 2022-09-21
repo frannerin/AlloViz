@@ -51,17 +51,14 @@ def GetContacts_edges(pkg, data, **kwargs):
     """
     # Get GetContacts raw data if its calculation is available, else raise an Exception
     try:
-        # If GetContacts_threshold kwarg is passed, use it to filter the present data without affecting the saved GetContacts' Protein attribute
-        if "GetContacts_threshold" in kwargs:
-            gc = pkg.protein.GetContacts._filter_raw(
-                data, kwargs["GetContacts_threshold"]
-            )
-        else:
-            gc = pkg.protein.GetContacts.raw
-        
+        gc = pkg.protein.GetContacts.raw
     except:
         raise Exception("GetContacts results are needed first")
-
+    
+    # If GetContacts_threshold kwarg is passed, use it to filter the present data without affecting the saved GetContacts' Protein attribute
+    if "GetContacts_threshold" in kwargs:
+        gc = gc[gc["weight"] >= kwargs["GetContacts_threshold"]]
+        
     # Return the data filtered retaining only the indices that are in GetContacts data
     return data.filter(gc.index, axis=0)
 
@@ -137,6 +134,45 @@ def GPCR_Interhelix(pkg, data, **kwargs):
     return data.filter(indices, axis=0)
 
 
+def Spatially_distant(pkg, data, **kwargs):
+    """Retain only edges between spatially distant residue pairs
+    
+    It only retains edges between residue pairs whose CA atoms are minimum a certain
+    number of angstroms away from each other in the initial PDB/structure (default 10 Å).
+    The relationship found between these residues can be considered purely allosteric, as
+    they are spatially distant and have no direct communication but can be found to be
+    interacting/correlated...
+    """
+    from MDAnalysis.analysis import distances
+    
+    # https://userguide.mdanalysis.org/1.1.1/examples/analysis/distances_and_contacts/distances_within_selection.html
+    # Create a triangular matrix with all inter-residue distances
+    CAs = pkg.protein.protein.select_atoms("name CA")
+    n_ca = len(CAs)
+    self_distances = distances.self_distance_array(CAs.positions)
+    sq_dist_arr = np.zeros((n_ca, n_ca))
+    triu = np.triu_indices_from(sq_dist_arr, k=1)
+    sq_dist_arr[triu] = self_distances
+    
+    # Transform the matrix into a pandas DataFrame
+    resnames = [f"{aa.resname}:{aa.resid}" for aa in pkg.protein.protein.residues]
+    df = pandas.DataFrame(sq_dist_arr, columns=resnames, index=resnames)
+    df = df.where( np.triu(np.ones(df.shape), k=1).astype(bool) )
+    df = pandas.DataFrame({"dist": df.stack()})
+    
+    # Define Interresidue_distance if it is in kwargs or with the default value
+    Interresidue_distance = (
+        float(kwargs["Interresidue_distance"])
+        if "Interresidue_distance" in kwargs
+        else 10
+    )
+    
+    indices = df[df["dist"] >= Interresidue_distance].index
+    # Return the filtered data
+    return data.filter(indices, axis=0)
+
+
+
 class Filtering:
     r"""Class for network filtering
 
@@ -164,7 +200,8 @@ class Filtering:
         :func:`~AlloViz.AlloViz.Filtering.All`,
         :func:`~AlloViz.AlloViz.Filtering.GetContacts_edges`,
         :func:`~AlloViz.AlloViz.Filtering.No_Sequence_Neighbors`,
-        :func:`~AlloViz.AlloViz.Filtering.GPCR_Interhelix`.
+        :func:`~AlloViz.AlloViz.Filtering.GPCR_Interhelix`,
+        :func:`~AlloViz.AlloViz.Filtering.Spatially_distant`.
     name : str
         Name of the filtering scheme. It will be the same name as the passed filtering
         option if it is a single string, or the names of the filtering options joined by
@@ -178,9 +215,17 @@ class Filtering:
         frequency (0-1, default 0) threshold, which will be used to filter out
         contacts with a frequency (average) lower than it before analysis.
     Intercontact_distance : int
-        Optional kwarg that can be passed to
-        specify the minimum number of sequence positions/distance between residues of
-        a pair to retain in Intercontact filtering, which defaults to 5.
+        Optional kwarg that can be passed to specify the minimum number of sequence
+        positions/distance between residues of a pair to retain in Intercontact
+        filtering, which defaults to 5.
+    Interresidue_distance : int or float
+        Optional kwarg that can be passed to specify the minimum number of angstroms
+        that the CA atoms of residue pairs should have between each other in the initial
+        PDB/structure (default 10 Å) to be considered spatially distant.
+         
+    Attributes
+    ----------
+    graphs : dict of external:ref:`Graph <graph>` objects
 
     See Also
     --------
@@ -212,9 +257,14 @@ class Filtering:
             data = filtfunc(self._pkg, data, **kwargs)
         self._filtdata = data
 
-        # For each column in the filtered data that is not a standard error, create an analyzable NetworkX's graph and save it as an attribute
+        # # For each column in the filtered data that is not a standard error, create an analyzable NetworkX's graph and save it as an attribute
+        # for col in [c for c in self._filtdata if "std" not in c]:
+        #     setattr(self, f"_{col}_G", self._get_G(self._filtdata[col]))
+        
+        # For each column in the filtered data that is not a standard error, create an analyzable NetworkX's graph and save it
+        self.graphs = {}
         for col in [c for c in self._filtdata if "std" not in c]:
-            setattr(self, f"_{col}_G", self._get_G(self._filtdata[col]))
+            self.graphs[col] = self._get_G(self._filtdata[col])
 
         # # Send the desired analyses
         # self.add_metrics(elements, metrics, normalize, **kwargs)
@@ -241,24 +291,34 @@ class Filtering:
         weights = (
             column[column != 0].dropna().abs().rename("weight").reset_index()
         )  # btw calculations fail with 0 value weights and cfb prob with negative
-        # Create the NetworkX's Graph
+        # Create the NetworkX's Graph and a list of its components
         network = networkx.from_pandas_edgelist(weights, "level_0", "level_1", "weight")
-
-        # Check that the largest connected component has the same size as the total number of nodes, else select the largest component to return as the Graph to be analyzed
-        largest_component = max(networkx.connected_components(network), key=len)
-
-        if len(largest_component) < network.number_of_nodes():
+        components = list(networkx.connected_components(network))
+        
+        if len(components) == 0:
             print(
-                f"WARNING! Unconnected network ({network.number_of_nodes()} nodes):",
+                f"WARNING! No connected components in network ({network.number_of_nodes()} nodes):",
                 self._pkg._name,
                 self._name,
                 column.name,
-                "\n",
-                f"Largest network component will be used for analysis. Sizes (number of nodes) of all components: {[len(comp) for comp in networkx.connected_components(network)]}",
             )
-            network = network.subgraph(largest_component)
+            return
+        else:
+            # Check that the largest connected component has the same size as the total number of nodes, else select the largest component to return as the Graph to be analyzed
+            largest_component = max(components, key=len)
 
-        return network
+            if len(largest_component) < network.number_of_nodes():
+                print(
+                    f"WARNING! Unconnected network ({network.number_of_nodes()} nodes):",
+                    self._pkg._name,
+                    self._name,
+                    column.name,
+                    "\n",
+                    f"Largest network component will be used for analysis. Sizes (number of nodes) of all components: {[len(comp) for comp in components]}",
+                )
+                network = network.subgraph(largest_component)
+
+            return network
     
     def analyze(self, elements="edges", metrics="all", normalize=True, cores=1, **kwargs):
         r"""Analyze the filtered network
@@ -313,19 +373,22 @@ class Filtering:
         # Changing it inside the `utils` module allows to share the same one between modules
         if cores > 1:
             mypool = Pool(cores)
+        # else:
+        #     mypool = utils.dummypool()
+            utils.pool = mypool
+            print(utils.pool)       
+        
+        if self._filtdata.size == 0:
+            print(f"{self._pkg._name} {self._name} is not a connected network (or subnetwork)")
         else:
+            Analysis.analyze(self, elements, metrics, normalize, **kwargs)
+        
+        if cores > 1:
+            # Close the pool
+            mypool.close()
+            mypool.join()
             mypool = utils.dummypool()
-        utils.pool = mypool
-        print(utils.pool)       
         
-        result = Analysis.analyze(self, elements, metrics, normalize, **kwargs)
-                
-        # Close the pool
-        mypool.close()
-        mypool.join()
-        mypool = utils.dummypool()
-        
-        return result
         
         
         
