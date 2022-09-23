@@ -93,7 +93,7 @@ autosummary_mock_imports = [
 	"pytraj",
 	"cython", "h5py", "python-louvain", "community", "colorama", #dynetan deps
 	"pyprind", "panedr", "natsort", "click", "PyQt5",
-	"enspara.info_theory.libinfo", "enspara.geometry.libdist", "enspara.msm.libmsm",
+	"enspara.info_theory.libinfo", "enspara.geometry.libdist", "enspara.msm.libmsm", "tables",
 ]
 
 # autodoc
