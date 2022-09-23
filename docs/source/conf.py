@@ -159,7 +159,8 @@ html_theme_options = {
 }
 
 html_sidebars = {
-  "example": []
+  "tutorial": [],
+  "table": [],
 }
 
 
@@ -169,28 +170,41 @@ from AlloViz.AlloViz import info
 
 df = info.df
 
-header = "Available information sources for network generation\n----------------------------------------------------\n\n.. raw:: html\n\n"
+# header = "Network construction methods\n============================\n\n.. raw:: html\n\n"
+firstlines = """
+Network construction methods
+============================
 
-tabulated_table = ""
-for line in df.to_html(header=False).replace(' valign="top"', '').split("\n"):
-	tabulated_table += f"\t{line}\n"
+.. raw:: html
+
+"""
+
+with open("table.rst", "w") as f:
+	f.write(firstlines)
+
+	for line in df.to_html(header=False).replace(' valign="top"', '').split("\n"):
+		f.write(f"\t{line}\n")
+
+# tabulated_table = ""
+# for line in df.to_html(header=False).replace(' valign="top"', '').split("\n"):
+# 	tabulated_table += f"\t{line}\n"
 
 
-import fileinput, sys
+# import fileinput, sys
 
-replace_line = False
-for line in fileinput.input("../../README.rst", inplace=True):
-	if line.startswith('Cite'):
-		replace_line = False
+# replace_line = False
+# for line in fileinput.input("../../README.rst", inplace=True):
+# 	if line.startswith('Cite'):
+# 		replace_line = False
 
-	if replace_line:
-		continue
+# 	if replace_line:
+# 		continue
 
-	if line.startswith('Available information sources for network generation'):
-		line = header + tabulated_table + "\n|\n\n"
-		replace_line = True
+# 	if line.startswith('Available information sources for network generation'):
+# 		line = header + tabulated_table + "\n|\n\n"
+# 		replace_line = True
 
-	sys.stdout.write(line)
+# 	sys.stdout.write(line)
 
 
 sys.path.pop(0)

@@ -81,8 +81,26 @@ class MDEntropy_Dihs(MDEntropy_Base):
     def __new__(cls, protein, d):
         new = super().__new__(cls, protein, d)        
         new._function = _mdentropy.DihedralMutualInformation
-        new._types = {"types": ["phi", "psi", "omega"]}
+        new._types = {"types": ["phi", "psi"]}#, "omega"]}
         new._resl = new._d["_dihedral_residx"]()
+        return new
+    
+    
+class MDEntropy_Phi(MDEntropy_Dihs):
+    """MDEntropy's MI of the phi backbone dihedral
+    """
+    def __new__(cls, protein, d):
+        new = super().__new__(cls, protein, d)        
+        new._types = {"types": ["phi"]}
+        return new
+    
+    
+class MDEntropy_Psi(MDEntropy_Dihs):
+    """MDEntropy's MI of the psi backbone dihedral
+    """
+    def __new__(cls, protein, d):
+        new = super().__new__(cls, protein, d)        
+        new._types = {"types": ["psi"]}
         return new
     
     

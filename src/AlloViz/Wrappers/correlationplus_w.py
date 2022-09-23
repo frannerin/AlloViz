@@ -93,7 +93,7 @@ class correlationplus_Backbone_Dihs_Avg(Combined_Dihs_Avg, correlationplus_CA_Pe
     """
     def __new__(cls, protein, d):
         new = super().__new__(cls, protein, d)
-        new._dihs = ["Phi", "Psi", "Omega"]
+        new._dihs = ["Phi", "Psi"]#, "Omega"]
         return new
     
     
@@ -103,5 +103,5 @@ class correlationplus_Backbone_Dihs_Max(Combined_Dihs_Max, correlationplus_CA_Pe
     """
     def __new__(cls, protein, d):
         new = super().__new__(cls, protein, d)
-        new._dihs = ["Phi", "Psi", "Omega"]
+        new._dihs = ["Phi", "Psi"]#, "Omega"]
         return new
