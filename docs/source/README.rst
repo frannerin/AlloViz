@@ -1,18 +1,3 @@
-.. 
-   <!-- [![PyPI - Python Version](https://img.shields.io/pypi/pyversions/correlationplus)](https://pypi.org/project/correlationplus/)
-   [![PyPI](https://img.shields.io/pypi/v/correlationplus)](https://pypi.org/project/correlationplus/)
-   [![install with bioconda](https://img.shields.io/badge/install%20with-bioconda-brightgreen.svg?style=flat)](http://bioconda.github.io/recipes/correlationplus/README.html)
-   [![Open Source License: GPL v3](https://img.shields.io/badge/License-LGPLv3-blue.svg)](https://opensource.org/licenses/LGPL-3.0)
-   [![Doc](https://readthedocs.org/projects/correlationplus/badge/?version=latest)](http://correlationplus.readthedocs.org/en/latest/#)
-   [![Docker Image Version (tag latest semver)](https://img.shields.io/docker/v/structuraldynamicslab/correlationplus/latest)](https://hub.docker.com/repository/docker/structuraldynamicslab/correlationplus)
-   ![Conda](https://img.shields.io/conda/pn/bioconda/correlationplus)
-   [![SWH](https://archive.softwareheritage.org/badge/origin/https://github.com/tekpinar/correlationplus/)](https://archive.softwareheritage.org/browse/origin/?origin_url=https://github.com/tekpinar/correlationplus) -->
-
-..
-	.. role::  raw-html(raw)
-	    :format: html
-	:raw-html:`&#128301;`
-
 AlloViz
 =======
 
@@ -41,9 +26,6 @@ that provide different ways of calculating residue interactions:
 `MDEntropy <https://github.com/msmbuilder/mdentropy>`__ and 
 `CARDS <https://github.com/sukritsingh/cardsReader>`__.
 
-..
-   <!-- [g_correlation](https://www.mpinat.mpg.de/grubmueller/g_correlation), [GSAtools](https://github.com/AllosterIt/GSAtools) -->
-
 For the same topology and molecular dynamics (MD) trajectory, the
 network can be constructed based on residue contacts,
 correlation of atom movement or dihedrals, or interaction energies,
@@ -51,7 +33,7 @@ depending on the package selected. Moreover, for example for movement
 correlation, the movement tracked can be that of the whole residue, its
 center of mass, its alpha-C or its beta-C; and it can be calculated as
 the Pearson’s correlation coefficient, Mutual Information (MI) or Linear
-MI (LMI). See all the calculation :doc:`options <./table>`.
+MI (LMI). See all the :ref:`options <Network construction methods>`.
 
 The resulting network can be analyzed with edge centrality metrics
 algorithms provided by the Python package
@@ -84,10 +66,12 @@ preferably with ``pip install .``.
 Tutorial
 ----------
 
-Check the :doc:`tutorial <./tutorial>`.
+Check the :ref:`tutorial <Tutorial:tutorial>`.
 
 Cite
 -------
 
 License
 ---------
+
+

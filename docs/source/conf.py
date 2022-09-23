@@ -92,7 +92,8 @@ autosummary_mock_imports = [
 	"numba",
 	"pytraj",
 	"cython", "h5py", "python-louvain", "community", "colorama", #dynetan deps
-	"pyprind", "panedr", "natsort", "click", "PyQt5"
+	"pyprind", "panedr", "natsort", "click", "PyQt5",
+	"enspara.info_theory.libinfo", "enspara.geometry.libdist", "enspara.msm.libmsm",
 ]
 
 # autodoc
@@ -212,22 +213,14 @@ sys.path.pop(0)
 
 
 
+with open("../../README.rst", 'r') as f:
+  lines = f.readlines()
 
+# lines[-3:] = [
+# 	".. _options: table.html\n",
+# 	".. _tutorial: tutorial.html\n",
+# 	".. _documentation: index.html\n",
+# ]
 
-
-"""
-protein : :class:`~MDAnalysis.core.universe.Universe`
-        Universe of the processed pdb with only the selected `protein_sel` atoms.
-    u : :class:`~MDAnalysis.core.universe.Universe`
-        Universe of the processed pdb and trajectory files with only the `protein_sel`
-        atoms.
-"""
-
-
-
-"""
-: str
-        Class attribute used to select only protein atoms from the input files with
-        :external:ref:`MDAnalysis selection syntax <selection-commands-label>`. It
-        defaults to "(same segid as protein) and (not segid LIG) and (not chainid L)".
-"""
+with open('README.rst', 'w') as f:
+  f.writelines(lines[:-2])
