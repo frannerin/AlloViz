@@ -40,7 +40,7 @@
            </sizepolicy>
           </property>
           <property name="title">
-           <string>Input</string>
+           <string>Included atoms</string>
           </property>
           <layout class="QVBoxLayout" name="verticalLayout_8">
            <item>
@@ -75,21 +75,24 @@
            <bool>true</bool>
           </property>
           <property name="title">
-           <string>Method</string>
+           <string>Network construction method</string>
           </property>
           <layout class="QVBoxLayout" name="verticalLayout_4">
            <item>
-            <widget class="QRadioButton" name="radioButton_7">
-             <property name="text">
-              <string>RadioButton</string>
+            <widget class="QTreeWidget" name="treeWidget">
+             <property name="columnCount">
+              <number>2</number>
              </property>
-            </widget>
-           </item>
-           <item>
-            <widget class="QRadioButton" name="radioButton_8">
-             <property name="text">
-              <string>RadioButton</string>
-             </property>
+             <column>
+              <property name="text">
+               <string notr="true">1</string>
+              </property>
+             </column>
+             <column>
+              <property name="text">
+               <string notr="true">2</string>
+              </property>
+             </column>
             </widget>
            </item>
            <item>
@@ -107,25 +110,79 @@
           <property name="title">
            <string>Filter</string>
           </property>
-          <layout class="QVBoxLayout" name="verticalLayout_5">
-           <item>
-            <widget class="QRadioButton" name="radioButton_9">
+          <layout class="QGridLayout" name="gridLayout_2" columnstretch="200,100,0">
+           <item row="3" column="0">
+            <widget class="QCheckBox" name="checkBox_3">
              <property name="text">
-              <string>RadioButton</string>
+              <string>Minumum spatial distance</string>
              </property>
             </widget>
            </item>
-           <item>
-            <widget class="QRadioButton" name="radioButton_10">
+           <item row="1" column="0">
+            <widget class="QCheckBox" name="checkBox">
              <property name="text">
-              <string>RadioButton</string>
+              <string>Minimum GetContacts frequency</string>
              </property>
             </widget>
            </item>
-           <item>
+           <item row="2" column="1">
+            <widget class="QLineEdit" name="lineEdit_3"/>
+           </item>
+           <item row="2" column="0">
+            <widget class="QCheckBox" name="checkBox_2">
+             <property name="text">
+              <string>Minimum sequence distance</string>
+             </property>
+            </widget>
+           </item>
+           <item row="1" column="1">
+            <widget class="QLineEdit" name="lineEdit"/>
+           </item>
+           <item row="0" column="1">
+            <widget class="QLabel" name="label">
+             <property name="text">
+              <string>Threshold</string>
+             </property>
+             <property name="alignment">
+              <set>Qt::AlignCenter</set>
+             </property>
+            </widget>
+           </item>
+           <item row="3" column="1">
+            <widget class="QLineEdit" name="lineEdit_4"/>
+           </item>
+           <item row="1" column="2">
+            <widget class="QLabel" name="label_3">
+             <property name="text">
+              <string>[0-1]</string>
+             </property>
+            </widget>
+           </item>
+           <item row="2" column="2">
+            <widget class="QLabel" name="label_4">
+             <property name="text">
+              <string>AAs</string>
+             </property>
+            </widget>
+           </item>
+           <item row="3" column="2">
+            <widget class="QLabel" name="label_5">
+             <property name="text">
+              <string>Å</string>
+             </property>
+            </widget>
+           </item>
+           <item row="5" column="0" colspan="3">
             <widget class="QPushButton" name="pushButton_5">
              <property name="text">
-              <string>PushButton</string>
+              <string>Filter</string>
+             </property>
+            </widget>
+           </item>
+           <item row="4" column="0" colspan="3">
+            <widget class="QCheckBox" name="checkBox_4">
+             <property name="text">
+              <string>Interhelix contacts only (GPCRs)</string>
              </property>
             </widget>
            </item>
