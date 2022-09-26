@@ -411,6 +411,9 @@ class Protein:
         #     mypool = utils.dummypool()
             utils.pool = mypool
             print(utils.pool)
+            
+        if any(["CARDS" in pkg for pkg in pkgs]):
+            Wrappers.CARDS_w.CARDS(self, d)
 
         for pkg in set(pkgs) - set(combined_dihs):
             # Establish the corresponding Wrappers' class
@@ -425,7 +428,6 @@ class Protein:
             mypool.close()
             mypool.join()
         
-        combined_in_pkgs = [p in pkgs for p in combined_dihs]
         if len(combined_dihs) > 0:
             # Calculate now the combination of dihedrals, which is just a combination of the already-calculated data
             if cores > 1:

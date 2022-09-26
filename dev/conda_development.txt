@@ -78,6 +78,10 @@ gxx_linux-64 # necessary for msmbuilder
 
 
 
+mpi4py # for enspara
+
+
+
 
 #correlationplus=0.2.1=pyh5e36f6f_0 #bioconda
 #dynetan=1.1.4=pypi_0

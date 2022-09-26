@@ -382,7 +382,7 @@ class Combined_Dihs(Base):
     
     def _calculate(self, xtc):
         # Child classes' names are: correlationplus_Backbone_Dihs_Avg, AlloViz_Sidechain_Dihs_Max, etc... 
-        pkg = self._name.split("_")[0]
+        pkg = self._name.rsplit("_", 3)[0] if ("Sidechain" in self._name or "Backbone" in self._name) else self._name.rsplit("_", 2)[0]
         
         # If any of the dihedral calculations don't exist, raise error
         attrs_exist = {f"{pkg}_{Dih}": rhasattr(self, "protein", f"{pkg}_{Dih}") for Dih in self._dihs}

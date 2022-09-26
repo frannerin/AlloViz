@@ -34,3 +34,7 @@
 	shallow = True
 	path = src/Packages/NPEET_LNC
 	url = https://github.com/ViktorvdValk/NPEET_LNC
+[submodule "src/Packages/enspara"]
+	shallow = True
+	path = src/Packages/enspara
+	url = https://github.com/bowman-lab/enspara
