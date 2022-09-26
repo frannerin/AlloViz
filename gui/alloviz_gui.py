@@ -1,9 +1,16 @@
 import sys
+import os
+from tkinter.tix import COLUMN
 from PyQt5.QtWidgets import *
+import pandas as pd
+
+# os.environ["DYLD_LIBRARY_PATH"]="/opt/homebrew/opt/sqlite/lib/"
 
 sys.path.append("gui")
 # pyuic5 alloviz_main.ui >alloviz_main_ui.py
 from alloviz_main_ui import Ui_MainWindow
+
+import AlloViz
 
 from PyQt5.uic import loadUi
 
@@ -12,16 +19,41 @@ from PyQt5.uic import loadUi
 #from qtpy.uic import loadUi
 
 
-class AlloVizWindow(QMainWindow, Ui_MainWindow):
+class AlloVizWindow(QMainWindow):
     def __init__(self, parent=None):
         super().__init__(parent)
-        self.setupUi(self)
+        self.ui = Ui_MainWindow()
+        self.ui.setupUi(self)
+        self.fillMethodsTree()
         self.connectSignalsSlots()
 
     def connectSignalsSlots(self):
-        self.actionQuit.triggered.connect(self.close)
-        self.actionAbout.triggered.connect(self.about)
+        self.ui.actionQuit.triggered.connect(self.close)
+        self.ui.actionAbout.triggered.connect(self.about)
 
+    def fillMethodsTree(self):
+        wlist=AlloViz.AlloViz.info.wrappers
+        df = pd.DataFrame(wlist.values())
+        df[4]=wlist.keys()
+        df.columns = ["Quantity", "Software", "Metric", "Object", "Code"]
+
+        tree = self.findChild(QTreeWidget,"methodTree")
+        tree.setColumnCount(5)
+        tree.setHeaderLabels(["Quantity", "Metric", "Software", "Object", "Code"])
+
+        items = []
+        for qty in df.Quantity.unique():
+            qty_item = QTreeWidgetItem([qty])
+            items.append(qty_item)
+            dfs = df.loc[df.Quantity == qty]            
+            for metr in dfs.Metric.unique():
+                metr_item = QTreeWidgetItem(["", metr])
+                qty_item.addChild(metr_item)
+                dfsm = dfs.loc[df.Metric==metr]
+                for i,poc in dfsm.iterrows():
+                    poc_item = QTreeWidgetItem(["", "", poc.Package, poc.Object, poc.Code])
+                    metr_item.addChild(poc_item)
+        tree.insertTopLevelItems(0, items)
 
     def about(self):
         QMessageBox.about(
