@@ -11,7 +11,7 @@
    </rect>
   </property>
   <property name="windowTitle">
-   <string>MainWindow</string>
+   <string>AlloViz GUI</string>
   </property>
   <property name="locale">
    <locale language="English" country="UnitedStates"/>
@@ -57,7 +57,7 @@
             </widget>
            </item>
            <item>
-            <widget class="QLineEdit" name="lineEdit_2">
+            <widget class="QLineEdit" name="atomselEdit">
              <property name="sizePolicy">
               <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
                <horstretch>0</horstretch>
@@ -79,7 +79,7 @@
           </property>
           <layout class="QVBoxLayout" name="verticalLayout_4">
            <item>
-            <widget class="QTreeWidget" name="treeWidget">
+            <widget class="QTreeWidget" name="methodTree">
              <property name="columnCount">
               <number>2</number>
              </property>
@@ -96,7 +96,7 @@
             </widget>
            </item>
            <item>
-            <widget class="QPushButton" name="pushButton_4">
+            <widget class="QPushButton" name="calculateButton">
              <property name="text">
               <string>Calculate</string>
              </property>
@@ -112,31 +112,31 @@
           </property>
           <layout class="QGridLayout" name="gridLayout_2" columnstretch="200,100,0">
            <item row="3" column="0">
-            <widget class="QCheckBox" name="checkBox_3">
+            <widget class="QCheckBox" name="distanceCheck">
              <property name="text">
               <string>Minumum spatial distance</string>
              </property>
             </widget>
            </item>
            <item row="1" column="0">
-            <widget class="QCheckBox" name="checkBox">
+            <widget class="QCheckBox" name="getcontactsCheck">
              <property name="text">
               <string>Minimum GetContacts frequency</string>
              </property>
             </widget>
            </item>
            <item row="2" column="1">
-            <widget class="QLineEdit" name="lineEdit_3"/>
+            <widget class="QLineEdit" name="sequenceEdit"/>
            </item>
            <item row="2" column="0">
-            <widget class="QCheckBox" name="checkBox_2">
+            <widget class="QCheckBox" name="sequenceCheck">
              <property name="text">
               <string>Minimum sequence distance</string>
              </property>
             </widget>
            </item>
            <item row="1" column="1">
-            <widget class="QLineEdit" name="lineEdit"/>
+            <widget class="QLineEdit" name="getcontactsEdit"/>
            </item>
            <item row="0" column="1">
             <widget class="QLabel" name="label">
@@ -149,7 +149,7 @@
             </widget>
            </item>
            <item row="3" column="1">
-            <widget class="QLineEdit" name="lineEdit_4"/>
+            <widget class="QLineEdit" name="distanceEdit"/>
            </item>
            <item row="1" column="2">
             <widget class="QLabel" name="label_3">
@@ -173,14 +173,14 @@
             </widget>
            </item>
            <item row="5" column="0" colspan="3">
-            <widget class="QPushButton" name="pushButton_5">
+            <widget class="QPushButton" name="filterButton">
              <property name="text">
-              <string>Apply</string>
+              <string>Apply Filter</string>
              </property>
             </widget>
            </item>
            <item row="4" column="0" colspan="3">
-            <widget class="QCheckBox" name="checkBox_4">
+            <widget class="QCheckBox" name="interhelixCheck">
              <property name="text">
               <string>Interhelix contacts only (GPCRs)</string>
              </property>
@@ -237,7 +237,7 @@
      <widget class="QWidget" name="widget_2" native="true">
       <layout class="QVBoxLayout" name="verticalLayout_9">
        <item>
-        <widget class="QListView" name="listView">
+        <widget class="QListView" name="historyList">
          <property name="sizePolicy">
           <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
            <horstretch>1</horstretch>
