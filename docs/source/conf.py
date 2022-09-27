@@ -214,7 +214,7 @@ sys.path.pop(0)
 
 
 with open("../../README.rst", 'r') as f:
-  lines = f.readlines()
+  lines = f.read()
 
 # lines[-3:] = [
 # 	".. _options: table.html\n",
@@ -222,5 +222,13 @@ with open("../../README.rst", 'r') as f:
 # 	".. _documentation: index.html\n",
 # ]
 
+
+
 with open('README.rst', 'w') as f:
-  f.writelines(lines[:-2])
+  f.write(lines.replace(
+  		"https://alloviz.readthedocs.io/en/latest/table.html",
+  		"table:Network construction methods"
+  	).replace(
+  		"https://alloviz.readthedocs.io/en/latest/tutorial.html",
+  		"tutorial:Tutorial"
+  	))

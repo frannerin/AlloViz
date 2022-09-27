@@ -14,7 +14,7 @@ whole = "Whole residue"
 Dihs = "All backbone dihedrals (Phi and psi)"
 
 # Package/Network construction method-level common information
-dynetani = ("Atoms' movement correlation", "dynetan", "Mutual Information (MI)")
+dynetani = ("Atoms' movement correlation", "dynetan", "MI")
 pytraji = ("Atoms' movement correlation", "pytraj", "Pearson's")
 correlationplusi = ("Atoms' movement correlation", "correlationplus")
 correlationplusdihsi = ("Dihedrals' movement correlation", "correlationplus", "Pearson's")
@@ -49,8 +49,8 @@ wrappers = {
     
     "correlationplus_CA_Pear": correlationplusi + ("Pearson's", alpha),
     "correlationplus_COM_Pear": correlationplusi + ("Pearson's", COM),
-    "correlationplus_CA_LMI": correlationplusi + ("Linear MI (LMI)", alpha),
-    "correlationplus_COM_LMI": correlationplusi + ("Linear MI (LMI)", COM),
+    "correlationplus_CA_LMI": correlationplusi + ("LMI", alpha),
+    "correlationplus_COM_LMI": correlationplusi + ("LMI", COM),
 
     "correlationplus_Phi": correlationplusdihsi + ("Phi",),
     "correlationplus_Psi": correlationplusdihsi + ("Psi",),
