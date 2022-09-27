@@ -35,24 +35,26 @@ class AlloVizWindow(QMainWindow):
         wlist=AlloViz.AlloViz.info.wrappers
         df = pd.DataFrame(wlist.values())
         df[4]=wlist.keys()
-        df.columns = ["Quantity", "Software", "Metric", "Object", "Code"]
+        df.columns = ["Quantity", "Software", "Metric", "Object", "Keyword"]
+
+        #df.set_index(["Metric","Quantity","Object"])
 
         tree = self.findChild(QTreeWidget,"methodTree")
         tree.setColumnCount(5)
-        tree.setHeaderLabels(["Quantity", "Metric", "Software", "Object", "Code"])
+        tree.setHeaderLabels(["Quantity", "Metric", "Software", "Object", "Keyword"])
 
         items = []
-        for qty in df.Quantity.unique():
-            qty_item = QTreeWidgetItem([qty])
-            items.append(qty_item)
-            dfs = df.loc[df.Quantity == qty]            
-            for metr in dfs.Metric.unique():
-                metr_item = QTreeWidgetItem(["", metr])
-                qty_item.addChild(metr_item)
-                dfsm = dfs.loc[df.Metric==metr]
-                for i,poc in dfsm.iterrows():
-                    poc_item = QTreeWidgetItem(["", "", poc.Package, poc.Object, poc.Code])
-                    metr_item.addChild(poc_item)
+        for lev1 in df.Quantity.unique():
+            lev1_item = QTreeWidgetItem([lev1])
+            items.append(lev1_item)
+            df1 = df.loc[df.Quantity == lev1]            
+            for lev2 in df1.Metric.unique():
+                lev2_item = QTreeWidgetItem(["", lev2])
+                lev1_item.addChild(lev2_item)
+                df2 = df1.loc[df.Metric==lev2]
+                for i,leaf in df2.iterrows():
+                    leaf_item = QTreeWidgetItem(["", "", leaf.Software, leaf.Object, leaf.Keyword])
+                    lev2_item.addChild(leaf_item)
         tree.insertTopLevelItems(0, items)
 
     def about(self):
