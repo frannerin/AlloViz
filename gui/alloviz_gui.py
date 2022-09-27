@@ -1,6 +1,5 @@
 import sys
 import os
-from tkinter.tix import COLUMN
 from PyQt5.QtWidgets import *
 import pandas as pd
 
@@ -38,22 +37,27 @@ class AlloVizWindow(QMainWindow):
         df.columns = ["Quantity", "Software", "Metric", "Object", "Keyword"]
 
         #df.set_index(["Metric","Quantity","Object"])
+        # Rearrange the columns according to the desired nesting
+        df = df[["Metric", "Quantity", "Object", "Software", "Keyword"]]
 
         tree = self.findChild(QTreeWidget,"methodTree")
-        tree.setColumnCount(5)
-        tree.setHeaderLabels(["Quantity", "Metric", "Software", "Object", "Keyword"])
+        tree.setColumnCount(len(df.columns))
+        tree.setHeaderLabels(df.columns)
 
         items = []
-        for lev1 in df.Quantity.unique():
+        for lev1 in df.iloc[:,0].unique():
             lev1_item = QTreeWidgetItem([lev1])
             items.append(lev1_item)
-            df1 = df.loc[df.Quantity == lev1]            
-            for lev2 in df1.Metric.unique():
+            df1 = df.loc[df.iloc[:,0] == lev1]            
+            for lev2 in df1.iloc[:,1].unique():
                 lev2_item = QTreeWidgetItem(["", lev2])
                 lev1_item.addChild(lev2_item)
-                df2 = df1.loc[df.Metric==lev2]
+                df2 = df1.loc[df.iloc[:,1]==lev2]
                 for i,leaf in df2.iterrows():
-                    leaf_item = QTreeWidgetItem(["", "", leaf.Software, leaf.Object, leaf.Keyword])
+                    leaf_list = list(leaf)
+                    leaf_list[0] = ""
+                    leaf_list[1] = ""
+                    leaf_item = QTreeWidgetItem(leaf_list)
                     lev2_item.addChild(leaf_item)
         tree.insertTopLevelItems(0, items)
 
