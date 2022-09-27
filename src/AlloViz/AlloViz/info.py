@@ -21,7 +21,7 @@ correlationplusdihsi = ("Dihedrals' movement correlation", "correlationplus", "P
 AlloVizi = ("Dihedrals' movement correlation", "AlloViz", "MI")
 MDEntropyi = ("MDEntropy", "MI")
 g_correlationi = ("Atoms' movement correlation", "g_correlation")
-pyinteraphi = ("Contacts", "PyInteraph2", "-")
+pyinteraphi = ("Contacts", "PyInteraph2", "None")
 CARDSi = ("Dihedrals' movement correlation", "CARDS")
 
 
@@ -135,16 +135,16 @@ wrappers = {
     "MDEntropy_AlphaAngle": ("Dihedrals' movement correlation",) + MDEntropyi + ("Alpha angle",),
     #"MDEntropy_Contacts": ("Contacts",) + MDEntropyi + ("Contact frequency",),
     
-    "GetContacts": ("Contacts", "GetContacts", "-", "Contact frequency"),
+    "GetContacts": ("Contacts", "GetContacts", "None", "Contact frequency"),
     
     "PyInteraph2_Atomic_Contacts_Occurrence": pyinteraphi + ("Contact frequency",),
     "PyInteraph2_Atomic_Contacts_Strength": pyinteraphi + ("Contact strength",),
     "PyInteraph2_COM_Contacts": pyinteraphi + ("Residue COM contacts",),
-    "PyInteraph2_COM_Contacts_Corrected": ("Contacts", "PyInteraph2 (with Rg correction)", "-", "Residue COM contacts"),
+    "PyInteraph2_COM_Contacts_Corrected": ("Contacts", "PyInteraph2 (with Rg correction)", "None", "Residue COM contacts"),
 
-    "PyInteraph2_Energy": ("Interaction energy", "PyInteraph2", "-", whole),
+    "PyInteraph2_Energy": ("Interaction energy", "PyInteraph2", "None", whole),
     
-    "gRINN": ("Interaction energy", "gRINN", "-", whole),
+    "gRINN": ("Interaction energy", "gRINN", "None", whole),
     "gRINN_corr": ("Interaction energy", "gRINN", "Pearson's", whole),
 }
 
