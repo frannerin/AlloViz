@@ -33,7 +33,7 @@ depending on the package selected. Moreover, for example for movement
 correlation, the movement tracked can be that of the whole residue, its
 center of mass, its alpha-C or its beta-C; and it can be calculated as
 the Pearson’s correlation coefficient, Mutual Information (MI) or Linear
-MI (LMI). See all the :ref:`options <Network construction methods>`.
+MI (LMI). See all the :ref:`options <table:Network construction methods>`.
 
 The resulting network can be analyzed with edge centrality metrics
 algorithms provided by the Python package
@@ -63,10 +63,10 @@ preferably with ``pip install .``.
 
    If environment creation with `conda_explicit.txt` fails, the non-explicit requirements/dependencies file `conda_minimal.txt` can be used, providing the conda channel `conda-forge` (`-c conda-forge`).
 
-Tutorial
-----------
+Tutorial notebook
+-----------------
 
-Check the :ref:`tutorial <Tutorial:tutorial>`.
+Check the :ref:`tutorial <tutorial:Tutorial>`.
 
 Cite
 -------
