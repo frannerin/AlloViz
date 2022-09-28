@@ -60,6 +60,12 @@ class AlloVizWindow(QMainWindow):
                     leaf_item = QTreeWidgetItem(leaf_list)
                     lev2_item.addChild(leaf_item)
         tree.insertTopLevelItems(0, items)
+        
+        #tree.setColumnWidth(0,200)
+        tree.resizeColumnToContents(0)
+
+        #for i in range(len(df.columns)):
+        #    tree.resizeColumnToContents(i)
 
     def about(self):
         QMessageBox.about(
