@@ -40,7 +40,7 @@
            </sizepolicy>
           </property>
           <property name="title">
-           <string>Included atoms</string>
+           <string>1. Select atoms to include</string>
           </property>
           <layout class="QVBoxLayout" name="verticalLayout_8">
            <item>
@@ -75,7 +75,7 @@
            <bool>true</bool>
           </property>
           <property name="title">
-           <string>Network construction method</string>
+           <string>2. Network construction</string>
           </property>
           <layout class="QVBoxLayout" name="verticalLayout_4">
            <item>
@@ -108,7 +108,7 @@
         <item>
          <widget class="QGroupBox" name="groupBox_2">
           <property name="title">
-           <string>Filter</string>
+           <string>3. Filter</string>
           </property>
           <layout class="QGridLayout" name="gridLayout_2" columnstretch="200,100,0">
            <item row="3" column="0">
@@ -126,7 +126,11 @@
             </widget>
            </item>
            <item row="2" column="1">
-            <widget class="QLineEdit" name="sequenceEdit"/>
+            <widget class="QLineEdit" name="sequenceEdit">
+             <property name="alignment">
+              <set>Qt::AlignCenter</set>
+             </property>
+            </widget>
            </item>
            <item row="2" column="0">
             <widget class="QCheckBox" name="sequenceCheck">
@@ -136,7 +140,11 @@
             </widget>
            </item>
            <item row="1" column="1">
-            <widget class="QLineEdit" name="getcontactsEdit"/>
+            <widget class="QLineEdit" name="getcontactsEdit">
+             <property name="alignment">
+              <set>Qt::AlignCenter</set>
+             </property>
+            </widget>
            </item>
            <item row="0" column="1">
             <widget class="QLabel" name="label">
@@ -149,7 +157,11 @@
             </widget>
            </item>
            <item row="3" column="1">
-            <widget class="QLineEdit" name="distanceEdit"/>
+            <widget class="QLineEdit" name="distanceEdit">
+             <property name="alignment">
+              <set>Qt::AlignCenter</set>
+             </property>
+            </widget>
            </item>
            <item row="1" column="2">
             <widget class="QLabel" name="label_3">
@@ -182,14 +194,14 @@
            <item row="4" column="0" colspan="3">
             <widget class="QCheckBox" name="interhelixCheck">
              <property name="text">
-              <string>Interhelix contacts only (GPCRs)</string>
+              <string>Interhelix contacts (GPCRs only)</string>
              </property>
             </widget>
            </item>
            <item row="0" column="0">
             <widget class="QLabel" name="label_6">
              <property name="text">
-              <string>Filtering criterion</string>
+              <string>Filtering criteria</string>
              </property>
              <property name="alignment">
               <set>Qt::AlignCenter</set>
@@ -202,7 +214,7 @@
         <item>
          <widget class="QGroupBox" name="groupBox_3">
           <property name="title">
-           <string>Analysis</string>
+           <string>4. Analysis</string>
           </property>
           <layout class="QVBoxLayout" name="verticalLayout_6">
            <item>
@@ -236,6 +248,22 @@
     <item row="0" column="0">
      <widget class="QWidget" name="widget_2" native="true">
       <layout class="QVBoxLayout" name="verticalLayout_9">
+       <item>
+        <widget class="QLabel" name="label_7">
+         <property name="sizePolicy">
+          <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
+           <horstretch>0</horstretch>
+           <verstretch>0</verstretch>
+          </sizepolicy>
+         </property>
+         <property name="text">
+          <string>History</string>
+         </property>
+         <property name="alignment">
+          <set>Qt::AlignCenter</set>
+         </property>
+        </widget>
+       </item>
        <item>
         <widget class="QListView" name="historyList">
          <property name="sizePolicy">

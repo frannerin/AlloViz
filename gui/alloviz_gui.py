@@ -42,6 +42,7 @@ class AlloVizWindow(QMainWindow):
         tree.setColumnCount(len(df.columns))
         tree.setHeaderLabels(df.columns)
 
+        # Nest grouping the first 2 levels by unique value.
         items = []
         ditto = "〃"
         for lev1 in df.iloc[:,0].unique():
@@ -70,10 +71,7 @@ class AlloVizWindow(QMainWindow):
         QMessageBox.about(
             self,
             "About Sample Editor",
-            "<p>A sample text editor app built with:</p>"
-            "<p>- PyQt</p>"
-            "<p>- Qt Designer</p>"
-            "<p>- Python</p>",
+            "<p>FIXME</p>"
         )
 
 if __name__ == "__main__":
