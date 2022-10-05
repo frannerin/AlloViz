@@ -4,8 +4,8 @@ from PyQt5.QtWidgets import *
 import pandas as pd
 
 sys.path.append("gui")
-# pyuic5 alloviz_main.ui >alloviz_main_ui.py
-from alloviz_main_ui import Ui_MainWindow
+# pyuic5 alloviz_mainwindow.ui >alloviz_mainwindow_ui.py
+from alloviz_mainwindow_ui import Ui_MainWindow
 
 import AlloViz
 
