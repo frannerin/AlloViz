@@ -150,7 +150,7 @@ class Protein:
             # Download the files from GPCRmd
             if not any(
                 [
-                    re.search("(pdb$|psf$|xtc$|parameters$)", file)
+                    re.search("(pdb$|psf$|xtc$|dcd$|parameters$)", file)
                     for file in os.listdir(self._path)
                 ]
             ):
@@ -168,7 +168,7 @@ class Protein:
                 sorted(
                     f"{self._path}/{traj}"
                     for traj in files
-                    if re.search("^(?!\.).*\.xtc$", traj)
+                    if re.search("^(?!\.).*\.(xtc|dcd)$", traj)
                 )
             )
             self.psf = get_filename("psf")
@@ -398,6 +398,20 @@ class Protein:
         # Calculate for "all" packages or the ones passed as parameter (check that they are on the list of available packages and retrieve their case-sensitive names, else raise an Exception)
         pkgs = utils.make_list(pkgs, if_all=utils.pkgsl, apply=utils.pkgname)
         combined_dihs = [pkg for pkg in pkgs if "Dihs" in pkg]
+        
+        # Add the calculations of the individual dihedrals if a combined_dihedral has been passed
+        bb = ["Phi", "Psi"]
+        sc = [f"Chi{i+1}" for i in range(4)]
+        if len(combined_dihs) > 0:
+            for comb in combined_dihs:
+                pkg = comb.split("_")[0]
+                if pkg == "CARDS":
+                    if "Sidechain" in comb or "Backbone" in comb:
+                        pkg = comb.rsplit("_", 3)[0]
+                    else:
+                        pkg = comb.rsplit("_", 2)[0]
+                dihs = bb if "Backbone" in comb else sc if "Sidechain" in comb else bb+sc
+            pkgs += [f"{pkg}_{dih}" for dih in dihs]
 
         # Objects from the classes in the Wrappers module need to be passed a dictionary "d" containing all the attributes of the source Protein object and the passed kwargs
         d = self.__dict__.copy()
@@ -430,21 +444,14 @@ class Protein:
         
         if len(combined_dihs) > 0:
             # Calculate now the combination of dihedrals, which is just a combination of the already-calculated data
-            if cores > 1:
-                mypool = Pool(cores)
-            # else:
-            #     mypool = utils.dummypool()
-                utils.pool = mypool
             for pkg in combined_dihs:
                 pkgclass = eval(f"Wrappers.{utils.pkgname(pkg)}")
                 if not hasattr(self, pkgclass.__name__):
                     setattr(self, pkgclass.__name__, pkgclass(self, d))
-            if cores > 1:
-                mypool.close()
-                mypool.join()
-                mypool = utils.dummypool()
         
         return getattr(self, pkgclass.__name__) if len(pkgs) == 1 else None
+    
+    
     
     def filter(self, pkgs="all", filterings="all", **kwargs):
         r"""Filter network edges

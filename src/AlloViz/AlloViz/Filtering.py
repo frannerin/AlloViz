@@ -173,6 +173,9 @@ def Spatially_distant(pkg, data, **kwargs):
 
 
 
+class NoNetworkException(Exception): pass
+
+
 class Filtering:
     r"""Class for network filtering
 
@@ -264,7 +267,11 @@ class Filtering:
         # For each column in the filtered data that is not a standard error, create an analyzable NetworkX's graph and save it
         self.graphs = {}
         for col in [c for c in self._filtdata if "std" not in c]:
-            self.graphs[col] = self._get_G(self._filtdata[col])
+            try:
+                self.graphs[col] = self._get_G(self._filtdata[col])
+            except NoNetworkException as e:
+                print(e)
+                
 
         # # Send the desired analyses
         # self.add_metrics(elements, metrics, normalize, **kwargs)
@@ -296,13 +303,14 @@ class Filtering:
         components = list(networkx.connected_components(network))
         
         if len(components) == 0:
-            print(
-                f"WARNING! No connected components in network ({network.number_of_nodes()} nodes):",
-                self._pkg._name,
-                self._name,
-                column.name,
+            raise NoNetworkException(
+                " ".join((
+                    f"EXCEPTION! No connected components in network ({network.number_of_nodes()} nodes):",
+                    self._pkg._name,
+                    self._name,
+                    column.name,
+                ))
             )
-            return
         else:
             # Check that the largest connected component has the same size as the total number of nodes, else select the largest component to return as the Graph to be analyzed
             largest_component = max(components, key=len)
