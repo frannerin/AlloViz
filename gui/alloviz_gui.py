@@ -36,7 +36,7 @@ class AlloVizWindow(QMainWindow):
 
         #df.set_index(["Metric","Quantity","Object"])
         # Rearrange the columns according to the desired nesting
-        df = df[["Correlation metric", "Quantity", "Object", "Software", "Keyword"]]
+        df = df[["Quantity",  "Object",  "Correlation metric", "Software", "Keyword"]]
 
         tree = self.findChild(QTreeWidget,"methodTree")
         tree.setColumnCount(len(df.columns))

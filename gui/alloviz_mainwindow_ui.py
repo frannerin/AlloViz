@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-# Form implementation generated from reading ui file 'gui/alloviz_mainwindow.ui'
+# Form implementation generated from reading ui file 'alloviz_mainwindow.ui'
 #
 # Created by: PyQt5 UI code generator 5.15.7
 #
@@ -128,6 +128,7 @@ class Ui_MainWindow(object):
         self.gridLayout = QtWidgets.QGridLayout(self.groupBox_3)
         self.gridLayout.setObjectName("gridLayout")
         self.radioButton_11 = QtWidgets.QRadioButton(self.groupBox_3)
+        self.radioButton_11.setChecked(True)
         self.radioButton_11.setObjectName("radioButton_11")
         self.gridLayout.addWidget(self.radioButton_11, 0, 0, 1, 1)
         self.radioButton_12 = QtWidgets.QRadioButton(self.groupBox_3)
