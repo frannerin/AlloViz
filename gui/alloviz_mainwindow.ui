@@ -111,14 +111,14 @@
          </property>
          <layout class="QGridLayout" name="gridLayout_2" columnstretch="200,0,0">
           <item row="4" column="0" colspan="3">
-           <widget class="QCheckBox" name="interhelixCheck">
+           <widget class="QCheckBox" name="filterInterhelixCheck">
             <property name="text">
              <string>Interhelix contacts (GPCRs only)</string>
             </property>
            </widget>
           </item>
           <item row="2" column="0">
-           <widget class="QCheckBox" name="minSequenceCheck">
+           <widget class="QCheckBox" name="filterSequenceCheck">
             <property name="text">
              <string>Minimum sequence distance</string>
             </property>
@@ -155,7 +155,7 @@
            </widget>
           </item>
           <item row="3" column="0">
-           <widget class="QCheckBox" name="minDistanceCheck">
+           <widget class="QCheckBox" name="filterDistanceCheck">
             <property name="text">
              <string>Minumum spatial distance</string>
             </property>
@@ -186,7 +186,7 @@
            </widget>
           </item>
           <item row="1" column="0">
-           <widget class="QCheckBox" name="minGetContactsCheck">
+           <widget class="QCheckBox" name="filterGetContactsCheck">
             <property name="text">
              <string>Minimum GetContacts frequency</string>
             </property>
@@ -228,15 +228,8 @@
           <string>4. Analysis</string>
          </property>
          <layout class="QGridLayout" name="gridLayout">
-          <item row="2" column="1">
-           <widget class="QRadioButton" name="radioButton">
-            <property name="text">
-             <string>Edge current flow btw.</string>
-            </property>
-           </widget>
-          </item>
           <item row="1" column="0">
-           <widget class="QRadioButton" name="radioButton_11">
+           <widget class="QRadioButton" name="anEdgeBtwCheck">
             <property name="text">
              <string>Edge betweenness</string>
             </property>
@@ -245,31 +238,38 @@
             </property>
            </widget>
           </item>
-          <item row="2" column="0">
-           <widget class="QRadioButton" name="radioButton_2">
-            <property name="text">
-             <string>Node current flow btw.</string>
-            </property>
-           </widget>
-          </item>
           <item row="1" column="1">
-           <widget class="QRadioButton" name="radioButton_12">
+           <widget class="QRadioButton" name="anNodeBtwCheck">
             <property name="text">
              <string>Node betweenness</string>
             </property>
            </widget>
           </item>
           <item row="4" column="0" colspan="2">
+           <widget class="QRadioButton" name="anEdgeRawCheck">
+            <property name="text">
+             <string>Raw edge values</string>
+            </property>
+           </widget>
+          </item>
+          <item row="5" column="0" colspan="2">
            <widget class="QPushButton" name="pushButton_6">
             <property name="text">
              <string>Visualize</string>
             </property>
            </widget>
           </item>
-          <item row="3" column="0" colspan="2">
-           <widget class="QRadioButton" name="radioButton_3">
+          <item row="3" column="0">
+           <widget class="QRadioButton" name="anEdgeCurrentCheck">
             <property name="text">
-             <string>Raw edge values</string>
+             <string>Edge current flow btw.</string>
+            </property>
+           </widget>
+          </item>
+          <item row="3" column="1">
+           <widget class="QRadioButton" name="anNodeCurrentCheck">
+            <property name="text">
+             <string>Node current flow btw.</string>
             </property>
            </widget>
           </item>
