@@ -40,7 +40,7 @@ wrappers = {
     "pytraj_CB": pytraji + (beta,),
 
     "dynetan": dynetani + (whole,),
-    "dynetan_COM": dynetani + (COM,),
+    # "dynetan_COM": dynetani + (COM,),
     
     "g_correlation_CA_MI": g_correlationi + ("MI", alpha), 
     "g_correlation_COM_MI": g_correlationi + ("MI", COM), 
@@ -133,7 +133,7 @@ wrappers = {
     "MDEntropy_Psi": ("Dihedrals' movement correlation",) + MDEntropyi + ("Psi",),
     "MDEntropy_Dihs": ("Dihedrals' movement correlation",) + MDEntropyi + (Dihs,),
     "MDEntropy_AlphaAngle": ("Dihedrals' movement correlation",) + MDEntropyi + ("Alpha angle",),
-    #"MDEntropy_Contacts": ("Contacts",) + MDEntropyi + ("Contact frequency",),
+    "MDEntropy_Contacts": ("Contacts",) + MDEntropyi + ("Contact frequency",),
     
     "GetContacts": ("Contacts", "GetContacts", "None", "Contact frequency"),
     

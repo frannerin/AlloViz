@@ -183,7 +183,7 @@ def download_GPCRmd_files(GPCRmdid, path):
     links = [
         link.get("href")
         for link in soup
-        if re.search("(xtc|pdb|psf|prm)", link.get("href"))
+        if re.search("(xtc|dcd|pdb|psf|prm)", link.get("href"))
     ]
 
     # Download the files in parallel and save them in `path` with the same original name that they have in GPCRmd (last part of `link`)

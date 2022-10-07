@@ -377,9 +377,9 @@ def add_data(pqs, elem, data, filtered):
 
         # If there are more than 1 trajectory, calculate the metric average and standard error from the trajectories' analyzed data
         if len(filtered._pkg.protein._trajs) > 1:
-            cols = [f"{metric}_{num}" for num in filtered._pkg.protein._trajs]
-            df[f"{metric}"] = df[cols].fillna(0).mean(axis=1)
-            df[f"{metric}_std"] = df[cols].fillna(0).std(axis=1)
+            cols = [f"{metric}_{num}" for num in filtered._pkg.protein._trajs if f"{metric}_{num}" in df.columns]
+            df[f"{metric}"] = df[cols].fillna(0).mean(axis=1) # .fillna(0) these methods aren't affected by NAs;;;;;;;;;;; .dropna(how="all")
+            df[f"{metric}_std"] = df[cols].fillna(0).std(axis=1) # .fillna(0)
             # After calculating the mean and std, drop the individual trajectories' columns, retaining the mean and std and also the analysis of the filtered raw weights averages
             out = df.drop(cols, axis=1)
         else:
