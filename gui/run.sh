@@ -5,5 +5,8 @@
 
 DIRECTORY=$(cd `dirname $0` && pwd)
 
-export DYLD_LIBRARY_PATH="/opt/homebrew/opt/sqlite3/lib" 
+os=$(uname)
+if [[ $os == "Darwin" ]]; then
+    export DYLD_LIBRARY_PATH="/opt/homebrew/opt/sqlite3/lib" 
+fi
 python $DIRECTORY/alloviz_gui.py
