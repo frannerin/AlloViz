@@ -367,11 +367,6 @@
     <string>&amp;Citation...</string>
    </property>
   </action>
-  <action name="actionadsfasdf">
-   <property name="text">
-    <string>&amp;asdf</string>
-   </property>
-  </action>
   <action name="actionQQuit">
    <property name="text">
     <string>QQQ&amp;uit</string>
