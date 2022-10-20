@@ -13,9 +13,9 @@ namespace eval alloviz {
 
     proc accept {channel clientaddr clientport} {
         set cmd [ gets $channel ]
-        puts "Executing $cmd"
+        puts "alloviz::accept <-- $cmd"
         set out [ eval  $cmd]
-        puts "Returning $out"
+        puts "alloviz::accept --> $out"
         puts $channel $out
         close $channel
     }
@@ -25,7 +25,6 @@ namespace eval alloviz {
         socket -server ::alloviz::accept $port
     }
     
-
     proc alloviz_gui_start {} {
         global here
         puts "Starting AlloViz GUI Python component $here/run.sh"
@@ -46,6 +45,16 @@ namespace eval alloviz {
                 "Analysis/AlloViz GUI"
         }
     }
+
+    proc dump_trajectory {sel} {
+        set tmpbase /var/tmp/alloviz_[pid]
+        set s [atomselect top $sel]
+        $s writepsf $tmpbase.psf
+        animate write dcd $tmpbase.dcd sel $s
+        puts "::alloviz::dump_trajectory writing to $tmpbase.{psf,dcd}"
+        return $tmpbase
+    }
+
 }
 
 ::alloviz::register_menu

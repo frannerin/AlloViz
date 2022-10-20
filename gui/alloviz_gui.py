@@ -103,10 +103,15 @@ class AlloVizWindow(QMainWindow):
         )
 
     def sendVMDCommand(self, cmd):
-        with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
-            s.connect((self._HOST, self._PORT))
-            s.sendall(str.encode(cmd+"\n"))
-            data = s.recv(1024)
+        try:
+            with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
+                s.connect((self._HOST, self._PORT))
+                s.sendall(str.encode(cmd+"\n"))
+                data = s.recv(1024)
+        except Exception as e:
+            print(f"Could not connect to VMD ({self._HOST}:{self._PORT}): {e}.\nMake sure the client component is running.")
+            raise e
+
         ret = data.decode()
         print("sendVMDCommand got "+ret)
         return ret
@@ -118,10 +123,8 @@ class AlloVizWindow(QMainWindow):
 
         method = self.getSelectedMethod()
         
-        try:
-            self.sendVMDCommand("expr 1+1")
-        except Exception as e:
-            print(f"Could not connect to VMD ({self._HOST}:{self._PORT}): {e}.\nMake sure the client component is running.")
+        bn = self.sendVMDCommand("::alloviz::dump_trajectory {"+asel+"}")
+        print("Got "+bn)
 
 
 
