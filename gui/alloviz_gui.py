@@ -25,11 +25,13 @@ class AlloVizWindow(QMainWindow):
     def __init__(self, parent=None):
         super().__init__(parent)
 
-        self._HOST="localhost"
-        self._PORT=9990
+        self.HOST="localhost"
+        self.PORT=9990
+        self._total_progressbar_steps = 5
 
         self.ui = Ui_MainWindow()
         self.ui.setupUi(self)
+        self.ui.progressBar.setRange(0,self._total_progressbar_steps)
         self.fillMethodsTree()
         self.connectSignalsSlots()
 
@@ -105,26 +107,32 @@ class AlloVizWindow(QMainWindow):
     def sendVMDCommand(self, cmd):
         try:
             with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
-                s.connect((self._HOST, self._PORT))
+                s.connect((self.HOST, self.PORT))
                 s.sendall(str.encode(cmd+"\n"))
                 data = s.recv(1024)
         except Exception as e:
-            print(f"Could not connect to VMD ({self._HOST}:{self._PORT}): {e}.\nMake sure the client component is running.")
+            print(f"Could not connect to VMD ({self.HOST}:{self.PORT}): {e}.\nMake sure the client component is running.")
             raise e
 
-        ret = data.decode()
+        ret = data.decode().strip()
         print("sendVMDCommand got "+ret)
         return ret
 
 
     def runAnalysis(self):       
         asel = self.ui.atomselEdit.text()
-        print(f"Run clicked: {asel}")
-
         method = self.getSelectedMethod()
-        
-        bn = self.sendVMDCommand("::alloviz::dump_trajectory {"+asel+"}")
-        print("Got "+bn)
+        pbar = self.ui.progressBar
+
+        print(f"Run clicked: {asel}, {method}")
+
+        pbar.setValue(0)
+        bn = self.sendVMDCommand(f"::alloviz::dump_trajectory {{{asel}}}")
+
+        pbar.setValue(pbar.value()+1)
+        prot = AlloViz.Protein(pdb=f"{bn}.pdb", trajs=f"{bn}.dcd")
+
+
 
 
 

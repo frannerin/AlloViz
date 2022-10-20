@@ -49,9 +49,10 @@ namespace eval alloviz {
     proc dump_trajectory {sel} {
         set tmpbase /var/tmp/alloviz_[pid]
         set s [atomselect top $sel]
+        $s writepdb $tmpbase.pdb
         $s writepsf $tmpbase.psf
         animate write dcd $tmpbase.dcd sel $s
-        puts "::alloviz::dump_trajectory writing to $tmpbase.{psf,dcd}"
+        puts "::alloviz::dump_trajectory writing to $tmpbase.{pdb,psf,dcd}"
         return $tmpbase
     }
 
