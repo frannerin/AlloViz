@@ -1,17 +1,20 @@
 import sys
 import os
+import socket
+
 from PyQt5.QtWidgets import *
 from PyQt5 import QtCore
+from PyQt5.uic import loadUi
 
 import pandas as pd
 
 sys.path.append("gui")
+
 # pyuic5 alloviz_mainwindow.ui >alloviz_mainwindow_ui.py
 from alloviz_mainwindow_ui import Ui_MainWindow
 
 import AlloViz
 
-from PyQt5.uic import loadUi
 
 # See https://pypi.org/project/QtPy/
 #from qtpy.QtWidgets import *
@@ -21,6 +24,10 @@ from PyQt5.uic import loadUi
 class AlloVizWindow(QMainWindow):
     def __init__(self, parent=None):
         super().__init__(parent)
+
+        self._HOST="localhost"
+        self._PORT=9990
+
         self.ui = Ui_MainWindow()
         self.ui.setupUi(self)
         self.fillMethodsTree()
@@ -29,18 +36,18 @@ class AlloVizWindow(QMainWindow):
     def connectSignalsSlots(self):
         self.ui.actionQuit.triggered.connect(self.close)
         self.ui.actionAbout.triggered.connect(self.about)
-        self.ui.runButton.clicked.connect(self.run_analysis)
-        self.ui.methodTree.itemSelectionChanged.connect(self.enable_or_disable_run_button)
+        self.ui.runButton.clicked.connect(self.runAnalysis)
+        self.ui.methodTree.itemSelectionChanged.connect(self._updateRunButtonState)
 
-    def selected_method(self):
+    def getSelectedMethod(self):
         method = self.ui.methodTree.selectedItems()
         if len(method) != 1:
             return None
         kw = method[0].data(self._keyword_column,0)
         return kw
 
-    def enable_or_disable_run_button(self):
-        m = self.selected_method()
+    def _updateRunButtonState(self):
+        m = self.getSelectedMethod()
         self.ui.runButton.setEnabled(m is not None)
 
     def fillMethodsTree(self):
@@ -95,12 +102,27 @@ class AlloVizWindow(QMainWindow):
             "<p>Source code: <a href=\"https://github.com/frannerin/AlloViz\">github.com/frannerin/AlloViz</a></p>"
         )
 
-    def run_analysis(self):       
+    def sendVMDCommand(self, cmd):
+        with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
+            s.connect((self._HOST, self._PORT))
+            s.sendall(str.encode(cmd+"\n"))
+            data = s.recv(1024)
+        ret = data.decode()
+        print("sendVMDCommand got "+ret)
+        return ret
+
+
+    def runAnalysis(self):       
         asel = self.ui.atomselEdit.text()
         print(f"Run clicked: {asel}")
 
-        method = self.selected_method()
+        method = self.getSelectedMethod()
         
+        try:
+            self.sendVMDCommand("expr 1+1")
+        except Exception as e:
+            print(f"Could not connect to VMD ({self._HOST}:{self._PORT}): {e}.\nMake sure the client component is running.")
+
 
 
 if __name__ == "__main__":

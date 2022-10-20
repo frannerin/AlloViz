@@ -22,7 +22,7 @@ namespace eval alloviz {
 
     proc start port {
         puts "Starting server on port $port"
-        socket -server accept $port
+        socket -server ::alloviz::accept $port
     }
     
 
@@ -34,6 +34,7 @@ namespace eval alloviz {
 
     proc alloviz_tk {} {
         alloviz_gui_start
+        return ""
     }
 
     proc register_menu {} {
@@ -41,12 +42,12 @@ namespace eval alloviz {
         if {$already_registered==0} {
             incr already_registered
             vmd_install_extension alloviz \
-                alloviz::alloviz_tk \
+                ::alloviz::alloviz_tk \
                 "Analysis/AlloViz GUI"
         }
     }
 }
 
-alloviz::register_menu
-alloviz::start 9990
+::alloviz::register_menu
+::alloviz::start 9990
 
