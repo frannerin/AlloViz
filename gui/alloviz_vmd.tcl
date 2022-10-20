@@ -25,10 +25,15 @@ namespace eval alloviz {
         socket -server accept $port
     }
     
-    proc alloviz_tk {} {
+
+    proc alloviz_gui_start {} {
         global here
         puts "Starting AlloViz GUI Python component $here/run.sh"
         exec $here/run.sh &
+    }
+
+    proc alloviz_tk {} {
+        alloviz_gui_start
     }
 
     proc register_menu {} {
