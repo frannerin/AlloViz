@@ -237,8 +237,11 @@
           </item>
           <item row="5" column="0" colspan="2">
            <widget class="QPushButton" name="runButton">
+            <property name="enabled">
+             <bool>false</bool>
+            </property>
             <property name="text">
-             <string>Visualize</string>
+             <string>Compute and Visualize</string>
             </property>
            </widget>
           </item>

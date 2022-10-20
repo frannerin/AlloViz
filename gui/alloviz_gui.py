@@ -1,6 +1,8 @@
 import sys
 import os
 from PyQt5.QtWidgets import *
+from PyQt5 import QtCore
+
 import pandas as pd
 
 sys.path.append("gui")
@@ -28,6 +30,18 @@ class AlloVizWindow(QMainWindow):
         self.ui.actionQuit.triggered.connect(self.close)
         self.ui.actionAbout.triggered.connect(self.about)
         self.ui.runButton.clicked.connect(self.run_analysis)
+        self.ui.methodTree.itemSelectionChanged.connect(self.enable_or_disable_run_button)
+
+    def selected_method(self):
+        method = self.ui.methodTree.selectedItems()
+        if len(method) != 1:
+            return None
+        kw = method[0].data(self._keyword_column,0)
+        return kw
+
+    def enable_or_disable_run_button(self):
+        m = self.selected_method()
+        self.ui.runButton.setEnabled(m is not None)
 
     def fillMethodsTree(self):
         wlist=AlloViz.AlloViz.info.wrappers
@@ -38,6 +52,7 @@ class AlloVizWindow(QMainWindow):
         #df.set_index(["Metric","Quantity","Object"])
         # Rearrange the columns according to the desired nesting
         df = df[["Quantity",  "Object",  "Correlation metric", "Software", "Keyword"]]
+        self._keyword_column = 4
 
         #tree = self.findChild(QTreeWidget,"methodTree")
         tree=self.ui.methodTree
@@ -49,10 +64,12 @@ class AlloVizWindow(QMainWindow):
         ditto = "〃"
         for lev1 in df.iloc[:,0].unique():
             lev1_item = QTreeWidgetItem([lev1])
+            lev1_item.setFlags(lev1_item.flags() & ~QtCore.Qt.ItemIsSelectable)
             items.append(lev1_item)
             df1 = df.loc[df.iloc[:,0] == lev1]            
             for lev2 in df1.iloc[:,1].unique():
                 lev2_item = QTreeWidgetItem([ditto, lev2])
+                lev2_item.setFlags(lev2_item.flags() & ~QtCore.Qt.ItemIsSelectable)
                 lev1_item.addChild(lev2_item)
                 df2 = df1.loc[df.iloc[:,1]==lev2]
                 for i,leaf in df2.iterrows():
@@ -82,14 +99,8 @@ class AlloVizWindow(QMainWindow):
         asel = self.ui.atomselEdit.text()
         print(f"Run clicked: {asel}")
 
-        method = self.ui.methodTree.selectedItems()
-        print(method)
-        if len(method) != 1:
-            print("None selected")
-        else:   
-            kw=method[0].data(4,0)
-            print(f"KW: {kw}")
-
+        method = self.selected_method()
+        
 
 
 if __name__ == "__main__":
