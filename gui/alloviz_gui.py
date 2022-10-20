@@ -27,6 +27,7 @@ class AlloVizWindow(QMainWindow):
     def connectSignalsSlots(self):
         self.ui.actionQuit.triggered.connect(self.close)
         self.ui.actionAbout.triggered.connect(self.about)
+        self.ui.runButton.clicked.connect(self.run_analysis)
 
     def fillMethodsTree(self):
         wlist=AlloViz.AlloViz.info.wrappers
@@ -38,7 +39,8 @@ class AlloVizWindow(QMainWindow):
         # Rearrange the columns according to the desired nesting
         df = df[["Quantity",  "Object",  "Correlation metric", "Software", "Keyword"]]
 
-        tree = self.findChild(QTreeWidget,"methodTree")
+        #tree = self.findChild(QTreeWidget,"methodTree")
+        tree=self.ui.methodTree
         tree.setColumnCount(len(df.columns))
         tree.setHeaderLabels(df.columns)
 
@@ -70,9 +72,25 @@ class AlloVizWindow(QMainWindow):
     def about(self):
         QMessageBox.about(
             self,
-            "About Sample Editor",
-            "<p>FIXME</p>"
+            "About the AlloViz GUI",
+            "<p>The AlloViz Graphical User Interface</p>"
+            "<p>Authors: Francho Nerin, Jana Selent, Toni Giorgino</p>"
+            "<p>Source code: <a href=\"https://github.com/frannerin/AlloViz\">github.com/frannerin/AlloViz</a></p>"
         )
+
+    def run_analysis(self):       
+        asel = self.ui.atomselEdit.text()
+        print(f"Run clicked: {asel}")
+
+        method = self.ui.methodTree.selectedItems()
+        print(method)
+        if len(method) != 1:
+            print("None selected")
+        else:   
+            kw=method[0].data(4,0)
+            print(f"KW: {kw}")
+
+
 
 if __name__ == "__main__":
     app = QApplication(sys.argv)

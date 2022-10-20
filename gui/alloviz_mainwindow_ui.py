@@ -212,6 +212,7 @@ class Ui_MainWindow(object):
         MainWindow.setWindowTitle(_translate("MainWindow", "AlloViz GUI"))
         self.groupBox_4.setTitle(_translate("MainWindow", "1. Select atoms to include"))
         self.label_2.setText(_translate("MainWindow", "VMD atom selection"))
+        self.atomselEdit.setText(_translate("MainWindow", "protein and noh"))
         self.groupBox.setTitle(_translate("MainWindow", "2. Network construction"))
         self.groupBox_2.setTitle(_translate("MainWindow", "3. Filter"))
         self.filterInterhelixCheck.setText(_translate("MainWindow", "Interhelix contacts (GPCRs only)"))
