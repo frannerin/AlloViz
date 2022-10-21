@@ -1,5 +1,5 @@
 # Major problems
-
+- There are no tests (normal or regression tests)
 - Make a list of imports without versions, or it can't be used
 - Removing files from packages confuses the history, impedes updates from upstream, and saves no space. May also be seen as unnecessary tweaks to the original work.
 - By all means keep the packages as they are, if possible. Tweak the path instead of making relative imports

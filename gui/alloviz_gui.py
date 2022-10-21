@@ -70,10 +70,11 @@ class AlloVizWindow(QMainWindow):
 
         # Nest grouping the first 2 levels by unique value.
         items = []
-        ditto = "〃"
+        ditto = "..."  # "〃"
         for lev1 in df.iloc[:,0].unique():
             lev1_item = QTreeWidgetItem([lev1])
             lev1_item.setFlags(lev1_item.flags() & ~QtCore.Qt.ItemIsSelectable)
+            # lev1_item.setFirstColumnSpanned(True)  ## would be nice but does nothing
             items.append(lev1_item)
             df1 = df.loc[df.iloc[:,0] == lev1]            
             for lev2 in df1.iloc[:,1].unique():
