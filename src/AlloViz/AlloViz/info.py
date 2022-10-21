@@ -14,15 +14,15 @@ whole = "Whole residue"
 Dihs = "All backbone dihedrals (Phi and psi)"
 
 # Package/Network construction method-level common information
-dynetani = ("Atoms' movement correlation", "dynetan", "MI")
-pytraji = ("Atoms' movement correlation", "pytraj", "Pearson's")
-correlationplusi = ("Atoms' movement correlation", "correlationplus")
-correlationplusdihsi = ("Dihedrals' movement correlation", "correlationplus", "Pearson's")
-AlloVizi = ("Dihedrals' movement correlation", "AlloViz", "MI")
+dynetani = ("Atoms' displacements", "dynetan", "MI")
+pytraji = ("Atoms' displacements", "pytraj", "Pearson's")
+correlationplusi = ("Atoms' displacements", "correlationplus")
+correlationplusdihsi = ("Dihedral angles", "correlationplus", "Pearson's")
+AlloVizi = ("Dihedral angles", "AlloViz", "MI")
 MDEntropyi = ("MDEntropy", "MI")
-g_correlationi = ("Atoms' movement correlation", "g_correlation")
+g_correlationi = ("Atoms' displacements", "g_correlation")
 pyinteraphi = ("Contacts", "PyInteraph2", "None")
-CARDSi = ("Dihedrals' movement correlation", "CARDS")
+CARDSi = ("Dihedral angles", "CARDS")
 
 
 
@@ -34,7 +34,7 @@ CARDSi = ("Dihedrals' movement correlation", "CARDS")
 #: the AlloViz accession name of the wrapper), the correlaton metric they use if
 #: applicable, and the atom/angle whose information it uses.
 wrappers = {
-    "MDTASK": ("Atoms' movement correlation", "MD-TASK", "Pearson's", alpha),
+    "MDTASK": ("Atoms' displacements", "MD-TASK", "Pearson's", alpha),
 
     "pytraj_CA": pytraji + (alpha,),
     "pytraj_CB": pytraji + (beta,),
@@ -129,10 +129,10 @@ wrappers = {
     'CARDS_Disorder_mediated_Dihs_Max': CARDSi + ('Disorder-mediated MI', 'All dihedrals (max. value)'), 
     'CARDS_Holistic_Dihs_Max': CARDSi + ('Holistic MI', 'All dihedrals (max. value)'),
     
-    "MDEntropy_Phi": ("Dihedrals' movement correlation",) + MDEntropyi + ("Phi",),
-    "MDEntropy_Psi": ("Dihedrals' movement correlation",) + MDEntropyi + ("Psi",),
-    "MDEntropy_Dihs": ("Dihedrals' movement correlation",) + MDEntropyi + (Dihs + " (average)",),
-    "MDEntropy_AlphaAngle": ("Dihedrals' movement correlation",) + MDEntropyi + ("Alpha angle",),
+    "MDEntropy_Phi": ("Dihedral angles",) + MDEntropyi + ("Phi",),
+    "MDEntropy_Psi": ("Dihedral angles",) + MDEntropyi + ("Psi",),
+    "MDEntropy_Dihs": ("Dihedral angles",) + MDEntropyi + (Dihs + " (average)",),
+    "MDEntropy_AlphaAngle": ("Dihedral angles",) + MDEntropyi + ("Alpha angle",),
     "MDEntropy_Contacts": ("Contacts",) + MDEntropyi + ("Contact frequency",),
     
     "GetContacts": ("Contacts", "GetContacts", "None", "Contact frequency"),

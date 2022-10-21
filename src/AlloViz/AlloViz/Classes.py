@@ -242,7 +242,8 @@ class Protein:
                 self.trajs,
                 self._trajs,
                 self._comtrajs,
-                **kwargs,
+                # **kwargs,
+                **{"special_res": kwargs["special_res"]} if "special_res" in kwargs else {},
             )
 
         # Set the protein/pdb and trajectory(ies) MDAnalysis' Universes with the processed files
