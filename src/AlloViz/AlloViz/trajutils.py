@@ -250,10 +250,10 @@ def process_input(
     trajs : list
         Filename(s) of the MD trajectory (or trajectories) to read and use. File format
         must be recognized by MDAnalysis (e.g., xtc).
-    trajsf : list
+    trajsf : dict
         Complete relative filename(s) of the processed MD trajectory (or trajectories) to
         save.
-    comtrajsf : list
+    comtrajsf : dict
         Complete relative filename(s) of the processed MD trajectory (or trajectories) of
         the CA atoms to save.
     **kwargs
@@ -274,13 +274,13 @@ def process_input(
 
     # If the input files has the same number of atoms and residue names as the processed entities, avoid re-saving pdb and trajectory(ies) files
     if (
-        whole.atoms.n_atoms == protein.n_atoms
-        and original_resnames == protein.residues.resnames
+        whole.atoms.n_atoms == protein.n_atoms and 
+        (original_resnames == protein.residues.resnames).all()
     ):
         pdbf = pdb
-        trajsf = trajs
+        trajsf = dict(x for x in enumerate(trajs, 1))
         psff = psf
-
+    
     # Make a selection of the CA atoms on the processed protein
     CAs = protein.select_atoms("name CA")
 
@@ -304,9 +304,14 @@ def process_input(
         ]
     ):
         whole.load_new(trajs, continuous=False)
-        sf = (
-            whole.trajectory._start_frames
-        )  # for 3 trajs of 2500 frames each looks like: array([   0, 2500, 5000, 7500])
+        
+        if hasattr(whole.trajectory, "_start_frames"):
+            sf = (
+                whole.trajectory._start_frames
+            )  # for 3 trajs of 2500 frames each looks like: array([   0, 2500, 5000, 7500])
+        else:
+            sf = [0, whole.trajectory.n_frames]
+            
         iterator = enumerate(
             zip(sf[:-1], sf[1:]), 1
         )  # looks like: (1, (0, 2500)), (2, (2500, 5000)), (3, (5000, 7500))

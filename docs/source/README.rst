@@ -63,8 +63,8 @@ preferably with ``pip install .``.
 
    If environment creation with `conda_explicit.txt` fails, the non-explicit requirements/dependencies file `conda_minimal.txt` can be used, providing the conda channel `conda-forge` (`-c conda-forge`).
 
-Tutorial notebook
------------------
+Tutorial
+--------
 
 Check the :ref:`tutorial <tutorial:Tutorial>`.
 

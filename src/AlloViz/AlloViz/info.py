@@ -131,7 +131,7 @@ wrappers = {
     
     "MDEntropy_Phi": ("Dihedrals' movement correlation",) + MDEntropyi + ("Phi",),
     "MDEntropy_Psi": ("Dihedrals' movement correlation",) + MDEntropyi + ("Psi",),
-    "MDEntropy_Dihs": ("Dihedrals' movement correlation",) + MDEntropyi + (Dihs,),
+    "MDEntropy_Dihs": ("Dihedrals' movement correlation",) + MDEntropyi + (Dihs + " (average)",),
     "MDEntropy_AlphaAngle": ("Dihedrals' movement correlation",) + MDEntropyi + ("Alpha angle",),
     "MDEntropy_Contacts": ("Contacts",) + MDEntropyi + ("Contact frequency",),
     
