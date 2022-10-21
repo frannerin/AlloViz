@@ -33,7 +33,7 @@ depending on the package selected. Moreover, for example for movement
 correlation, the movement tracked can be that of the whole residue, its
 center of mass, its alpha-C or its beta-C; and it can be calculated as
 the Pearson’s correlation coefficient, Mutual Information (MI) or Linear
-MI (LMI). See all the :ref:`options <https://alloviz.readthedocs.io/en/latest/table.html>`_.
+MI (LMI). See all the `options <https://alloviz.readthedocs.io/en/latest/table.html>`__.
 
 The resulting network can be analyzed with edge centrality metrics
 algorithms provided by the Python package
@@ -66,7 +66,7 @@ preferably with ``pip install .``.
 Tutorial
 --------
 
-Check the :ref:`tutorial <https://alloviz.readthedocs.io/en/latest/tutorial.html>`_.
+Check the `tutorial <https://alloviz.readthedocs.io/en/latest/tutorial.html>`__.
 
 Cite
 -------

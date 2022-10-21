@@ -34,7 +34,7 @@ Network construction methods
 	    </tr>
 	    <tr>
 	      <th>dynetan</th>
-	      <th>Mutual Information (MI)</th>
+	      <th>MI</th>
 	      <th>Whole residue</th>
 	      <td>dynetan</td>
 	    </tr>
@@ -49,7 +49,7 @@ Network construction methods
 	      <td>correlationplus_COM_Pear</td>
 	    </tr>
 	    <tr>
-	      <th rowspan="2">Linear MI (LMI)</th>
+	      <th rowspan="2">LMI</th>
 	      <th>Carbon α</th>
 	      <td>correlationplus_CA_LMI</td>
 	    </tr>
@@ -378,7 +378,7 @@ Network construction methods
 	      <td>MDEntropy_Psi</td>
 	    </tr>
 	    <tr>
-	      <th>All backbone dihedrals (Phi and psi)</th>
+	      <th>All backbone dihedrals (Phi and psi) (average)</th>
 	      <td>MDEntropy_Dihs</td>
 	    </tr>
 	    <tr>
@@ -386,15 +386,21 @@ Network construction methods
 	      <td>MDEntropy_AlphaAngle</td>
 	    </tr>
 	    <tr>
-	      <th rowspan="5">Contacts</th>
+	      <th rowspan="6">Contacts</th>
+	      <th>MDEntropy</th>
+	      <th>MI</th>
+	      <th>Contact frequency</th>
+	      <td>MDEntropy_Contacts</td>
+	    </tr>
+	    <tr>
 	      <th>GetContacts</th>
-	      <th>-</th>
+	      <th>None</th>
 	      <th>Contact frequency</th>
 	      <td>GetContacts</td>
 	    </tr>
 	    <tr>
 	      <th rowspan="3">PyInteraph2</th>
-	      <th rowspan="3">-</th>
+	      <th rowspan="3">None</th>
 	      <th>Contact frequency</th>
 	      <td>PyInteraph2_Atomic_Contacts_Occurrence</td>
 	    </tr>
@@ -408,20 +414,20 @@ Network construction methods
 	    </tr>
 	    <tr>
 	      <th>PyInteraph2 (with Rg correction)</th>
-	      <th>-</th>
+	      <th>None</th>
 	      <th>Residue COM contacts</th>
 	      <td>PyInteraph2_COM_Contacts_Corrected</td>
 	    </tr>
 	    <tr>
 	      <th rowspan="3">Interaction energy</th>
 	      <th>PyInteraph2</th>
-	      <th>-</th>
+	      <th>None</th>
 	      <th>Whole residue</th>
 	      <td>PyInteraph2_Energy</td>
 	    </tr>
 	    <tr>
 	      <th rowspan="2">gRINN</th>
-	      <th>-</th>
+	      <th>None</th>
 	      <th>Whole residue</th>
 	      <td>gRINN</td>
 	    </tr>

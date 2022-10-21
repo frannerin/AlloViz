@@ -226,9 +226,9 @@ with open("../../README.rst", 'r') as f:
 
 with open('README.rst', 'w') as f:
   f.write(lines.replace(
-  		"https://alloviz.readthedocs.io/en/latest/table.html",
-  		"table:Network construction methods"
+  		"`options <https://alloviz.readthedocs.io/en/latest/table.html>`__",
+  		":ref:`options <table:Network construction methods>`"
   	).replace(
-  		"https://alloviz.readthedocs.io/en/latest/tutorial.html",
-  		"tutorial:Tutorial"
+  		"`tutorial <https://alloviz.readthedocs.io/en/latest/tutorial.html>`__",
+  		":ref:`tutorial <tutorial:Tutorial>`"
   	))
