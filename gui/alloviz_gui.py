@@ -25,6 +25,8 @@ logging.basicConfig(level=logging.INFO,
 
 
 class AlloVizWindow(QMainWindow):
+    updateProgress=QtCore.pyqtSignal(int)
+
     def __init__(self, parent=None):
         super().__init__(parent)
 
@@ -40,12 +42,16 @@ class AlloVizWindow(QMainWindow):
         self.fillMethodsTree()
 
         self.connectSignalsSlots()
+        
 
     def connectSignalsSlots(self):
         self.ui.actionQuit.triggered.connect(self.close)
         self.ui.actionAbout.triggered.connect(self.about)
         self.ui.runButton.clicked.connect(self.runAnalysis)
         self.ui.methodTree.itemSelectionChanged.connect(self._updateRunButtonState)
+        # https://stackoverflow.com/questions/50104163/update-pyqt-gui-from-a-python-thread
+        self.updateProgress.connect(self.ui.progressBar.setValue)
+
 
     def getSelectedMethod(self):
         method = self.ui.methodTree.selectedItems()
@@ -164,14 +170,19 @@ class AlloVizWindow(QMainWindow):
         logging.info(f"Analysis: {el}, {met}")
         return el, met
 
+    # Should work but doesn't update. Not with setValue, neither with signals
     def increaseProgressBar(self):
         pbar = self.ui.progressBar
-        pbar.setValue(pbar.value() + 1)
-        pbar.repaint()
+        i = pbar.value()
+        logging.info(f"Current progressbar is {i}")
+        self.updateProgress.emit(i+1)
+        #pbar.repaint()
+        self.app.processEvents()
 
     def showMessage(self, msg):
         logging.info(msg)
         self.ui.statusbar.showMessage(msg)
+        self.app.processEvents()
 
     def runAnalysis(self):
         pbar = self.ui.progressBar
@@ -228,7 +239,7 @@ class AlloVizWindow(QMainWindow):
         prot.analyze("all", elements=el, metrics=met)
         logging.info("...done")
 
-
+        self.showMessage("Ready")
 
         # Add item to history 
         hitem = QListWidgetItem(method)
@@ -241,5 +252,6 @@ class AlloVizWindow(QMainWindow):
 if __name__ == "__main__":
     app = QApplication(sys.argv)
     win = AlloVizWindow()
+    win.app = app
     win.show()
     sys.exit(app.exec())

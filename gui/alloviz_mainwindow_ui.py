@@ -213,7 +213,7 @@ class Ui_MainWindow(object):
         self.groupBox_2.setTitle(_translate("MainWindow", "3. Filter"))
         self.checkbox_GPCR_Interhelix.setText(_translate("MainWindow", "Interhelix contacts (GPCRs only)"))
         self.checkbox_No_Sequence_Neighbors.setText(_translate("MainWindow", "Minimum sequence distance"))
-        self.edit_GetContacts_threshold.setText(_translate("MainWindow", "0"))
+        self.edit_GetContacts_threshold.setText(_translate("MainWindow", "0.5"))
         self.label.setText(_translate("MainWindow", "Threshold"))
         self.edit_Interresidue_distance.setText(_translate("MainWindow", "10"))
         self.checkbox_Spatially_distant.setText(_translate("MainWindow", "Minumum spatial distance"))
