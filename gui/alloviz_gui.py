@@ -1,6 +1,7 @@
 import sys
 import os
 import socket
+import logging
 
 from PyQt5.QtWidgets import *
 from PyQt5 import QtCore
@@ -15,6 +16,8 @@ from alloviz_mainwindow_ui import Ui_MainWindow
 
 import AlloViz
 
+logging.basicConfig(level=logging.INFO,
+                    format="%(asctime)s %(pathname)s %(funcName)s %(levelname)s %(message)s")
 
 # See https://pypi.org/project/QtPy/
 # from qtpy.QtWidgets import *
@@ -63,10 +66,14 @@ class AlloVizWindow(QMainWindow):
         df = df[["Quantity", "Object", "Correlation metric", "Software", "Keyword"]]
         self._keyword_column = 4
 
+        # Remove gRINN because it requires ff parameters
+        df=df.loc[df.Software != "gRINN"]
+
         # tree = self.findChild(QTreeWidget,"methodTree")
         tree = self.ui.methodTree
         tree.setColumnCount(len(df.columns))
         tree.setHeaderLabels(df.columns)
+
 
         # Nest grouping the first 2 levels by unique value.
         items = []
@@ -112,27 +119,75 @@ class AlloVizWindow(QMainWindow):
                 s.sendall(str.encode(cmd + "\n"))
                 data = s.recv(1024)
         except Exception as e:
-            print(
+            logging.warning(
                 f"Could not connect to VMD ({self.HOST}:{self.PORT}): {e}.\nMake sure the client component is running."
             )
             raise e
 
         ret = data.decode().strip()
-        print("sendVMDCommand got " + ret)
+        logging.info("sendVMDCommand got " + ret)
         return ret
 
+    def _getFilters(self):
+        flist = []
+        fargs = {}
+        if self.ui.checkbox_GetContacts_edges.isChecked():
+            flist.append("GetContacts_edges")
+            fargs["GetContacts_threshold"]=float(self.ui.edit_GetContacts_threshold.text())
+        if self.ui.checkbox_No_Sequence_Neighbors.isChecked():
+            flist.append("No_Sequence_Neighbors")
+            fargs["Sequence_Neighbor_distance"]=int(self.ui.edit_Sequence_Neighbor_distance.text())
+        if self.ui.checkbox_Spatially_distant.isChecked():
+            flist.append("Spatially_distant")
+            fargs["Interresidue_distance"]=float(self.ui.edit_Interresidue_distance.text())
+        if self.ui.checkbox_GPCR_Interhelix.isChecked():
+            flist.append("GPCR_Interhelix")
+        logging.info(f"Filters: {flist}, kwargs {fargs}") 
+        return flist, fargs
+        
+
+
     def runAnalysis(self):
+        pbar = self.ui.progressBar
         asel = self.ui.atomselEdit.text()
         method = self.getSelectedMethod()
-        pbar = self.ui.progressBar
+        filters = self._getFilters()
 
-        print(f"Run clicked: {asel}, {method}")
+        logging.info(f"Run clicked: {asel}, {method}")
 
         pbar.setValue(0)
-        bn = self.sendVMDCommand(f"::alloviz::dump_trajectory {{{asel}}}")
+        logging.info("Dumping trajectory")
+        try:
+            bn = self.sendVMDCommand(f"::alloviz::dump_trajectory {{{asel}}}")
+            pdbfile = bn + ".pdb"
+            dcdfile = bn + ".dcd"
+        except:
+            logging.warning("Cannot communicate with VMD, using test data under dir 117")
+            pdbfile = "../117/11159_dyn_117.pdb"
+            dcdfile = "../117/11157_trj_117.xtc"
 
         pbar.setValue(pbar.value() + 1)
-        prot = AlloViz.Protein(pdb=f"{bn}.pdb", trajs=f"{bn}.dcd")
+        logging.info("Loading trajectory...")
+        prot = AlloViz.Protein(pdb=pdbfile, trajs=dcdfile)
+        logging.info("...done")
+
+        pbar.setValue(pbar.value() + 1)
+        logging.info("Calculating...")
+        prot.calculate(method)
+        logging.info("...done")
+
+        if self.ui.checkbox_GetContacts_edges.isChecked():
+            logging.info("Adding getContacts...")
+            prot.calculate("GetContacts")
+            logging.info("...done")
+
+        pbar.setValue(pbar.value() + 1)
+        logging.info("Filtering...")
+        flist, fargs = self._getFilters()
+        # The weird syntax requires a list of lists for sequential filtering
+        prot.filter("all", filterings=[flist], **fargs)
+        logging.info("...done")
+        
 
 
 if __name__ == "__main__":
