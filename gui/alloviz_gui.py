@@ -35,7 +35,10 @@ class AlloVizWindow(QMainWindow):
         self.ui = Ui_MainWindow()
         self.ui.setupUi(self)
         self.ui.progressBar.setRange(0, self._total_progressbar_steps)
+        # self.ui.statusbar.addWidget(QLabel("Prova"))
+        self.ui.statusbar.showMessage("Ready")
         self.fillMethodsTree()
+
         self.connectSignalsSlots()
 
     def connectSignalsSlots(self):
@@ -144,19 +147,46 @@ class AlloVizWindow(QMainWindow):
             flist.append("GPCR_Interhelix")
         logging.info(f"Filters: {flist}, kwargs {fargs}") 
         return flist, fargs
-        
+    
+    def _getAnalysis(self):
+        if self.ui.anEdgeBtwCheck.isChecked():
+            el, met = "edges", "btw"
+        elif self.ui.anEdgeCurrentCheck.isChecked():
+            el, met = "edges", "cfb"
+        elif self.ui.anEdgeRawCheck.isChecked():
+            el, met = "edges", "raw" # ?????
+        elif self.ui.anNodeBtwCheck.isChecked():
+            el, met = "nodes", "btw"
+        elif self.ui.anNodeCurrentCheck.isChecked():
+            el, met = "nodes", "cfb"
+        else:
+            logging.error("No radio button selected, should not happen")
+        logging.info(f"Analysis: {el}, {met}")
+        return el, met
 
+    def increaseProgressBar(self):
+        pbar = self.ui.progressBar
+        pbar.setValue(pbar.value() + 1)
+        pbar.repaint()
+
+    def showMessage(self, msg):
+        logging.info(msg)
+        self.ui.statusbar.showMessage(msg)
 
     def runAnalysis(self):
         pbar = self.ui.progressBar
+        ht = self.ui.historyWidget
         asel = self.ui.atomselEdit.text()
         method = self.getSelectedMethod()
         filters = self._getFilters()
 
+        logging.info(f"FOCUS ht: {ht.hasFocus()}")
+        logging.info(f"FOCUS m: {self.ui.methodTree.hasFocus()}")
+
         logging.info(f"Run clicked: {asel}, {method}")
 
         pbar.setValue(0)
-        logging.info("Dumping trajectory")
+        self.showMessage("Dumping trajectory")
         try:
             bn = self.sendVMDCommand(f"::alloviz::dump_trajectory {{{asel}}}")
             pdbfile = bn + ".pdb"
@@ -165,28 +195,46 @@ class AlloVizWindow(QMainWindow):
             logging.warning("Cannot communicate with VMD, using test data under dir 117")
             pdbfile = "../117/11159_dyn_117.pdb"
             dcdfile = "../117/11157_trj_117.xtc"
+        logging.info("...done")
 
-        pbar.setValue(pbar.value() + 1)
-        logging.info("Loading trajectory...")
+        self.increaseProgressBar()
+        self.showMessage("Loading trajectory...")
         prot = AlloViz.Protein(pdb=pdbfile, trajs=dcdfile)
         logging.info("...done")
 
-        pbar.setValue(pbar.value() + 1)
-        logging.info("Calculating...")
+        self.increaseProgressBar()
+        self.showMessage("Calculating...")
         prot.calculate(method)
         logging.info("...done")
 
+        self.increaseProgressBar()
         if self.ui.checkbox_GetContacts_edges.isChecked():
-            logging.info("Adding getContacts...")
+            self.showMessage("Adding getContacts...")
             prot.calculate("GetContacts")
             logging.info("...done")
 
-        pbar.setValue(pbar.value() + 1)
-        logging.info("Filtering...")
+        self.increaseProgressBar()
+        self.showMessage("Filtering...")
         flist, fargs = self._getFilters()
         # The weird syntax requires a list of lists for sequential filtering
         prot.filter("all", filterings=[flist], **fargs)
         logging.info("...done")
+
+
+        self.increaseProgressBar()
+        self.showMessage("Analyzing...")
+        el, met = self._getAnalysis()
+        # The weird syntax requires a list of lists for sequential filtering
+        prot.analyze("all", elements=el, metrics=met)
+        logging.info("...done")
+
+
+
+        # Add item to history 
+        hitem = QListWidgetItem(method)
+        hitem.setData(QtCore.Qt.UserRole, prot)
+        ht.addItem(hitem)
+
         
 
 

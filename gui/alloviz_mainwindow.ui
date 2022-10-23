@@ -36,7 +36,7 @@
           </sizepolicy>
          </property>
          <property name="title">
-          <string>1. Select atoms to include</string>
+          <string>1. Select atoms to include (top molecule)</string>
          </property>
          <layout class="QVBoxLayout" name="verticalLayout_8">
           <item>
@@ -74,7 +74,7 @@
           <bool>true</bool>
          </property>
          <property name="title">
-          <string>2. Network construction</string>
+          <string>2. Network construction method</string>
          </property>
          <layout class="QVBoxLayout" name="verticalLayout_4">
           <item>
@@ -235,16 +235,6 @@
             </property>
            </widget>
           </item>
-          <item row="5" column="0" colspan="2">
-           <widget class="QPushButton" name="runButton">
-            <property name="enabled">
-             <bool>false</bool>
-            </property>
-            <property name="text">
-             <string>Compute and Visualize</string>
-            </property>
-           </widget>
-          </item>
           <item row="3" column="0">
            <widget class="QRadioButton" name="anEdgeCurrentCheck">
             <property name="text">
@@ -260,6 +250,16 @@
            </widget>
           </item>
          </layout>
+        </widget>
+       </item>
+       <item>
+        <widget class="QPushButton" name="runButton">
+         <property name="enabled">
+          <bool>false</bool>
+         </property>
+         <property name="text">
+          <string>Compute and Visualize</string>
+         </property>
         </widget>
        </item>
        <item>
@@ -295,14 +295,7 @@
         </widget>
        </item>
        <item>
-        <widget class="QListView" name="historyList">
-         <property name="sizePolicy">
-          <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
-           <horstretch>1</horstretch>
-           <verstretch>0</verstretch>
-          </sizepolicy>
-         </property>
-        </widget>
+        <widget class="QListWidget" name="historyWidget"/>
        </item>
        <item>
         <widget class="QPushButton" name="pushButton_7">
