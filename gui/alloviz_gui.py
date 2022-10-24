@@ -24,6 +24,16 @@ logging.basicConfig(level=logging.INFO,
 # from qtpy.uic import loadUi
 
 
+class ComputeStep(object):
+    def __init__(self, msg):
+        self.msg = socket.MsgFlag
+
+    def __enter__(self):
+    
+    def __exit__(self):
+        
+
+
 class AlloVizWindow(QMainWindow):
     updateProgress=QtCore.pyqtSignal(int)
 
