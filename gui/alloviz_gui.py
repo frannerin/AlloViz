@@ -54,18 +54,29 @@ class AlloVizWindow(QMainWindow):
         # self.ui.statusbar.addWidget(QLabel("Prova"))
         self.ui.statusbar.showMessage("Ready")
         self.fillMethodsTree()
+        self.setupHistoryWidget()
 
         self.connectSignalsSlots()
-        
+
+    def setupHistoryWidget(self):
+        self.ui.historyWidget.addActions([self.ui.actionSaveAs])
+
+
 
     def connectSignalsSlots(self):
         self.ui.actionQuit.triggered.connect(self.close)
         self.ui.actionAbout.triggered.connect(self.about)
         self.ui.runButton.clicked.connect(self.runAnalysis)
         self.ui.methodTree.itemSelectionChanged.connect(self._updateRunButtonState)
+
+        self.ui.actionSaveAs.triggered.connect(self.saveas)
+
         # https://stackoverflow.com/questions/50104163/update-pyqt-gui-from-a-python-thread
         self.updateProgress.connect(self.ui.progressBar.setValue)
 
+
+    def saveas(self):
+        logging.info("SAVEAS called")
 
     def getSelectedMethod(self):
         method = self.ui.methodTree.selectedItems()
@@ -77,6 +88,7 @@ class AlloVizWindow(QMainWindow):
     def _updateRunButtonState(self):
         m = self.getSelectedMethod()
         self.ui.runButton.setEnabled(m is not None)
+
 
     def fillMethodsTree(self):
         wlist = AlloViz.AlloViz.info.wrappers

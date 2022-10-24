@@ -295,7 +295,11 @@
         </widget>
        </item>
        <item>
-        <widget class="QListWidget" name="historyWidget"/>
+        <widget class="QListWidget" name="historyWidget">
+         <property name="contextMenuPolicy">
+          <enum>Qt::ActionsContextMenu</enum>
+         </property>
+        </widget>
        </item>
        <item>
         <widget class="QPushButton" name="pushButton_7">
@@ -369,6 +373,11 @@
   <action name="actionQQuit">
    <property name="text">
     <string>QQQ&amp;uit</string>
+   </property>
+  </action>
+  <action name="actionSaveAs">
+   <property name="text">
+    <string>SaveAs</string>
    </property>
   </action>
  </widget>
