@@ -25,13 +25,17 @@ logging.basicConfig(level=logging.INFO,
 
 
 class ComputeStep(object):
-    def __init__(self, msg):
-        self.msg = socket.MsgFlag
+    def __init__(self, msg, smcb=None):
+        self.msg = msg
+        self.smcb = smcb
 
     def __enter__(self):
+        if self.smcb is not None:
+            self.smcb(self.msg)
+        logging.info(self.msg)
     
-    def __exit__(self):
-        
+    def __exit__(self, type, value, traceback):
+        logging.info("...done")
 
 
 class AlloVizWindow(QMainWindow):
@@ -207,47 +211,41 @@ class AlloVizWindow(QMainWindow):
         logging.info(f"Run clicked: {asel}, {method}")
 
         pbar.setValue(0)
-        self.showMessage("Dumping trajectory")
-        try:
-            bn = self.sendVMDCommand(f"::alloviz::dump_trajectory {{{asel}}}")
-            pdbfile = bn + ".pdb"
-            dcdfile = bn + ".dcd"
-        except:
-            logging.warning("Cannot communicate with VMD, using test data under dir 117")
-            pdbfile = "../117/11159_dyn_117.pdb"
-            dcdfile = "../117/11157_trj_117.xtc"
-        logging.info("...done")
+        with ComputeStep("Dumping trajectory", self.showMessage):
+            try:
+                bn = self.sendVMDCommand(f"::alloviz::dump_trajectory {{{asel}}}")
+                pdbfile = bn + ".pdb"
+                dcdfile = bn + ".dcd"
+            except:
+                logging.warning("Cannot communicate with VMD, using test data under dir 117")
+                pdbfile = "../117/11159_dyn_117.pdb"
+                dcdfile = "../117/11157_trj_117.xtc"
 
         self.increaseProgressBar()
-        self.showMessage("Loading trajectory...")
-        prot = AlloViz.Protein(pdb=pdbfile, trajs=dcdfile)
-        logging.info("...done")
+        with ComputeStep("Loading trajectory", self.showMessage):
+            prot = AlloViz.Protein(pdb=pdbfile, trajs=dcdfile)
 
         self.increaseProgressBar()
-        self.showMessage("Calculating...")
-        prot.calculate(method)
-        logging.info("...done")
+        with ComputeStep("Calculating", self.showMessage):
+            prot.calculate(method)
 
         self.increaseProgressBar()
-        if self.ui.checkbox_GetContacts_edges.isChecked():
-            self.showMessage("Adding getContacts...")
-            prot.calculate("GetContacts")
-            logging.info("...done")
+        with ComputeStep("Adding getContacts", self.showMessage):
+            if self.ui.checkbox_GetContacts_edges.isChecked():
+                prot.calculate("GetContacts")
 
         self.increaseProgressBar()
-        self.showMessage("Filtering...")
-        flist, fargs = self._getFilters()
-        # The weird syntax requires a list of lists for sequential filtering
-        prot.filter("all", filterings=[flist], **fargs)
-        logging.info("...done")
+        with ComputeStep("Filtering", self.showMessage):
+            flist, fargs = self._getFilters()
+            # The weird syntax requires a list of lists for sequential filtering
+            prot.filter("all", filterings=[flist], **fargs)
 
 
         self.increaseProgressBar()
-        self.showMessage("Analyzing...")
-        el, met = self._getAnalysis()
-        # The weird syntax requires a list of lists for sequential filtering
-        prot.analyze("all", elements=el, metrics=met)
-        logging.info("...done")
+        with ComputeStep("Analyzing", self.showMessage):
+            el, met = self._getAnalysis()
+            # The weird syntax requires a list of lists for sequential filtering
+            prot.analyze("all", elements=el, metrics=met)
 
         self.showMessage("Ready")
 
