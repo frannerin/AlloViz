@@ -2,6 +2,7 @@ import sys
 import os
 import socket
 import logging
+import hashlib
 
 from PyQt5.QtWidgets import *
 from PyQt5 import QtCore
@@ -17,13 +18,26 @@ from alloviz_mainwindow_ui import Ui_MainWindow
 import AlloViz
 
 logging.basicConfig(level=logging.INFO,
-                    format="%(asctime)s %(pathname)s %(funcName)s %(levelname)s %(message)s")
+                    format="%(asctime)s %(pathname)s %(levelname)s %(funcName)s %(message)s")
 
 # See https://pypi.org/project/QtPy/
 # from qtpy.QtWidgets import *
 # from qtpy.uic import loadUi
 
-# TODO catch exception. possibly move as inner class.
+_HOST = "localhost"
+_PORT = 9990
+_total_progressbar_steps = 5
+
+
+def md5sum_file(fn):
+    with open(fn, "rb") as f:
+        file_hash = hashlib.md5()
+        while chunk := f.read(8192):
+            file_hash.update(chunk)
+    return file_hash.digest(), file_hash.hexdigest()
+
+
+# TODO possibly move as inner class.
 class ComputeStep(object):
     def __init__(self, msg, obj, show_on_statusbar=True, increase_progressbar=True):
         self.msg = msg
@@ -52,43 +66,14 @@ class AlloVizWindow(QMainWindow):
     def __init__(self, parent=None):
         super().__init__(parent)
 
-        self.HOST = "localhost"
-        self.PORT = 9990
-        self._total_progressbar_steps = 5
-
         self.ui = Ui_MainWindow()
         self.ui.setupUi(self)
-        self.ui.progressBar.setRange(0, self._total_progressbar_steps)
+        self.ui.progressBar.setRange(0, _total_progressbar_steps)
         # self.ui.statusbar.addWidget(QLabel("Prova"))
         self.ui.statusbar.showMessage("Ready")
         self.fillMethodsTree()
         self.setupHistoryWidget()
-
         self.connectSignalsSlots()
-
-    def setupHistoryWidget(self):
-        self.ui.historyWidget.addActions([self.ui.actionSaveAs])
-
-    def connectSignalsSlots(self):
-        self.ui.actionQuit.triggered.connect(self.close)
-        self.ui.actionAbout.triggered.connect(self.about)
-        self.ui.runButton.clicked.connect(self.runAnalysis)
-        self.ui.methodTree.itemSelectionChanged.connect(self._updateRunButtonState)
-
-        self.ui.actionSaveAs.triggered.connect(self.saveas)
-
-        # https://stackoverflow.com/questions/50104163/update-pyqt-gui-from-a-python-thread
-        self.updateProgress.connect(self.ui.progressBar.setValue)
-
-
-    def saveas(self):
-        logging.info("SAVEAS called")
-
-
-    def _updateRunButtonState(self):
-        m = self._getMethod()
-        self.ui.runButton.setEnabled(m is not None)
-
 
     def fillMethodsTree(self):
         wlist = AlloViz.AlloViz.info.wrappers
@@ -108,7 +93,6 @@ class AlloVizWindow(QMainWindow):
         tree = self.ui.methodTree
         tree.setColumnCount(len(df.columns))
         tree.setHeaderLabels(df.columns)
-
 
         # Nest grouping the first 2 levels by unique value.
         items = []
@@ -134,9 +118,32 @@ class AlloVizWindow(QMainWindow):
 
         # tree.setColumnWidth(0,200)
         tree.resizeColumnToContents(0)
-
         # for i in range(len(df.columns)):
         #    tree.resizeColumnToContents(i)
+
+    def setupHistoryWidget(self):
+        self.ui.historyWidget.addActions([self.ui.actionSaveAs])
+
+    def connectSignalsSlots(self):
+        self.ui.actionQuit.triggered.connect(self.close)
+        self.ui.actionAbout.triggered.connect(self.about)
+        self.ui.runButton.clicked.connect(self.runAnalysis)
+        self.ui.methodTree.itemSelectionChanged.connect(self._updateRunButtonState)
+
+        self.ui.actionSaveAs.triggered.connect(self.saveas)
+
+        # https://stackoverflow.com/questions/50104163/update-pyqt-gui-from-a-python-thread
+        self.updateProgress.connect(self.ui.progressBar.setValue)
+
+
+    def saveas(self):
+        logging.info("SAVEAS called")
+
+
+    def _updateRunButtonState(self):
+        m = self._getUiMethod()
+        self.ui.runButton.setEnabled(m is not None)
+
 
     def about(self):
         QMessageBox.about(
@@ -157,7 +164,7 @@ class AlloVizWindow(QMainWindow):
     def sendVMDCommand(self, cmd):
         try:
             with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
-                s.connect((self.HOST, self.PORT))
+                s.connect((_HOST, _PORT))
                 s.sendall(str.encode(cmd + "\n"))
                 data = s.recv(4096)
         except Exception as e:
@@ -170,14 +177,14 @@ class AlloVizWindow(QMainWindow):
         logging.info("sendVMDCommand got " + ret)
         return ret
 
-    def _getMethod(self):
+    def _getUiMethod(self):
         method = self.ui.methodTree.selectedItems()
         if len(method) != 1:
             return None
         kw = method[0].data(self._keyword_column, 0)
         return kw
 
-    def _getFilters(self):
+    def _getUiFilters(self):
         flist = []
         fargs = {}
         if self.ui.checkbox_GetContacts_edges.isChecked():
@@ -194,7 +201,7 @@ class AlloVizWindow(QMainWindow):
         logging.info(f"Filters: {flist}, kwargs {fargs}") 
         return flist, fargs
     
-    def _getAnalysis(self):
+    def _getUiAnalysisType(self):
         if self.ui.anEdgeBtwCheck.isChecked():
             el, met = "edges", "btw"
         elif self.ui.anEdgeCurrentCheck.isChecked():
@@ -210,11 +217,10 @@ class AlloVizWindow(QMainWindow):
         logging.info(f"Analysis: {el}, {met}")
         return el, met
 
-    # Should work but doesn't update. Not with setValue, neither with signals
     def _increaseProgressBar(self):
         pbar = self.ui.progressBar
         i = pbar.value()
-        logging.info(f"Current progressbar is {i}")
+        logging.info(f"Updating progressbar {i} -> {i+1}")
         self.updateProgress.emit(i+1)
         #pbar.repaint()
         self.app.processEvents()
@@ -224,17 +230,13 @@ class AlloVizWindow(QMainWindow):
         self.ui.statusbar.showMessage(msg)
         self.app.processEvents()
 
+    # TODO: long-running calcs in threads, interruptible
     def runAnalysis(self):
         pbar = self.ui.progressBar
         ht = self.ui.historyWidget
         asel = self.ui.atomselEdit.text()
-        method = self._getMethod()
-        filters = self._getFilters()
-
-        logging.info(f"FOCUS ht: {ht.hasFocus()}")
-        logging.info(f"FOCUS m: {self.ui.methodTree.hasFocus()}")
-
-        logging.info(f"Run clicked: {asel}, {method}")
+        method = self._getUiMethod()
+        filters = self._getUiFilters()
 
         pbar.setValue(0)
         with ComputeStep("Dumping trajectory", self):
@@ -247,8 +249,12 @@ class AlloVizWindow(QMainWindow):
                 pdbfile = "../117/11159_dyn_117.pdb"
                 dcdfile = "../117/11157_trj_117.xtc"
 
+        _,tmp = md5sum_file(dcdfile)
+        cache_path = f"/var/tmp/alloviz_gui_{tmp}"
+        logging.info(f"Using cache path {cache_path}")
+
         with ComputeStep("Loading trajectory", self):
-            prot = AlloViz.Protein(pdb=pdbfile, trajs=dcdfile)
+            prot = AlloViz.Protein(pdb=pdbfile, trajs=dcdfile, path=cache_path)
 
         self._increaseProgressBar()
         with ComputeStep("Calculating", self):
@@ -261,14 +267,14 @@ class AlloVizWindow(QMainWindow):
 
         self._increaseProgressBar()
         with ComputeStep("Filtering", self):
-            flist, fargs = self._getFilters()
+            flist, fargs = self._getUiFilters()
             # The weird syntax requires a list of lists for sequential filtering
             prot.filter("all", filterings=[flist], **fargs)
 
 
         self._increaseProgressBar()
         with ComputeStep("Analyzing", self):
-            el, met = self._getAnalysis()
+            el, met = self._getUiAnalysisType()
             # The weird syntax requires a list of lists for sequential filtering
             prot.analyze("all", elements=el, metrics=met)
 
