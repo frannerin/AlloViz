@@ -256,27 +256,22 @@ class AlloVizWindow(QMainWindow):
         with ComputeStep("Loading trajectory", self):
             prot = AlloViz.Protein(pdb=pdbfile, trajs=dcdfile, path=cache_path)
 
-        self._increaseProgressBar()
         with ComputeStep("Calculating", self):
             prot.calculate(method)
 
-        self._increaseProgressBar()
         with ComputeStep("Adding getContacts", self):
             if self.ui.checkbox_GetContacts_edges.isChecked():
                 prot.calculate("GetContacts")
 
-        self._increaseProgressBar()
         with ComputeStep("Filtering", self):
             flist, fargs = self._getUiFilters()
             # The weird syntax requires a list of lists for sequential filtering
-            prot.filter("all", filterings=[flist], **fargs)
+            prot.filter(method, filterings=[flist], **fargs)  # "all"?
 
-
-        self._increaseProgressBar()
         with ComputeStep("Analyzing", self):
             el, met = self._getUiAnalysisType()
             # The weird syntax requires a list of lists for sequential filtering
-            prot.analyze("all", elements=el, metrics=met)
+            prot.analyze(method, elements=el, metrics=met) # "all"?
 
         self._showMessage("Ready")
 
