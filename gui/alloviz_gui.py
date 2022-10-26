@@ -23,7 +23,7 @@ logging.basicConfig(level=logging.INFO,
 # from qtpy.QtWidgets import *
 # from qtpy.uic import loadUi
 
-
+# TODO catch exception. possibly move as inner class.
 class ComputeStep(object):
     def __init__(self, msg, smcb=None):
         self.msg = msg
