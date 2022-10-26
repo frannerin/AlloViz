@@ -25,17 +25,25 @@ logging.basicConfig(level=logging.INFO,
 
 # TODO catch exception. possibly move as inner class.
 class ComputeStep(object):
-    def __init__(self, msg, smcb=None):
+    def __init__(self, msg, obj, show_on_statusbar=True, increase_progressbar=True):
         self.msg = msg
-        self.smcb = smcb
+        self.obj = obj
+        self.show_on_statusbar = show_on_statusbar
+        self.increase_progressbar = increase_progressbar
 
     def __enter__(self):
-        if self.smcb is not None:
-            self.smcb(self.msg)
+        if self.show_on_statusbar:
+            self.obj.ui.statusbar.showMessage(self.msg)
+        if self.increase_progressbar:
+            self.obj._increaseProgressBar()
         logging.info(self.msg)
     
-    def __exit__(self, type, value, traceback):
+    def __exit__(self, exc_type, exc_value, traceback):
         logging.info("...done")
+        if exc_type is not None:
+            logging.info("(with exception)")
+            self.obj.critical(self.msg, exc_value)
+            return True
 
 
 class AlloVizWindow(QMainWindow):
@@ -61,8 +69,6 @@ class AlloVizWindow(QMainWindow):
     def setupHistoryWidget(self):
         self.ui.historyWidget.addActions([self.ui.actionSaveAs])
 
-
-
     def connectSignalsSlots(self):
         self.ui.actionQuit.triggered.connect(self.close)
         self.ui.actionAbout.triggered.connect(self.about)
@@ -78,15 +84,9 @@ class AlloVizWindow(QMainWindow):
     def saveas(self):
         logging.info("SAVEAS called")
 
-    def getSelectedMethod(self):
-        method = self.ui.methodTree.selectedItems()
-        if len(method) != 1:
-            return None
-        kw = method[0].data(self._keyword_column, 0)
-        return kw
 
     def _updateRunButtonState(self):
-        m = self.getSelectedMethod()
+        m = self._getMethod()
         self.ui.runButton.setEnabled(m is not None)
 
 
@@ -147,12 +147,19 @@ class AlloVizWindow(QMainWindow):
             '<p>Source code: <a href="https://github.com/frannerin/AlloViz">github.com/frannerin/AlloViz</a></p>',
         )
 
+    def critical(self, stepname, message):
+        QMessageBox.critical(
+            self,
+            "Error",
+            f"Error while executing step `{stepname}':<br><br>{message}"
+        )
+
     def sendVMDCommand(self, cmd):
         try:
             with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
                 s.connect((self.HOST, self.PORT))
                 s.sendall(str.encode(cmd + "\n"))
-                data = s.recv(1024)
+                data = s.recv(4096)
         except Exception as e:
             logging.warning(
                 f"Could not connect to VMD ({self.HOST}:{self.PORT}): {e}.\nMake sure the client component is running."
@@ -162,6 +169,13 @@ class AlloVizWindow(QMainWindow):
         ret = data.decode().strip()
         logging.info("sendVMDCommand got " + ret)
         return ret
+
+    def _getMethod(self):
+        method = self.ui.methodTree.selectedItems()
+        if len(method) != 1:
+            return None
+        kw = method[0].data(self._keyword_column, 0)
+        return kw
 
     def _getFilters(self):
         flist = []
@@ -197,7 +211,7 @@ class AlloVizWindow(QMainWindow):
         return el, met
 
     # Should work but doesn't update. Not with setValue, neither with signals
-    def increaseProgressBar(self):
+    def _increaseProgressBar(self):
         pbar = self.ui.progressBar
         i = pbar.value()
         logging.info(f"Current progressbar is {i}")
@@ -205,7 +219,7 @@ class AlloVizWindow(QMainWindow):
         #pbar.repaint()
         self.app.processEvents()
 
-    def showMessage(self, msg):
+    def _showMessage(self, msg):
         logging.info(msg)
         self.ui.statusbar.showMessage(msg)
         self.app.processEvents()
@@ -214,7 +228,7 @@ class AlloVizWindow(QMainWindow):
         pbar = self.ui.progressBar
         ht = self.ui.historyWidget
         asel = self.ui.atomselEdit.text()
-        method = self.getSelectedMethod()
+        method = self._getMethod()
         filters = self._getFilters()
 
         logging.info(f"FOCUS ht: {ht.hasFocus()}")
@@ -223,7 +237,7 @@ class AlloVizWindow(QMainWindow):
         logging.info(f"Run clicked: {asel}, {method}")
 
         pbar.setValue(0)
-        with ComputeStep("Dumping trajectory", self.showMessage):
+        with ComputeStep("Dumping trajectory", self):
             try:
                 bn = self.sendVMDCommand(f"::alloviz::dump_trajectory {{{asel}}}")
                 pdbfile = bn + ".pdb"
@@ -233,33 +247,32 @@ class AlloVizWindow(QMainWindow):
                 pdbfile = "../117/11159_dyn_117.pdb"
                 dcdfile = "../117/11157_trj_117.xtc"
 
-        self.increaseProgressBar()
-        with ComputeStep("Loading trajectory", self.showMessage):
+        with ComputeStep("Loading trajectory", self):
             prot = AlloViz.Protein(pdb=pdbfile, trajs=dcdfile)
 
-        self.increaseProgressBar()
-        with ComputeStep("Calculating", self.showMessage):
+        self._increaseProgressBar()
+        with ComputeStep("Calculating", self):
             prot.calculate(method)
 
-        self.increaseProgressBar()
-        with ComputeStep("Adding getContacts", self.showMessage):
+        self._increaseProgressBar()
+        with ComputeStep("Adding getContacts", self):
             if self.ui.checkbox_GetContacts_edges.isChecked():
                 prot.calculate("GetContacts")
 
-        self.increaseProgressBar()
-        with ComputeStep("Filtering", self.showMessage):
+        self._increaseProgressBar()
+        with ComputeStep("Filtering", self):
             flist, fargs = self._getFilters()
             # The weird syntax requires a list of lists for sequential filtering
             prot.filter("all", filterings=[flist], **fargs)
 
 
-        self.increaseProgressBar()
-        with ComputeStep("Analyzing", self.showMessage):
+        self._increaseProgressBar()
+        with ComputeStep("Analyzing", self):
             el, met = self._getAnalysis()
             # The weird syntax requires a list of lists for sequential filtering
             prot.analyze("all", elements=el, metrics=met)
 
-        self.showMessage("Ready")
+        self._showMessage("Ready")
 
         # Add item to history 
         hitem = QListWidgetItem(method)
