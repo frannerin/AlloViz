@@ -1142,4 +1142,4 @@ class Delta:
         NGLWidget()
         """
         # Function is the same one as the Protein class one but 'self' is passed to use Delta's attributes' data
-        return Protein.view(self, pkg, metric, filterby, element, num, colors, nv)
+        return Protein.view(self, pkg, metric, filtering, element, num, colors, nv)
