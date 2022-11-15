@@ -128,6 +128,104 @@ class Protein:
     extended through the `protein_sel` parameter using, e.g.,
     :attr:`AlloViz.Protein._protein_sel` + " and {customselection}"
     """
+    
+    def __new__(
+        cls,
+        pdb="",
+        trajs=[],
+        GPCR=False,
+        name=None,
+        path=None,
+        protein_sel=None,
+        **kwargs,
+    ):
+        new = super().__new__(cls)
+        new.GPCR = GPCR
+
+        # If a GPCRmd ID is passed
+        if not isinstance(new.GPCR, bool) and isinstance(new.GPCR, int):
+            new.name = f"{new.GPCR}" if not name else name
+            new._path = f"{new.GPCR}" if not path else path
+            os.makedirs(new._path, exist_ok=True)
+
+            # Download the files from GPCRmd
+            if not any(
+                [
+                    re.search("(pdb$|psf$|xtc$|dcd$|parameters$)", file)
+                    for file in os.listdir(new._path)
+                ]
+            ):
+                trajutils.download_GPCRmd_files(new.GPCR, new._path)
+            files = os.listdir(new._path)
+
+            # Retrieve filenames from the files downloaded into new._path
+            get_filename = (
+                lambda ext: new._path
+                + "/"
+                + next(file for file in files if re.search(f"{ext}$", file))
+            )
+            new.pdb = get_filename("pdb")
+            new.trajs = list(
+                sorted(
+                    f"{new._path}/{traj}"
+                    for traj in files
+                    if re.search("^(?!\.).*\.(xtc|dcd)$", traj)
+                )
+            )
+            new.psf = get_filename("psf")
+            new._paramf = get_filename("parameters")
+
+        # If pdb and trajectory files are passed
+        else:
+            new.name = pdb.replace(".pdb", "").split("/")[-1] if not name else name
+            new._path = "." if not path else path
+            os.makedirs(new._path, exist_ok=True)
+
+            new.pdb = pdb
+            new.trajs = trajs if isinstance(trajs, list) else [trajs]
+
+            # Check if a .psf and a force-field parameters files have been passed for gRINN network calculation
+            passed_psf_params = "parameters" in kwargs and "psf" in kwargs
+            if passed_psf_params:
+                new.psf = kwargs["psf"]
+                new._paramf = kwargs["parameters"]
+
+            # Check if all the filehandles passed exist, and raise an error if not
+            files_to_check = (
+                new.trajs + [new.pdb]
+                if not passed_psf_params
+                else new.trajs + [new.pdb, new.psf, new._paramf]
+            )
+            files_exist = {file: os.path.isfile(file) for file in files_to_check}
+            if any([not file_exist for file_exist in files_exist.values()]):
+                raise FileNotFoundError(
+                    f"Some of the files could not be found: {files_exist}"
+                )
+
+        new._protein_sel = Protein._protein_sel if not protein_sel else protein_sel
+
+        # Set the names of the directories and files that will be creating when processing the input files
+        new._datadir = f"{new._path}/data"
+        os.makedirs(new._datadir, exist_ok=True)
+
+        new._pdbf = f"{new._datadir}/protein.pdb"
+        new._trajs = dict(
+            [
+                (num + 1, f"{new._datadir}/traj_{num+1}.xtc")
+                for num in range(len(new.trajs))
+            ]
+        )
+        new._psff = new._pdbf.replace("pdb", "psf") if hasattr(new, "psf") else None
+
+        # Names of the directories and files of the future pdb and trajectory(ies) of the residues' Center Of Mass
+        compath = f"{new._datadir}/COM_trajs"
+        os.makedirs(compath, exist_ok=True)
+        new._compdbf = f"{compath}/ca.pdb"
+        new._comtrajs = {num: f"{compath}/{num}.xtc" for num in new._trajs}
+        
+        return new
+        
+        
 
     def __init__(
         self,
@@ -139,88 +237,6 @@ class Protein:
         protein_sel=None,
         **kwargs,
     ):
-        self.GPCR = GPCR
-
-        # If a GPCRmd ID is passed
-        if not isinstance(self.GPCR, bool) and isinstance(self.GPCR, int):
-            self.name = f"{self.GPCR}" if not name else name
-            self._path = f"{self.GPCR}" if not path else path
-            os.makedirs(self._path, exist_ok=True)
-
-            # Download the files from GPCRmd
-            if not any(
-                [
-                    re.search("(pdb$|psf$|xtc$|dcd$|parameters$)", file)
-                    for file in os.listdir(self._path)
-                ]
-            ):
-                trajutils.download_GPCRmd_files(self.GPCR, self._path)
-            files = os.listdir(self._path)
-
-            # Retrieve filenames from the files downloaded into self._path
-            get_filename = (
-                lambda ext: self._path
-                + "/"
-                + next(file for file in files if re.search(f"{ext}$", file))
-            )
-            self.pdb = get_filename("pdb")
-            self.trajs = list(
-                sorted(
-                    f"{self._path}/{traj}"
-                    for traj in files
-                    if re.search("^(?!\.).*\.(xtc|dcd)$", traj)
-                )
-            )
-            self.psf = get_filename("psf")
-            self._paramf = get_filename("parameters")
-
-        # If pdb and trajectory files are passed
-        else:
-            self.name = pdb.replace(".pdb", "").split("/")[-1] if not name else name
-            self._path = "." if not path else path
-            os.makedirs(self._path, exist_ok=True)
-
-            self.pdb = pdb
-            self.trajs = trajs if isinstance(trajs, list) else [trajs]
-
-            # Check if a .psf and a force-field parameters files have been passed for gRINN network calculation
-            passed_psf_params = "parameters" in kwargs and "psf" in kwargs
-            if passed_psf_params:
-                self.psf = kwargs["psf"]
-                self._paramf = kwargs["parameters"]
-
-            # Check if all the filehandles passed exist, and raise an error if not
-            files_to_check = (
-                self.trajs + [self.pdb]
-                if not passed_psf_params
-                else self.trajs + [self.pdb, self.psf, self._paramf]
-            )
-            files_exist = {file: os.path.isfile(file) for file in files_to_check}
-            if any([not file_exist for file_exist in files_exist.values()]):
-                raise FileNotFoundError(
-                    f"Some of the files could not be found: {files_exist}"
-                )
-
-        self._protein_sel = Protein._protein_sel if not protein_sel else protein_sel
-
-        # Set the names of the directories and files that will be creating when processing the input files
-        self._datadir = f"{self._path}/data"
-        os.makedirs(self._datadir, exist_ok=True)
-
-        self._pdbf = f"{self._datadir}/protein.pdb"
-        self._trajs = dict(
-            [
-                (num + 1, f"{self._datadir}/traj_{num+1}.xtc")
-                for num in range(len(self.trajs))
-            ]
-        )
-        self._psff = self._pdbf.replace("pdb", "psf") if hasattr(self, "psf") else None
-
-        # Names of the directories and files of the future pdb and trajectory(ies) of the residues' Center Of Mass
-        compath = f"{self._datadir}/COM_trajs"
-        os.makedirs(compath, exist_ok=True)
-        self._compdbf = f"{compath}/ca.pdb"
-        self._comtrajs = {num: f"{compath}/{num}.xtc" for num in self._trajs}
 
         # If the processed filenames don't exist yet as files, process the input files; if special_res kwarg is used it will be passed
         if any(
