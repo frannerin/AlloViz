@@ -288,9 +288,6 @@ class Edges(Element):
     See this class' :meth:`~AlloViz.AlloViz.Elements.Edges._add_element`
     """
 
-    def __init__(self, *args):
-        super().__init__(*args)
-
     def _add_element(self, nv, prot, edge, color, size):
         r"""Add a network element to the representation
 
@@ -336,9 +333,6 @@ class Nodes(Element):
 
     See this class' :meth:`~AlloViz.AlloViz.Elements.Nodes._add_element`
     """
-
-    def __init__(self, *args):
-        super().__init__(*args)
 
     def _add_element(self, nv, prot, node, color, size):
         r"""Add a network element to the representation

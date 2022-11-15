@@ -199,17 +199,19 @@ def download_GPCRmd_files(GPCRmdid, path):
     mypool.join()
 
     # Extract the 'parameters' file, remove the tar and transform it in-place to avoid errors with the gRINN network construction method
-    fname = next(get_name(link) for link in links if "prm" in get_name(link))
-    with tarfile.open(fname) as tar:
-        tar.extractall(path)
-    os.remove(fname)
+    if any(["prm" in link for link in links]):
+        fname = next(get_name(link) for link in links if "prm" in get_name(link))
+        if "tar" in fname:
+            with tarfile.open(fname) as tar:
+                tar.extractall(path)
+            os.remove(fname)
 
-    for line in fileinput.input(f"{path}/parameters", inplace=True):
-        if line.strip().startswith("HBOND"):
-            line = "HBOND CUTHB 0.5\n"  # gRINN example parameters file has the 'CUTHB 0.5' in addition to 'HBOND' in its line and seems to be necessary
-        elif line.strip().startswith("END"):
-            line = "END\n"  # gRINN example parameters file has a newline in the end of the file that seems to be necessary
-        sys.stdout.write(line)
+        for line in fileinput.input(f"{path}/parameters", inplace=True):
+            if line.strip().startswith("HBOND"):
+                line = "HBOND CUTHB 0.5\n"  # gRINN example parameters file has the 'CUTHB 0.5' in addition to 'HBOND' in its line and seems to be necessary
+            elif line.strip().startswith("END"):
+                line = "END\n"  # gRINN example parameters file has a newline in the end of the file that seems to be necessary
+            sys.stdout.write(line)
 
     return
 

@@ -172,8 +172,10 @@ class Protein:
                     if re.search("^(?!\.).*\.(xtc|dcd)$", traj)
                 )
             )
-            new.psf = get_filename("psf")
-            new._paramf = get_filename("parameters")
+            if any(["psf" in file for file in files]):
+                self.psf = get_filename("psf")
+            if any(["parameters" in file for file in files]):
+                self._paramf = get_filename("parameters")
 
         # If pdb and trajectory files are passed
         else:
@@ -238,7 +240,6 @@ class Protein:
         protein_sel=None,
         **kwargs,
     ):
-
         # If the processed filenames don't exist yet as files, process the input files; if special_res kwarg is used it will be passed
         if any(
             [
