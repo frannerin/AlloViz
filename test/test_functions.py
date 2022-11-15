@@ -15,6 +15,9 @@ def noninit_protein(test_path):
                                    trajs = f"{test_path}/data/traj_1.xtc",
                                    path = test_path)
 
+
+
+
 def test_pathname(test_path):
     assert "test" in test_path
 
