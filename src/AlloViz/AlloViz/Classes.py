@@ -171,8 +171,10 @@ class Protein:
                     if re.search("^(?!\.).*\.(xtc|dcd)$", traj)
                 )
             )
-            self.psf = get_filename("psf")
-            self._paramf = get_filename("parameters")
+            if any(["psf" in file for file in files]):
+                self.psf = get_filename("psf")
+            if any(["parameters" in file for file in files]):
+                self._paramf = get_filename("parameters")
 
         # If pdb and trajectory files are passed
         else:
