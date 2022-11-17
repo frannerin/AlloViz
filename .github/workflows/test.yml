@@ -8,10 +8,10 @@ on:
 jobs:
   miniconda:
     name: Miniconda ${{ matrix.os }}
-    runs-on: ${{ matrix.os }}
+    runs-on: ${{ matrix.os }}-latest
     strategy:
-        matrix:
-            os: ["ubuntu-latest", "windows-latest" "macos-latest"]
+      matrix:
+        os: ["ubuntu", "windows" "macos"]
   # build-linux:
   #   runs-on: ubuntu-latest
   #   strategy:
