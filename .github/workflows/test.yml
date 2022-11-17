@@ -37,7 +37,7 @@ jobs:
         activate-environment: test
         channels: conda-forge
         environment-file: dev/dev_env.yml
-        python-version: "3.10"
+        # python-version: "3.10"
         auto-activate-base: false
     - name: Lint with flake8
       run: |
