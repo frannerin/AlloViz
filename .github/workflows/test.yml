@@ -11,11 +11,7 @@ jobs:
     runs-on: ${{ matrix.os }}-latest
     strategy:
       matrix:
-        os: ["ubuntu", "windows" "macos"]
-  # build-linux:
-  #   runs-on: ubuntu-latest
-  #   strategy:
-  #     max-parallel: 5
+        os: ["ubuntu", "macos", "windows"]
     defaults:
       run:
         shell: bash -el {0}
@@ -28,17 +24,6 @@ jobs:
           environment-file: dev/dev_env.txt
           python-version: 3.10
           auto-activate-base: false
-    # - name: Set up Python 3.10
-    #   uses: actions/setup-python@v4
-    #   with:
-    #     python-version: "3.10"
-    # - name: Add conda to system path
-    #   run: |
-    #     # $CONDA is an environment variable pointing to the root of the miniconda directory
-    #     echo $CONDA/bin >> $GITHUB_PATH
-    # - name: Install dependencies
-    #   run: |
-    #     conda env update --file dev/dev_env.txt --name base
     - name: Lint with flake8
       run: |
         conda install flake8
@@ -49,3 +34,21 @@ jobs:
     - name: Test with pytest
       run: |
         pytest test
+
+
+
+# build-linux:
+#   runs-on: ubuntu-latest
+#   strategy:
+#     max-parallel: 5
+  # - name: Set up Python 3.10
+#   uses: actions/setup-python@v4
+#   with:
+#     python-version: "3.10"
+# - name: Add conda to system path
+#   run: |
+#     # $CONDA is an environment variable pointing to the root of the miniconda directory
+#     echo $CONDA/bin >> $GITHUB_PATH
+# - name: Install dependencies
+#   run: |
+#     conda env update --file dev/dev_env.txt --name base
