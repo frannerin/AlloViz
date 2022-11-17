@@ -9,7 +9,7 @@ dependencies:
   - nb_conda_kernels
   - sphinx_rtd_theme
   - nbsphinx
-  - "nbsphinx-link"
+  - nbsphinx-link
   - pytest
 
   # main pkgs
@@ -50,7 +50,7 @@ dependencies:
 
 
   # Pkgs and deps
-  - vmd-python>=3.0 # for getcontacts
+  #- vmd-python>=3.0 # for getcontacts # NOT AVAILABLE FOR WINDOWS
   #git+https://github.com/Eigenstate/vmd-python@master # needed for pip because it's not on PyPi, although it didn't work
 
   - matplotlib # for MDTASK probably; ALSO FOR VIZ
@@ -61,8 +61,8 @@ dependencies:
   - h5py # for dynetan
   - python-louvain # for dynetan; imported as community
 
-  - ambertools>=21.0 # for pytraj and parmed
-
+  #- ambertools>=21.0 # for pytraj and parmed
+  - parmed
   - prody>=2.0.1 # for correlationplus; prob 2.0.2 needed for a gRINN dep
   - pyprind # for gRINN
   - panedr # for gRINN
@@ -78,7 +78,8 @@ dependencies:
   #fastcluster is also missing
 
   # pyyaml is needed for psntools
-
+  - pip:
+      - pytraj
 
 
 
