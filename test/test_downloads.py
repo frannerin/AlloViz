@@ -11,6 +11,15 @@ def path(tmp_path_factory):
     yield str(path)
     shutil.rmtree(str(path))
 
+    
+    
+def test_download(path):
+    AlloViz.AlloViz.trajutils.download_GPCRmd_files(10, path)
+    files = os.listdir(path)
+    assert ("10182_dyn_10.pdb" in files and "10180_trj_10.dcd" in files), "download_GPCRmd_files of dynid 10 weren't correctly downloaded"
+    
+    
+    
 # @pytest.mark.filterwarnings("ignore::UserWarning:MDAnalysis")
 @pytest.fixture(scope="module", autouse=True)
 def prot(path):
@@ -18,14 +27,17 @@ def prot(path):
     yield prot
     del prot
 
-    
-    
-def test_download(path):
-    files = os.listdir(path)
-    assert ("10182_dyn_10.pdb" in files and "10180_trj_10.dcd" in files), "GPCRmd files of dynid 10 weren't correctly downloaded"
+
     
 def test_pdbname(prot):
     assert "10182_dyn_10.pdb" in prot.pdb
+    
+    
+def test_processing(path):
+    files = os.listdir(path + "/data")
+    assert ("protein.pdb" in files and "traj_1.xtc" in files), "Structure and trajectory files weren't correctly processed"
+    
+
     
 def test_gpcrdb_numbering(prot):
     np.testing.assert_allclose(

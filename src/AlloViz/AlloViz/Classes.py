@@ -458,9 +458,9 @@ class Protein:
         
         # if cores > 1:
         # Close the pool
-        mypool.close()
-        mypool.join()
-        mypool = utils.dummypool()
+        utils.pool.close()
+        utils.pool.join()
+        utils.pool = utils.dummypool()
         
         if len(combined_dihs) > 0:
             # Calculate now the combination of dihedrals, which is just a combination of the already-calculated data
@@ -658,9 +658,9 @@ class Protein:
         # mypool = utils.dummypool()
         # if cores > 1:
         # Close the pool
-        mypool.close()
-        mypool.join()
-        mypool = utils.dummypool()
+        utils.pool.close()
+        utils.pool.join()
+        utils.pool = utils.dummypool()
             
         #return #result if (len(pkgs) == 1 and len(filterings) == 1) else None
     
