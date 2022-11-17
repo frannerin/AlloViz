@@ -80,6 +80,9 @@ dependencies:
   # pyyaml is needed for psntools
 
 
+  #for enspara parallelization
+  - mpi4py
+  - mpich
 
   # - pip:
   #     - -i https://pypi.anaconda.org/ambermd/simple pytraj #git+https://github.com/Amber-MD/pytraj

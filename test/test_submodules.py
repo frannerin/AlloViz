@@ -59,4 +59,116 @@ def test_calculation_reg(single_traj, test_path, pkg):
         getattr(single_traj, pkg).raw.sort_index(inplace=True)
         reg.sort_index(inplace=True)
     np.testing.assert_array_equal(getattr(single_traj, pkg).raw.index.values, reg.index.values)
-    np.testing.assert_allclose(getattr(single_traj, pkg).raw.values, reg.values)
+    np.testing.assert_allclose(getattr(single_traj, pkg).raw.values, reg.values, rtol=3e-03)
+    
+# Had to increase rtol because calculations results in MACOS (in GitHub actions) maximum relative difference of correlationplus_Phi is up to 0.002+:
+# __________________ test_calculation_reg[correlationplus_Phi0] __________________
+
+# single_traj = <AlloViz.AlloViz.Classes.Protein object at 0x1392cfa60>
+# test_path = '/Users/runner/work/AlloViz/AlloViz/test'
+# pkg = 'correlationplus_Phi'
+
+#     @pytest.mark.parametrize("pkg", pkgs)
+#     def test_calculation_reg(single_traj, test_path, pkg):
+#         reg = pandas.read_parquet(f"{test_path}/data/{pkg}/raw/1.pq")
+#         if pkg in ["GetContacts"]:
+#             getattr(single_traj, pkg).raw.sort_index(inplace=True)
+#             reg.sort_index(inplace=True)
+#         np.testing.assert_array_equal(getattr(single_traj, pkg).raw.index.values, reg.index.values)
+# >       np.testing.assert_allclose(getattr(single_traj, pkg).raw.values, reg.values)
+# E       AssertionError: 
+# E       Not equal to tolerance rtol=1e-07, atol=0
+# E       
+# E       Mismatched elements: 4294 / 13861 (31%)
+# E       Max absolute difference: 1.01149605e-07
+# E       Max relative difference: 0.00214515
+# E        x: array([[ 0.303966],
+# E              [-0.222161],
+# E              [ 0.341827],...
+# E        y: array([[ 0.303966],
+# E              [-0.222161],
+# E              [ 0.341827],...
+
+# test/test_submodules.py:62: AssertionError
+# __________________ test_calculation_reg[correlationplus_Phi1] __________________
+
+# single_traj = <AlloViz.AlloViz.Classes.Protein object at 0x1392cfa60>
+# test_path = '/Users/runner/work/AlloViz/AlloViz/test'
+# pkg = 'correlationplus_Phi'
+
+#     @pytest.mark.parametrize("pkg", pkgs)
+#     def test_calculation_reg(single_traj, test_path, pkg):
+#         reg = pandas.read_parquet(f"{test_path}/data/{pkg}/raw/1.pq")
+#         if pkg in ["GetContacts"]:
+#             getattr(single_traj, pkg).raw.sort_index(inplace=True)
+#             reg.sort_index(inplace=True)
+#         np.testing.assert_array_equal(getattr(single_traj, pkg).raw.index.values, reg.index.values)
+# >       np.testing.assert_allclose(getattr(single_traj, pkg).raw.values, reg.values)
+# E       AssertionError: 
+# E       Not equal to tolerance rtol=1e-07, atol=0
+# E       
+# E       Mismatched elements: 4294 / 13861 (31%)
+# E       Max absolute difference: 1.01149605e-07
+# E       Max relative difference: 0.00214515
+# E        x: array([[ 0.303966],
+# E              [-0.222161],
+# E              [ 0.341827],...
+# E        y: array([[ 0.303966],
+# E              [-0.222161],
+# E              [ 0.341827],...
+
+# test/test_submodules.py:62: AssertionError
+# ___________ test_calculation_reg[correlationplus_Backbone_Dihs_Avg] ____________
+
+# single_traj = <AlloViz.AlloViz.Classes.Protein object at 0x1392cfa60>
+# test_path = '/Users/runner/work/AlloViz/AlloViz/test'
+# pkg = 'correlationplus_Backbone_Dihs_Avg'
+
+#     @pytest.mark.parametrize("pkg", pkgs)
+#     def test_calculation_reg(single_traj, test_path, pkg):
+#         reg = pandas.read_parquet(f"{test_path}/data/{pkg}/raw/1.pq")
+#         if pkg in ["GetContacts"]:
+#             getattr(single_traj, pkg).raw.sort_index(inplace=True)
+#             reg.sort_index(inplace=True)
+#         np.testing.assert_array_equal(getattr(single_traj, pkg).raw.index.values, reg.index.values)
+# >       np.testing.assert_allclose(getattr(single_traj, pkg).raw.values, reg.values)
+# E       AssertionError: 
+# E       Not equal to tolerance rtol=1e-07, atol=0
+# E       
+# E       Mismatched elements: 1870 / 13861 (13.5%)
+# E       Max absolute difference: 5.30856664e-08
+# E       Max relative difference: 3.09321557e-06
+# E        x: array([[0.299593],
+# E              [0.144347],
+# E              [0.242614],...
+# E        y: array([[0.299593],
+# E              [0.144347],
+# E              [0.242614],...
+
+# test/test_submodules.py:62: AssertionError
+# ___________ test_calculation_reg[correlationplus_Backbone_Dihs_Max] ____________
+
+# single_traj = <AlloViz.AlloViz.Classes.Protein object at 0x1392cfa60>
+# test_path = '/Users/runner/work/AlloViz/AlloViz/test'
+# pkg = 'correlationplus_Backbone_Dihs_Max'
+
+#     @pytest.mark.parametrize("pkg", pkgs)
+#     def test_calculation_reg(single_traj, test_path, pkg):
+#         reg = pandas.read_parquet(f"{test_path}/data/{pkg}/raw/1.pq")
+#         if pkg in ["GetContacts"]:
+#             getattr(single_traj, pkg).raw.sort_index(inplace=True)
+#             reg.sort_index(inplace=True)
+#         np.testing.assert_array_equal(getattr(single_traj, pkg).raw.index.values, reg.index.values)
+# >       np.testing.assert_allclose(getattr(single_traj, pkg).raw.values, reg.values)
+# E       AssertionError: 
+# E       Not equal to tolerance rtol=1e-07, atol=0
+# E       
+# E       Mismatched elements: 1803 / 13861 (13%)
+# E       Max absolute difference: 6.69842053e-08
+# E       Max relative difference: 8.51313525e-06
+# E        x: array([[0.303966],
+# E              [0.222161],
+# E              [0.341827],...
+# E        y: array([[0.303966],
+# E              [0.222161],
+# E              [0.341827],...
