@@ -17,6 +17,8 @@ jobs:
         shell: bash -el {0}
     steps:
     - uses: actions/checkout@v3
+      with:
+        submodules: recursive
     - uses: conda-incubator/setup-miniconda@v2
       with:
         miniforge-variant: Mambaforge
