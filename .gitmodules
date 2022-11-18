@@ -1,7 +1,3 @@
-[submodule "src/Packages/correlationplus"]
-	shallow = True
-	path = src/Packages/correlationplus
-	url = https://github.com/frannerin/correlationplus
 [submodule "src/Packages/MD-TASK"]
 	shallow = True
 	path = src/Packages/MD-TASK
@@ -38,3 +34,7 @@
 	shallow = True
 	path = src/Packages/enspara
 	url = https://github.com/bowman-lab/enspara
+[submodule "src/Packages/correlationplus"]
+	shallow = True
+	path = src/Packages/correlationplus
+	url = https://github.com/tekpinar/correlationplus

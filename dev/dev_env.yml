@@ -62,7 +62,7 @@ dependencies:
   - python-louvain # for dynetan; imported as community
 
   - ambertools>=21.0 # for pytraj and parmed
-  - parmed
+  #- parmed
   - prody>=2.0.1 # for correlationplus; prob 2.0.2 needed for a gRINN dep
   - pyprind # for gRINN
   - panedr # for gRINN
@@ -84,7 +84,8 @@ dependencies:
   - mpi4py
   - mpich
 
-  # - pip:
+  #- pip:
+    #- pytraj
   #     - -i https://pypi.anaconda.org/ambermd/simple pytraj #git+https://github.com/Amber-MD/pytraj
 
 
