@@ -70,7 +70,7 @@ if not on_rtd:
 
 
 
-  ensara_extensions = [
+  enspara_extensions = [
     Extension(
         "enspara.info_theory.libinfo",
         ["src/Packages/enspara/enspara/info_theory/libinfo.pyx"],
@@ -93,7 +93,7 @@ if not on_rtd:
 
 
   #from Cython.Build import cythonize
-  ext_modules = [libinteract, libdistance] + ensara_extensions #cythonize()
+  ext_modules = [libinteract, libdistance] + enspara_extensions #cythonize()
 
 
 

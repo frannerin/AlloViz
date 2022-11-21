@@ -6,10 +6,6 @@
 	shallow = True
 	path = src/Packages/getcontacts
 	url = https://github.com/frannerin/getcontacts
-[submodule "src/Packages/msmbuilder"]
-	shallow = True
-	path = src/Packages/msmbuilder
-	url = https://github.com/frannerin/msmbuilder
 [submodule "src/Packages/pyinteraph2"]
 	shallow = True
 	path = src/Packages/pyinteraph2
@@ -38,3 +34,7 @@
 	shallow = True
 	path = src/Packages/dynetan
 	url = https://github.com/melomcr/dynetan
+[submodule "src/Packages/msmbuilder"]
+	shallow = True
+	path = src/Packages/msmbuilder
+	url = https://github.com/msmbuilder/msmbuilder2022

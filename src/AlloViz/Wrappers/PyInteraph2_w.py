@@ -4,7 +4,10 @@ It calculates interaction energies and contact frequencies.
 
 """
 
+import numpy as np
+
 from .Base import lazy_import, Base
+
 
 imports = {
 "_pyinteraph": "pyinteraph.main",
@@ -27,7 +30,8 @@ class PyInteraph2_Base(Base):
     """    
     def _computation(self, xtc):#pdb, traj, xtc, pq, CLIargs):
         """"""
-        corr = _pyinteraph.main(f"-s {self._pdbf} -t {self._trajs[xtc]} {self._CLIargs}".split())        
+        _pyinteraph.main(f"-s {self._pdbf} -t {self._trajs[xtc]} {self._CLIargs(xtc)}".split())
+        corr = np.loadtxt(f"{new._rawpq(xtc)}.dat")
         return corr, xtc
     
     
@@ -40,7 +44,7 @@ class PyInteraph2_COM_Contacts(PyInteraph2_Base):
     """
     def __new__(cls, protein, d):
         new = super().__new__(cls, protein, d)
-        new._CLIargs = f"-m --cmpsn-graph dummy --cmpsn-residues {','.join(cmpsn_reslist)}"
+        new._CLIargs = lambda xtc: f"-m --cmpsn-csv {new._rawpq(xtc)}.csv --cmpsn-graph {new._rawpq(xtc)}.dat --cmpsn-residues {','.join(cmpsn_reslist)}"
         return new
                 
         
@@ -71,7 +75,7 @@ class PyInteraph2_COM_Contacts_Corrected(PyInteraph2_COM_Contacts):
     """
     def __new__(cls, protein, d):
         new = super().__new__(cls, protein, d)
-        new._CLIargs = f"-m --cmpsn-graph dummy --cmpsn-residues {','.join(cmpsn_reslist)} --cmpsn-correction rg --cmpsn-co 2.5"
+        new._CLIargs = lambda xtc: f"-m --cmpsn-csv {new._rawpq(xtc)}.csv --cmpsn-graph {new._rawpq(xtc)}.dat --cmpsn-residues {','.join(cmpsn_reslist)} --cmpsn-correction rg --cmpsn-co 2.5"
         return new
     
     
@@ -88,7 +92,7 @@ class PyInteraph2_Atomic_Contacts_Strength(PyInteraph2_Base):
     """
     def __new__(cls, protein, d):
         new = super().__new__(cls, protein, d)
-        new._CLIargs = f"-a --acpsn-graph dummy --acpsn-proxco 0 --acpsn-imin 0 --acpsn-nf-permissive --acpsn-ew strength"
+        new._CLIargs = lambda xtc: f"-a --acpsn-csv {new._rawpq(xtc)}.csv --acpsn-graph {new._rawpq(xtc)}.dat --acpsn-proxco 0 --acpsn-imin 0 --acpsn-nf-permissive --acpsn-ew strength"
         return new
     
     
@@ -99,7 +103,7 @@ class PyInteraph2_Atomic_Contacts_Occurrence(PyInteraph2_COM_Contacts):
     """
     def __new__(cls, protein, d):
         new = super().__new__(cls, protein, d)
-        new._CLIargs = f"-a --acpsn-graph dummy --acpsn-proxco 0 --acpsn-imin 0 --acpsn-nf-permissive --acpsn-ew persistence"
+        new._CLIargs = lambda xtc: f"-a --acpsn-csv {new._rawpq(xtc)}.csv --acpsn-graph {new._rawpq(xtc)}.dat --acpsn-proxco 0 --acpsn-imin 0 --acpsn-nf-permissive --acpsn-ew persistence"
         return new
 
     
@@ -109,5 +113,5 @@ class PyInteraph2_Energy(PyInteraph2_Base):
     """
     def __new__(cls, protein, d):
         new = super().__new__(cls, protein, d)
-        new._CLIargs = "-p --kbp-graph dummy"
+        new._CLIargs = lambda xtc: f"-p --kbp-csv {new._rawpq(xtc)}.csv --kbp-graph {new._rawpq(xtc)}.dat"
         return new

@@ -47,7 +47,11 @@ pkgs = [ "MDTASK", "pytraj_CB", "dynetan",
     
 # @pytest.mark.filterwarnings("ignore:::MDAnalysis")
 # list(set(AlloViz.AlloViz.utils.pkgsl) - {"gRINN", "MDEntropy_Contacts"})
-@pytest.mark.parametrize("pkg", pkgs)
+@pytest.mark.parametrize("pkg", pkgs + [
+                                        "AlloViz_Chi4", 
+                                        "MDEntropy_Phi", 
+                                        "MDEntropy_AlphaAngle"
+                                       ])
 def test_submodules(single_traj, pkg):
     single_traj.calculate(pkg, taskcpus=os.cpu_count())
     
