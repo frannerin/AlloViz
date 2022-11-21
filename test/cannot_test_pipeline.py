@@ -27,7 +27,7 @@ def prot(test_path, path):
     del prot
     
 def test_calculation(prot, test_path, path):
-    # prot.calculate(["correlationplus_CA_Pear", "GetContacts"], cores=2)
+    prot.calculate(["correlationplus_CA_Pear", "GetContacts"], cores=2)
     assert prot.pdb == f"{test_path}/data/protein.pdb"
     assert os.path.isfile(prot.pdb)
     assert f"{test_path}/data/traj_2.xtc" in prot._trajs.values()

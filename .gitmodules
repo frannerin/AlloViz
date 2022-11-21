@@ -2,10 +2,6 @@
 	shallow = True
 	path = src/Packages/MD-TASK
 	url = https://github.com/frannerin/MD-TASK
-[submodule "src/Packages/dynetan"]
-	shallow = True
-	path = src/Packages/dynetan
-	url = https://github.com/frannerin/dynetan
 [submodule "src/Packages/getcontacts"]
 	shallow = True
 	path = src/Packages/getcontacts
@@ -38,3 +34,7 @@
 	shallow = True
 	path = src/Packages/correlationplus
 	url = https://github.com/tekpinar/correlationplus
+[submodule "src/Packages/dynetan"]
+	shallow = True
+	path = src/Packages/dynetan
+	url = https://github.com/melomcr/dynetan
