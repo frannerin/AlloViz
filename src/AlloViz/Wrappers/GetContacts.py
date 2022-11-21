@@ -13,8 +13,8 @@ from .Base import lazy_import, Multicore
 from ..AlloViz.utils import get_pool
 
 imports = {
-"_getcontacts_contacts": ".Packages.getcontacts.get_dynamic_contacts",
-"_getcontacts_freqs": ".Packages.getcontacts.get_contact_frequencies",
+"_getcontacts_contacts": "getcontacts.get_dynamic_contacts",
+"_getcontacts_freqs": "getcontacts.get_contact_frequencies",
 }
 
 for key, val in imports.items():

@@ -42,6 +42,7 @@ pyinteraph = "src/Packages/pyinteraph2/pyinteraph"
 libinteract = "src/Packages/pyinteraph2/libinteract"
 msmbuilder = "src/Packages/msmbuilder/msmbuilder"
 enspara = "src/Packages/enspara/enspara"
+getcontacts = "src/Packages/getcontacts"
 
 
 
@@ -49,7 +50,8 @@ enspara = "src/Packages/enspara/enspara"
 packages = [
 	"AlloViz", "AlloViz.AlloViz", "AlloViz.Wrappers", "AlloViz.Packages",
 	"pyinteraph", "libinteract", 
-	"msmbuilder", "enspara"
+	"msmbuilder", "enspara",
+	"getcontacts"
 ]
 
 
