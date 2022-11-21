@@ -30,8 +30,8 @@ class PyInteraph2_Base(Base):
     """    
     def _computation(self, xtc):#pdb, traj, xtc, pq, CLIargs):
         """"""
-        _pyinteraph.main(f"-s {self._pdbf} -t {self._trajs[xtc]} {self._CLIargs(xtc)}".split())
-        corr = np.loadtxt(f"{new._rawpq(xtc)}.dat")
+        _pyinteraph.main(f"-s {self._pdbf} -t {self._trajs[xtc]} {self._CLIargs(xtc)}".split(" "))
+        corr = np.loadtxt(f"{self._rawpq(xtc)}{'_all' if 'Energy' not in self._name else ''}.dat")
         return corr, xtc
     
     
@@ -113,5 +113,5 @@ class PyInteraph2_Energy(PyInteraph2_Base):
     """
     def __new__(cls, protein, d):
         new = super().__new__(cls, protein, d)
-        new._CLIargs = lambda xtc: f"-p --kbp-csv {new._rawpq(xtc)}.csv --kbp-graph {new._rawpq(xtc)}.dat"
+        new._CLIargs = lambda xtc: f"-p --kbp-csv {new._rawpq(xtc)}.csv --kbp-graph {new._rawpq(xtc)}.dat" #{new._rawpq(xtc)}.csv --kbp-graph {new._rawpq(xtc)}.dat
         return new

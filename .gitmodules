@@ -6,10 +6,6 @@
 	shallow = True
 	path = src/Packages/getcontacts
 	url = https://github.com/frannerin/getcontacts
-[submodule "src/Packages/pyinteraph2"]
-	shallow = True
-	path = src/Packages/pyinteraph2
-	url = https://github.com/frannerin/pyinteraph2
 [submodule "src/Packages/gRINN_Bitbucket"]
 	shallow = True
 	path = src/Packages/gRINN_Bitbucket
@@ -38,3 +34,7 @@
 	shallow = True
 	path = src/Packages/msmbuilder
 	url = https://github.com/msmbuilder/msmbuilder2022
+[submodule "src/Packages/pyinteraph2"]
+	shallow = True
+	path = src/Packages/pyinteraph2
+	url = https://github.com/ELELAB/pyinteraph2
