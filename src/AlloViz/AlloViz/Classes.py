@@ -336,9 +336,9 @@ class Protein:
                     setattr(
                         rgetattr(delta, pkg, filtering),
                         elem,
-                        elemclass(dif),
+                        elemclass(dif, parent=self._delta),
                     )
-                    rgetattr(delta, pkg, filtering, elem)._parent = self._delta
+                    # rgetattr(delta, pkg, filtering, elem)._parent = self._delta
 
         return delta.__dict__
 

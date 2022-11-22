@@ -219,6 +219,7 @@ class Element(pandas.DataFrame):
         if nv is None:
             nv = nglview.show_mdanalysis(mdau_parent.protein, default=False)
             nv.add_cartoon("protein", color="white")
+            nv.center("protein")
 
         return nv, mdau_parent
 

@@ -381,17 +381,19 @@ def add_data(pqs, elem, data, filtered):
             df[f"{metric}"] = df[cols].fillna(0).mean(axis=1) # .fillna(0) these methods aren't affected by NAs;;;;;;;;;;; .dropna(how="all")
             df[f"{metric}_std"] = df[cols].fillna(0).std(axis=1) # .fillna(0)
             # After calculating the mean and std, drop the individual trajectories' columns, retaining the mean and std and also the analysis of the filtered raw weights averages
-            out = df.drop(cols, axis=1)
-        else:
+            # out = df.drop(cols, axis=1)
+        # else:
             # If there is only 1 trajectory, only the filtered raw weights are analyzed, outputing a single analyzed column
-            out = df
+            # out = df
+        
+        out = df
 
         data = pandas.concat([data, out], axis=1)
 
     # Retrieve the Element's class from the Visualization module and (re-)set it with the data
     elemclass = eval(f"Elements.{elem.capitalize()}")
-    setattr(filtered, elem, elemclass(data))
-    getattr(filtered, elem)._parent = filtered._pkg.protein
+    setattr(filtered, elem, elemclass(data, parent=filtered._pkg.protein))
+    # getattr(filtered, elem)._parent = filtered._pkg.protein
     
     
 
