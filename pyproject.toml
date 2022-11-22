@@ -42,7 +42,6 @@ pyinteraph = "src/Packages/pyinteraph2/pyinteraph"
 libinteract = "src/Packages/pyinteraph2/libinteract"
 msmbuilder = "src/Packages/msmbuilder/msmbuilder"
 enspara = "src/Packages/enspara/enspara"
-getcontacts = "src/Packages/getcontacts"
 
 
 
@@ -50,8 +49,7 @@ getcontacts = "src/Packages/getcontacts"
 packages = [
 	"AlloViz", "AlloViz.AlloViz", "AlloViz.Wrappers", "AlloViz.Packages",
 	"pyinteraph", "libinteract", 
-	"msmbuilder", "enspara",
-	"getcontacts"
+	"msmbuilder", "enspara"
 ]
 
 
@@ -66,12 +64,6 @@ env = [
 
 
 
-[tool.poetry]
-name = "AlloViz"
-version = "1.0"
-description = "A Python package to interactively computate, analyze and visualize protein allosteric communication (residue interaction) networks and delta-networks."
-authors = ["Francho Nerín-Fonz <[francho.nerin01@estudiant.upf.edu]>"]
-license = "-"
 
 [tool.poetry.build]
 script = "setup.py"

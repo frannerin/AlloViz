@@ -12,7 +12,7 @@ jobs:
     runs-on: ${{ matrix.os }}-latest
     strategy:
       matrix:
-        os: ["ubuntu", "macos"] #, "windows"
+        os: ["ubuntu", "macos", "windows"]
     defaults:
       run:
         shell: bash -el {0}
@@ -26,19 +26,23 @@ jobs:
         miniforge-version: latest
         activate-environment: anaconda-client-env
         use-mamba: true
+    - name: Process environment file
+      run:
+        wget https://github.com/silvanmelchior/cme_parser/blob/master/create_env.py
+        python create_env.py -i dev/dev_env_meta.yml -o dev/dev_env_out.yml -p
     - name: Cache Conda env
       uses: actions/cache@v3
       with:
         path: ${{ env.CONDA }}/envs
         key:
-          conda-${{ runner.os }}--${{ runner.arch }}-${{ hashFiles('dev/dev_env.yml') }}-${{ env.CACHE_NUMBER }}
+          conda-${{ runner.os }}--${{ runner.arch }}-${{ hashFiles('dev/dev_env_out.yml') }}-${{ env.CACHE_NUMBER }}
       env:
         # Increase this value to reset cache if etc/example-environment.yml has not changed
         CACHE_NUMBER: 0
       id: cache
     - name: Update environment
       run:
-        mamba env update -n anaconda-client-env -f dev/dev_env.yml
+        mamba env update -n anaconda-client-env -f dev/dev_env_out.yml
       if: steps.cache.outputs.cache-hit != 'true'
 
     # - uses: conda-incubator/setup-miniconda@v2

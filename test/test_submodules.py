@@ -53,11 +53,15 @@ pkgs = [ "MDTASK", "pytraj_CB", "dynetan",
                                         "MDEntropy_AlphaAngle"
                                        ])
 def test_submodules(single_traj, pkg):
+    if "pytraj" in pkg:
+        pytest.importorskip("pytraj")
     single_traj.calculate(pkg, taskcpus=os.cpu_count())
     
     
 @pytest.mark.parametrize("pkg", pkgs)
 def test_calculation_reg(single_traj, test_path, pkg):
+    if "pytraj" in pkg:
+        pytest.importorskip("pytraj")
     reg = pandas.read_parquet(f"{test_path}/data/{pkg}/raw/1.pq")
     if pkg in ["GetContacts"]:
         getattr(single_traj, pkg).raw.sort_index(inplace=True)
