@@ -35,7 +35,7 @@ jobs:
       with:
         url: "https://raw.githubusercontent.com/silvanmelchior/cme_parser/master/create_env.py"
         target: create_env.py
-    - run: python ${{ steps.downloadfile.outputs.filename }} -i dev/dev_env_meta.yml -o dev/dev_env_out.yml -p
+    - run: python create_env.py -i dev/dev_env_meta.yml -o dev/dev_env_out.yml -p
     - name: Cache Conda env
       uses: actions/cache@v3
       with:
