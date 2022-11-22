@@ -32,7 +32,7 @@ jobs:
         activate-environment: anaconda-client-env
         use-mamba: true
     - name: Process environment file
-      run: python dev/cme_parser/create_env.py -i dev/dev_env.yml.meta -o dev/dev_env_out.yml -p -v platform ${{ matrix.os }}
+      run: python dev/cme_parser/create_env.py -i dev/dev_env.yml.meta -o dev/dev_env_out.yml -p -v so ${{ matrix.os }}
       # run: |
       #   wget https://raw.githubusercontent.com/silvanmelchior/cme_parser/master/create_env.py
       #   python create_env.py -i dev/dev_env_meta.yml -o dev/dev_env_out.yml -p

@@ -2,7 +2,7 @@
 
 sphinx>=5
 jupyterlab
-nb_conda_kernels
+# nb_conda_kernels # of course it is a conda package
 
 sphinx_rtd_theme
 nbsphinx
@@ -54,7 +54,7 @@ nglview>=3.0
 # Pkgs and deps
 #vmd-python>=3.0 # for getcontacts
 #git+https://github.com/Eigenstate/vmd-python@master # needed for pip because it's not on PyPi, although it didn't work
-expat
+# expat # NOT AVAILABLE IN PYPI
 # tk>=8.5,<8.6 # DOESN'T SEEM TO BE NEEDED AS APPARENTLY THEY ARE SHIPPED WITH PYTHON (TKINTER IS BUILTIN)
 
 matplotlib # for MDTASK probably; ALSO FOR VIZ
@@ -85,8 +85,7 @@ compilers # trying to substitute gxx
 
 # pyyaml is needed for psntools
 
-mpi4py
-mpich
+mpi4py-mpich
 
 
 
