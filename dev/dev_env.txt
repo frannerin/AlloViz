@@ -1,6 +1,6 @@
 # conda list -e | sed 's/\(.*\)\=/\1\&/;s/&.*//;s/\=/\=\=/;3s/.*/\#/' > conda.txt
 
-sphinx=>5
+sphinx>=5
 jupyterlab
 nb_conda_kernels
 
@@ -55,7 +55,7 @@ nglview>=3.0
 #vmd-python>=3.0 # for getcontacts
 #git+https://github.com/Eigenstate/vmd-python@master # needed for pip because it's not on PyPi, although it didn't work
 expat
-tcl>=8.5,<8.6
+# tk>=8.5,<8.6 # DOESN'T SEEM TO BE NEEDED AS APPARENTLY THEY ARE SHIPPED WITH PYTHON (TKINTER IS BUILTIN)
 
 matplotlib # for MDTASK probably; ALSO FOR VIZ
 mdtraj>=1.9 # for MDTASK
