@@ -23,6 +23,7 @@ from importlib import import_module
 from lazyasd import LazyObject
 
 from ..AlloViz.Filtering import Filtering
+from ..AlloViz.Elements import Edges
 from ..AlloViz.utils import get_pool, rgetattr, rhasattr
 from ..AlloViz import utils
 
@@ -142,7 +143,7 @@ class Base:
                 # If there is only 1 trajectory, simply use its raw data as the "weight" variable
                 df.rename(columns={"1": "weight"}, inplace=True)
                 
-            return df
+            return Edges(df, parent=self.protein)
         
         # Function to call get_raw to read and process the raw data and add it as the "raw" attribute to self
         add_raw = lambda pqs: setattr(self, "raw", get_raw(pqs))
