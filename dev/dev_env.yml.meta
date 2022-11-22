@@ -83,8 +83,8 @@ dependencies:
 
 
   #for enspara parallelization
-  - mpi4py
-  - openmpi # mpich
+  - mpi4py [not platform contains win]
+  - mpich [not platform contains win]
 
   #- pip:
     #- pytraj
