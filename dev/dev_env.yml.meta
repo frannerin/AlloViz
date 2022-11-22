@@ -54,7 +54,7 @@ dependencies:
   #- vmd-python>=3.0 # for getcontacts # NOT AVAILABLE FOR WINDOWS
   #git+https://github.com/Eigenstate/vmd-python@master # needed for pip because it's not on PyPi, although it didn't work
   - expat # needed for vmd-python and available in all platforms
-  - tcl # needed to compile vmd-python in windows and available in all platforms; from intel channel
+  - tcl>=8.5,<8.6 [platform contains win] # needed to compile vmd-python in windows and available in all platforms; from intel channel
 
   - matplotlib # for MDTASK probably; ALSO FOR VIZ
   - mdtraj>=1.9 # for MDTASK
