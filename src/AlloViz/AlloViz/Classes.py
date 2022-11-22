@@ -173,9 +173,9 @@ class Protein:
                 )
             )
             if any(["psf" in file for file in files]):
-                self.psf = get_filename("psf")
+                new.psf = get_filename("psf")
             if any(["parameters" in file for file in files]):
-                self._paramf = get_filename("parameters")
+                new._paramf = get_filename("parameters")
 
         # If pdb and trajectory files are passed
         else:

@@ -55,7 +55,7 @@ installed with conda.
 .. code:: bash
 
    git clone --recursive --shallow-submodules -j 9 https://github.com/frannerin/AlloViz
-   conda create AlloViz --file AlloViz/conda_explicit.txt
+   conda create -n AlloViz --file AlloViz/conda_explicit.txt
    conda activate AlloViz
 
 Then go to the package folder (``cd AlloViz``) and install the package,

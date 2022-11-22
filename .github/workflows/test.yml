@@ -27,9 +27,15 @@ jobs:
         activate-environment: anaconda-client-env
         use-mamba: true
     - name: Process environment file
-      run: |
-        wget https://raw.githubusercontent.com/silvanmelchior/cme_parser/master/create_env.py
-        python create_env.py -i dev/dev_env_meta.yml -o dev/dev_env_out.yml -p
+      # run: |
+      #   wget https://raw.githubusercontent.com/silvanmelchior/cme_parser/master/create_env.py
+      #   python create_env.py -i dev/dev_env_meta.yml -o dev/dev_env_out.yml -p
+      uses: suisei-cn/actions-download-file@v1.3.0
+      id: downloadfile  # Remember to give an ID if you need the output filename
+      with:
+        url: "https://raw.githubusercontent.com/silvanmelchior/cme_parser/master/create_env.py"
+        target: create_env.py
+    - run: python ${{ steps.downloadfile.outputs.filename }} -i dev/dev_env_meta.yml -o dev/dev_env_out.yml -p
     - name: Cache Conda env
       uses: actions/cache@v3
       with:
