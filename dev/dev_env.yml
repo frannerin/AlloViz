@@ -83,7 +83,7 @@ dependencies:
 
   #for enspara parallelization
   - mpi4py
-  - mpich
+  - openmpi # mpich
 
   #- pip:
     #- pytraj
