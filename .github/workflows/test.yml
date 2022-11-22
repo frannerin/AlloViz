@@ -28,7 +28,7 @@ jobs:
         use-mamba: true
     - name: Process environment file
       run: |
-        wget https://github.com/silvanmelchior/cme_parser/blob/master/create_env.py
+        wget https://raw.githubusercontent.com/silvanmelchior/cme_parser/master/create_env.py
         python create_env.py -i dev/dev_env_meta.yml -o dev/dev_env_out.yml -p
     - name: Cache Conda env
       uses: actions/cache@v3
