@@ -38,3 +38,6 @@
 	shallow = True
 	path = src/Packages/getcontacts
 	url = https://github.com/getcontacts/getcontacts
+[submodule "dev/cme_parser"]
+	path = dev/cme_parser
+	url = https://github.com/silvanmelchior/cme_parser
