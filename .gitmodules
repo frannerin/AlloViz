@@ -1,7 +1,3 @@
-[submodule "src/Packages/MD-TASK"]
-	shallow = True
-	path = src/Packages/MD-TASK
-	url = https://github.com/frannerin/MD-TASK
 [submodule "src/Packages/gRINN_Bitbucket"]
 	shallow = True
 	path = src/Packages/gRINN_Bitbucket
@@ -38,6 +34,11 @@
 	shallow = True
 	path = src/Packages/getcontacts
 	url = https://github.com/getcontacts/getcontacts
+[submodule "src/Packages/MD-TASK"]
+	shallow = True
+	path = src/Packages/MD-TASK
+	url = https://github.com/RUBi-ZA/MD-TASK
 [submodule "dev/cme_parser"]
+	shallow = True
 	path = dev/cme_parser
 	url = https://github.com/silvanmelchior/cme_parser
