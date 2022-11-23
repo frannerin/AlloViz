@@ -68,10 +68,10 @@ dependencies:
   - ambertools>=21.0 [not so contains windows]
   - parmed
   - prody>=2.0.1 # for correlationplus; prob 2.0.2 needed for a gRINN dep
-  - pyprind # for gRINN
-  - panedr # for gRINN
-  - natsort # for gRINN
-  - click # probably for gRINN too
+  # - pyprind # for gRINN
+  # - panedr # for gRINN
+  # - natsort # for gRINN
+  # - click # probably for gRINN too
 
   #parmed # for dcd generation; ambertools is going to be a dependency so :D
   #mdtraj and parmed are needed for dcd generation and thus for gRINN; they might be installed for other reasons (mdtraj is needed for MD-TASK and parmed comes with ambertools)
