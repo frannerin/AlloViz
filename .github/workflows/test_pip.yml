@@ -26,7 +26,7 @@ jobs:
         submodules: recursive
 
     - uses: msys2/setup-msys2@v2
-      if: matrix.os == "windows"
+      if: matrix.os == 'windows'
       with:
         update: true
         install: >-

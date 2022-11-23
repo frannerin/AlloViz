@@ -1,4 +1,4 @@
-name: Python Package using pip
+name: Python Package using pip and tcl
 
 on:
   push:
@@ -8,7 +8,7 @@ on:
 
 jobs:
   miniconda:
-    name: pip ${{ matrix.os }}
+    name: pip tcl ${{ matrix.os }}
     runs-on: ${{ matrix.os }}-latest
     continue-on-error: ${{ matrix.experimental }} #true
     # python-version: "3.10"
@@ -51,20 +51,20 @@ jobs:
 
     # TCL IN LINUX
     - name: Checkout Tk
-      if: matrix.os == "ubuntu"
+      if: matrix.os == 'ubuntu'
       uses: actions/checkout@v3
       with:
         repository: tcltk/tK
         path: tk
     - name: Checkout Tcl 8.7
-      if: matrix.os == "ubuntu"
+      if: matrix.os == 'ubuntu'
       uses: actions/checkout@v3
       with:
         repository: tcltk/tcl
         ref: core-8-5-19
         path: tcl
     - name: Setup Environment
-      if: matrix.os == "ubuntu"
+      if: matrix.os == 'ubuntu'
       run: |
         sudo apt-get install libxss-dev
         touch tcl/generic/tclStubInit.c tcl/generic/tclOOStubInit.c
@@ -73,23 +73,23 @@ jobs:
         echo "VER_PATH=$(cd tcl/tools; pwd)/addVerToFile.tcl" >> $GITHUB_ENV
       working-directory: "."
     - name: Configure Tcl
-      if: matrix.os == "ubuntu"
+      if: matrix.os == 'ubuntu'
       run: |
         ./configure $CFGOPT --enable-zipfs --prefix=$INST_DIR
       working-directory: tcl/unix
     - name: Build & Install Tcl
-      if: matrix.os == "ubuntu"
+      if: matrix.os == 'ubuntu'
       run: |
         make binaries libraries install
         make shell SCRIPT="$VER_PATH $GITHUB_ENV"
       working-directory: tcl/unix
     - name: Configure Tk
-      if: matrix.os == "ubuntu"
+      if: matrix.os == 'ubuntu'
       run: |
         ./configure $CFGOPT --with-tcl=$INST_DIR/lib --prefix=$INST_DIR
       working-directory: tk/unix
     - name: Build & Install Tk
-      if: matrix.os == "ubuntu"
+      if: matrix.os == 'ubuntu'
       run: |
         make binaries libraries install
       working-directory: tk/unix
@@ -97,27 +97,27 @@ jobs:
 
     # TCL IN MACOS
     - name: Checkout Tk
-      if: matrix.os == "macos"
+      if: matrix.os == 'macos'
       uses: actions/checkout@v3
       with:
         repository: tcltk/tk
         path: tk
     - name: Checkout Tcl 8.7
-      if: matrix.os == "macos"
+      if: matrix.os == 'macos'
       uses: actions/checkout@v3
       with:
         repository: tcltk/tcl
         ref: core-8-5-19
         path: tcl
     - name: Checkout create-dmg
-      if: matrix.os == "macos"
+      if: matrix.os == 'macos'
       uses: actions/checkout@v3
       with:
         repository: create-dmg/create-dmg
         ref: v1.0.8
         path: create-dmg
     - name: Setup Environment
-      if: matrix.os == "macos"
+      if: matrix.os == 'macos'
       run: |
         mkdir -p install/contents
         touch tcl/generic/tclStubInit.c tcl/generic/tclOOStubInit.c
@@ -128,24 +128,24 @@ jobs:
         echo "CFLAGS=-arch x86_64 -arch arm64e" >> $GITHUB_ENV
       working-directory: "."
     - name: Configure Tcl
-      if: matrix.os == "macos"
+      if: matrix.os == 'macos'
       run: |
         ./configure $CFGOPT --enable-zipfs --prefix=$INST_DIR
       working-directory: tcl/unix
     - name: Build & Install Tcl
-      if: matrix.os == "macos"
+      if: matrix.os == 'macos'
       run: |
         make binaries libraries install
         make shell SCRIPT="$VER_PATH $GITHUB_ENV"
       working-directory: tcl/unix
     - name: Configure Tk
-      if: matrix.os == "macos"
+      if: matrix.os == 'macos'
       run: |
         ./configure $CFGOPT --with-tcl=$INST_DIR/lib --prefix=$INST_DIR \
             --enable-aqua
       working-directory: tk/unix
     - name: Build & Install Tk
-      if: matrix.os == "macos"
+      if: matrix.os == 'macos'
       run: |
         make binaries libraries install
       working-directory: tk/unix
@@ -154,26 +154,26 @@ jobs:
 
     # TCL IN WINDOWS
     - name: Install MSYS2
-      if: matrix.os == "windows"
+      if: matrix.os == 'windows'
       uses: msys2/setup-msys2@v2
       with:
         #msystem: MINGW64
         install: git mingw-w64-x86_64-toolchain make zip zlib # INCLUDED ZLIB
     - name: Checkout Tk
-      if: matrix.os == "windows"
+      if: matrix.os == 'windows'
       uses: actions/checkout@v3
       with:
         repository: tcltk/tk
         path: tk
     - name: Checkout Tcl 8.7
-      if: matrix.os == "windows"
+      if: matrix.os == 'windows'
       uses: actions/checkout@v3
       with:
         repository: tcltk/tcl
         ref: core-8-5-19
         path: tcl
     - name: Setup Environment
-      if: matrix.os == "windows"
+      if: matrix.os == 'windows'
       run: |
         mkdir -p install/combined
         touch tcl/generic/tclStubInit.c tcl/generic/tclOOStubInit.c
@@ -182,23 +182,23 @@ jobs:
         echo "VER_PATH=$(cd tcl/tools; pwd)/addVerToFile.tcl" >> $GITHUB_ENV
       working-directory: "."
     - name: Configure Tcl
-      if: matrix.os == "windows"
+      if: matrix.os == 'windows'
       run: |
         ./configure $CFGOPT --enable-zipfs --prefix=$INST_DIR
       working-directory: tcl/win
     - name: Build & Install Tcl
-      if: matrix.os == "windows"
+      if: matrix.os == 'windows'
       run: |
         make binaries libraries install
         $INST_DIR/bin/tclsh* $VER_PATH $GITHUB_ENV
       working-directory: tcl/win
     - name: Configure Tk
-      if: matrix.os == "windows"
+      if: matrix.os == 'windows'
       run: |
         ./configure $CFGOPT --with-tcl=$INST_DIR/lib --prefix=$INST_DIR
       working-directory: tk/win
     - name: Build & Install Tk
-      if: matrix.os == "windows"
+      if: matrix.os == 'windows'
       run: |
         make all install
         echo "TK_BIN=`pwd`/`echo wish*.exe`" >> $GITHUB_ENV
