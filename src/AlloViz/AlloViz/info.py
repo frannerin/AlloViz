@@ -144,8 +144,8 @@ wrappers = {
 
     "PyInteraph2_Energy": ("Interaction energy", "PyInteraph2", "None", whole),
     
-    "gRINN": ("Interaction energy", "gRINN", "None", whole),
-    "gRINN_corr": ("Interaction energy", "gRINN", "Pearson's", whole),
+    # "gRINN": ("Interaction energy", "gRINN", "None", whole),
+    # "gRINN_corr": ("Interaction energy", "gRINN", "Pearson's", whole),
 }
 
 

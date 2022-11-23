@@ -1,7 +1,3 @@
-[submodule "src/Packages/gRINN_Bitbucket"]
-	shallow = True
-	path = src/Packages/gRINN_Bitbucket
-	url = https://bitbucket.org/fnerin/grinn_bitbucket.git
 [submodule "src/Packages/mdentropy"]
 	shallow = True
 	path = src/Packages/mdentropy
