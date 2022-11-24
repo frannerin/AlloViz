@@ -31,11 +31,21 @@ jobs:
 
 
     - uses: conda-incubator/setup-miniconda@v2
+      if: matrix.os == 'windows'
       with:
         miniforge-variant: Mambaforge
         miniforge-version: latest
         activate-environment: anaconda-client-env
         use-mamba: true
+        environment-file: dev/win_env.yml
+    - uses: conda-incubator/setup-miniconda@v2
+      if: matrix.os != 'windows'
+      with:
+        miniforge-variant: Mambaforge
+        miniforge-version: latest
+        activate-environment: anaconda-client-env
+        use-mamba: true
+
     - name: Process environment file
       run: python dev/cme_parser/create_env.py -i dev/dev_env.yml.meta -o dev/dev_env_out.yml -p -v so ${{ matrix.os }}
       # run: |
