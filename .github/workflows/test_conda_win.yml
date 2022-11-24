@@ -8,24 +8,21 @@ on:
 
 jobs:
   miniconda:
-    name: Miniconda ${{ matrix.os }}
-    runs-on: ${{ matrix.os }}-latest
-    continue-on-error: ${{ matrix.experimental }} #true
-    strategy:
-      matrix:
-        os: ["ubuntu", "macos"] #, "windows"]
-        experimental: [false]
-        # include:
-        #   - os: "windows"
-        #     experimental: true
+    name: Miniconda windows
+    runs-on: windows-latest
     defaults:
       run:
-        shell: bash -el {0}
+        shell: msys2 {0}
     steps:
     - uses: actions/checkout@v3
       with:
         submodules: recursive
 
+    - name: Install MSYS2
+      uses: msys2/setup-msys2@v2
+      with:
+        #msystem: MINGW64 # default
+        install: git mingw-w64-x86_64-toolchain make zlib python-pip tcl mingw-w64-netcdf
 
     # INSTALL TCL 8.5 IN WINDOWS BC APPARENTLY THE CONDA THING DOESN'T WORK?
 
@@ -78,9 +75,9 @@ jobs:
     #     environment-file: dev/dev_env.yml
     #     # python-version: "3.10"
     #     auto-activate-base: false
-    - name: Install tcl with choco
-      if: matrix.os == 'windows'
-      run: choco install activetcl
+    # - name: Install tcl with choco
+    #   if: matrix.os == 'windows'
+    #   run: choco install activetcl
 
     - name: Install AlloViz
       run: pip install .

@@ -1,5 +1,9 @@
 version: 2
 
+build:
+  apt_packages:
+    - libnetcdf-dev
+
 sphinx:
   fail_on_warning: false
 
