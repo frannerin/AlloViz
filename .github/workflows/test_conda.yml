@@ -18,9 +18,9 @@ jobs:
         include:
           - os: "windows"
             experimental: true
-    # defaults:
-    #   run:
-    #     shell: bash -el {0}
+    defaults:
+      run:
+        shell: bash -el {0}
     steps:
     - uses: actions/checkout@v3
       with:
@@ -67,9 +67,8 @@ jobs:
         CACHE_NUMBER: 0
       id: cache
     - name: Update environment
-      run: |
-        mamba install -n anaconda-client-env -c conda-forge --force-reinstall -y "tk>=8.5,<8.6"
-        mamba env update -n anaconda-client-env -f dev/dev_env_out.yml
+      run: mamba env update -n anaconda-client-env -f dev/dev_env_out.yml
+      # mamba install -n anaconda-client-env -c conda-forge --force-reinstall -y "tk>=8.5,<8.6"
       if: steps.cache.outputs.cache-hit != 'true'
 
     # - uses: conda-incubator/setup-miniconda@v2

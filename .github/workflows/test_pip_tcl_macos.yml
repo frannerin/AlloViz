@@ -79,7 +79,7 @@ jobs:
       working-directory: tk/unix
     - name: Install
       run: |
-        make install || {
+        sudo make install || {
           echo "::error::Failure during Install"
           exit 1
         }
@@ -101,7 +101,7 @@ jobs:
     - name: Install dependencies
       run: |
         python -m pip install -U --upgrade-strategy eager pip
-        pip install -U --upgrade-strategy eager setuptools "numpy>=1.22.4,<1.22.5"
+        pip install -U --upgrade-strategy eager setuptools "numpy>=1.22.4,<1.22.5" wheel
         pip install -r dev/dev_env.txt
 
     # - name: Update environment
