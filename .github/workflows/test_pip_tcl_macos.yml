@@ -16,9 +16,16 @@ jobs:
           - 'no'
         options:
           - '--disable-aqua'
-    defaults:
-      run:
-        shell: bash
+
+
+
+
+    # defaults:
+    #   run:
+    #     shell: bash
+
+
+
 
 
     steps:
@@ -54,9 +61,20 @@ jobs:
     #     touch ../generic/tkStubInit.c ../doc/man.macros
     #     mkdir "$HOME/install"
     #   working-directory: tk/unix
-    - name: Install brew tcl
-      run: |
-        brew install tcl-tk
+
+
+
+
+
+    # - name: Install brew tcl
+    #   run: |
+    #     brew install tcl-tk
+
+
+
+
+
+
     # - name: Add X11
     #   run: |
     #     brew install --cask xquartz

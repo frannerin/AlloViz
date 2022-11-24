@@ -4,7 +4,7 @@ on:
   push:
     branches:
       - reg_test
-      - fix_submodules
+      #- fix_submodules
 
 jobs:
   miniconda:

@@ -110,9 +110,9 @@ jobs:
     - name: Install dependencies
       # python -m 
       run: |
-        pip install -U --upgrade-strategy eager pip
-        pip install -U --upgrade-strategy eager setuptools "numpy>=1.22.4,<1.22.5" wheel
-        pip install -r dev/dev_env.txt
+        sudo pip install -U --upgrade-strategy eager pip
+        sudo pip install -U --upgrade-strategy eager setuptools "numpy>=1.22.4,<1.22.5" wheel
+        sudo pip install -r dev/dev_env.txt
 
     # - name: Update environment
     #   run:

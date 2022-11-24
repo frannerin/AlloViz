@@ -22,7 +22,7 @@ jobs:
       uses: msys2/setup-msys2@v2
       with:
         #msystem: MINGW64 # default
-        install: git mingw-w64-x86_64-toolchain make zlib python-pip tcl mingw-w64-netcdf
+        install: git mingw-w64-x86_64-toolchain make zlib python-pip tcl mingw-w64-x86_64-netcdf
 
     # INSTALL TCL 8.5 IN WINDOWS BC APPARENTLY THE CONDA THING DOESN'T WORK?
 
