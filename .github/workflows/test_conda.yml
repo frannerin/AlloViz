@@ -79,6 +79,7 @@ jobs:
     #     # python-version: "3.10"
     #     auto-activate-base: false
     - name: Install tcl with choco
+      if: matrix.os == 'windows'
       run: choco install magicsplat-tcl-tk
 
     - name: Install AlloViz

@@ -92,6 +92,7 @@ mpi4py-mpich
 # NEEDED DEPS WHEN USING PIP
 colorama
 scikit-learn
+tables
 
 
 

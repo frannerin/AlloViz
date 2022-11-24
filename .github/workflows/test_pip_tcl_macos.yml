@@ -34,19 +34,19 @@ jobs:
         cache-dependency-path: dev/dev_env.txt
 
 
-    # TCL IN MACOS
-    - name: Checkout Tk
-      uses: actions/checkout@v3
-      with:
-        repository: tcltk/tk
-        ref: core-8-5-branch
-        path: tk
-    - name: Checkout Tcl 8.7
-      uses: actions/checkout@v3
-      with:
-        repository: tcltk/tcl
-        ref: core-8-5-branch
-        path: tcl
+    # # TCL IN MACOS
+    # - name: Checkout Tk
+    #   uses: actions/checkout@v3
+    #   with:
+    #     repository: tcltk/tk
+    #     ref: core-8-5-branch
+    #     path: tk
+    # - name: Checkout Tcl 8.7
+    #   uses: actions/checkout@v3
+    #   with:
+    #     repository: tcltk/tcl
+    #     ref: core-8-5-branch
+    #     path: tcl
 
     # Install acc to the 8-5-branch workflow   
     # - name: Prepare checked out repository
@@ -54,9 +54,9 @@ jobs:
     #     touch ../generic/tkStubInit.c ../doc/man.macros
     #     mkdir "$HOME/install"
     #   working-directory: tk/unix
-    # - name: Add Tcl
-    #   run: |
-    #     brew install tcl-tk
+    - name: Install brew tcl
+      run: |
+        brew install tcl-tk
     # - name: Add X11
     #   run: |
     #     brew install --cask xquartz
@@ -88,16 +88,16 @@ jobs:
     #   working-directory: tk/unix
 
 
-    - name: Install acc to 8-5-branch README
-      run: |
-        ver=""
-        CFLAGS="-arch i386 -arch x86_64 -arch ppc -mmacosx-version-min=10.5"
-        export CFLAGS
-        make -C tcl${ver}/macosx
-        make -C tk${ver}/macosx
-        sudo make -C tcl${ver}/macosx install
-        sudo make -C tk${ver}/macosx  install
-      working-directory: "."
+    # - name: Install acc to 8-5-branch README
+    #   run: |
+    #     ver=""
+    #     CFLAGS="-arch i386 -arch x86_64 -arch ppc -mmacosx-version-min=10.5"
+    #     export CFLAGS
+    #     make -C tcl${ver}/macosx
+    #     make -C tk${ver}/macosx
+    #     sudo make -C tcl${ver}/macosx install
+    #     sudo make -C tk${ver}/macosx  install
+    #   working-directory: "."
 
 
 
