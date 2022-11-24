@@ -9,7 +9,6 @@ on:
 defaults:
   run:
     shell: bash
-    working-directory: tk/unix
 jobs:
   job:
     name: pip tcl ubuntu
@@ -69,24 +68,28 @@ jobs:
           echo "::error::Failure during Configure"
           exit 1
         }
+      working-directory: tk/unix
     - name: Build
       run: |
         make binaries libraries || {
           echo "::error::Failure during Build"
           exit 1
         }
+      working-directory: tk/unix
     - name: Build Test Harness
       run: |
         make tktest || {
           echo "::error::Failure during Build"
           exit 1
         }
+      working-directory: tk/unix
     - name: Test-Drive Installation
       run: |
         make install || {
           echo "::error::Failure during Install"
           exit 1
         }
+      working-directory: tk/unix
 
 
 

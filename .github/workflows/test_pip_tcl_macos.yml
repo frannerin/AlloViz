@@ -19,7 +19,6 @@ jobs:
     defaults:
       run:
         shell: bash
-        working-directory: unix
 
 
     steps:
@@ -51,8 +50,7 @@ jobs:
       run: |
         touch ../generic/tkStubInit.c ../doc/man.macros
         mkdir "$HOME/install"
-      with:
-        working-directory: tk
+      working-directory: tk/unix
     - name: Add Tcl
       run: |
         brew install tcl-tk
@@ -68,6 +66,7 @@ jobs:
           echo "::error::Failure during Configure"
           exit 1
         }
+      working-directory: tk/unix
       env:
         CFGOPT: --enable-symbols=${{ matrix.symbols }} ${{matrix.options }}
     - name: Build
@@ -80,7 +79,8 @@ jobs:
           echo "::error::Failure during Install"
           exit 1
         }
-    
+      working-directory: tk/unix
+
 
 
     # - name: Cache pip deps

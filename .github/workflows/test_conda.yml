@@ -18,9 +18,9 @@ jobs:
         include:
           - os: "windows"
             experimental: true
-    defaults:
-      run:
-        shell: bash -el {0}
+    # defaults:
+    #   run:
+    #     shell: bash -el {0}
     steps:
     - uses: actions/checkout@v3
       with:
