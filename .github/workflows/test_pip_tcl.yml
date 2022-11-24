@@ -71,7 +71,7 @@ jobs:
         touch tk/generic/tkStubInit.c
         echo "INST_DIR=$(cd install;pwd)" >> $GITHUB_ENV
         echo "VER_PATH=$(cd tcl/tools; pwd)/addVerToFile.tcl" >> $GITHUB_ENV
-      working-directory: "tk"
+      working-directory: "."
     - name: Configure Tcl
       if: matrix.os == 'ubuntu'
       run: |
@@ -126,7 +126,7 @@ jobs:
         echo "VER_PATH=$(cd tcl/tools; pwd)/addVerToFile.tcl" >> $GITHUB_ENV
         echo "CREATE_DMG=$(cd create-dmg;pwd)/create-dmg" >> $GITHUB_ENV
         echo "CFLAGS=-arch x86_64 -arch arm64e" >> $GITHUB_ENV
-      working-directory: "tk"
+      working-directory: "."
     - name: Configure Tcl
       if: matrix.os == 'macos'
       run: |
@@ -180,7 +180,7 @@ jobs:
         touch tk/generic/tkStubInit.c
         echo "INST_DIR=$(cd install;pwd)" >> $GITHUB_ENV
         echo "VER_PATH=$(cd tcl/tools; pwd)/addVerToFile.tcl" >> $GITHUB_ENV
-      working-directory: "tk"
+      working-directory: "."
     - name: Configure Tcl
       if: matrix.os == 'windows'
       run: |

@@ -57,7 +57,7 @@ jobs:
         CACHE_NUMBER: 0
       id: cache
     - name: Update environment
-      run:
+      run: |
         mamba install -n anaconda-client-env -c conda-forge "tk>=8.5,<8.6" --force-reinstall -y
         mamba env update -n anaconda-client-env -f dev/dev_env_out.yml
       if: steps.cache.outputs.cache-hit != 'true'
