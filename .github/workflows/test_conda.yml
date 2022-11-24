@@ -30,16 +30,16 @@ jobs:
     # INSTALL TCL 8.5 IN WINDOWS BC APPARENTLY THE CONDA THING DOESN'T WORK?
 
 
+    # - uses: conda-incubator/setup-miniconda@v2
+    #   if: matrix.os == 'windows'
+    #   with:
+    #     miniforge-variant: Mambaforge
+    #     miniforge-version: latest
+    #     activate-environment: anaconda-client-env
+    #     use-mamba: true
+    #     environment-file: dev/win_env.yml
     - uses: conda-incubator/setup-miniconda@v2
-      if: matrix.os == 'windows'
-      with:
-        miniforge-variant: Mambaforge
-        miniforge-version: latest
-        activate-environment: anaconda-client-env
-        use-mamba: true
-        environment-file: dev/win_env.yml
-    - uses: conda-incubator/setup-miniconda@v2
-      if: matrix.os != 'windows'
+      # if: matrix.os != 'windows'
       with:
         miniforge-variant: Mambaforge
         miniforge-version: latest
@@ -78,6 +78,9 @@ jobs:
     #     environment-file: dev/dev_env.yml
     #     # python-version: "3.10"
     #     auto-activate-base: false
+    - name: Install tcl with choco
+      run: choco install magicsplat-tcl-tk
+
     - name: Install AlloViz
       run: pip install .
 

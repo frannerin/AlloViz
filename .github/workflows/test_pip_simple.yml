@@ -1,0 +1,241 @@
+name: Python Package using pip simpler
+
+on:
+  push:
+    branches:
+      - reg_test
+      # - fix_submodules
+
+jobs:
+  simple:
+    name: pip tcl ${{ matrix.os }}
+    runs-on: ${{ matrix.os }}-latest
+    continue-on-error: ${{ matrix.experimental }} #true
+    # python-version: "3.10"
+    strategy:
+      matrix:
+        os: ["ubuntu", "macos"] #, "windows"]
+        experimental: [true] # CHANGE TO FALSE WHEN EVERYTHING RUNS
+        include:
+          - os: "windows"
+            experimental: true
+
+    steps:
+    - uses: actions/checkout@v3
+      with:
+        submodules: recursive
+
+    # - name: Install tcl
+    #   run: |
+        
+
+    # - uses: msys2/setup-msys2@v2
+    #   if: matrix.os == "windows"
+    #   with:
+    #     update: true
+    #     install: >-
+    #       zlib
+    #     # https://github.com/msys2/MSYS2-packages/blob/12598003a2a68c7e3187d76cb9ec3588a07a5c95/tcl/PKGBUILD
+
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: "3.10.6"
+        cache: "pip"
+        cache-dependency-path: dev/dev_env.txt
+
+
+    # TCL IN LINUX
+    - name: Checkout Tk
+      if: matrix.os == 'ubuntu'
+      uses: actions/checkout@v3
+      with:
+        repository: tcltk/tk
+        path: tk
+    - name: Checkout Tcl 8.7
+      if: matrix.os == 'ubuntu'
+      uses: actions/checkout@v3
+      with:
+        repository: tcltk/tcl
+        ref: core-8-5-branch
+        path: tcl
+    - name: Setup Environment
+      if: matrix.os == 'ubuntu'
+      run: |
+        sudo apt-get install libxss-dev
+        touch tcl/generic/tclStubInit.c tcl/generic/tclOOStubInit.c
+        touch tk/generic/tkStubInit.c
+        echo "INST_DIR=$(cd install;pwd)" >> $GITHUB_ENV
+        echo "VER_PATH=$(cd tcl/tools; pwd)/addVerToFile.tcl" >> $GITHUB_ENV
+      working-directory: "."
+    - name: Configure Tcl
+      if: matrix.os == 'ubuntu'
+      run: |
+        ./configure $CFGOPT --enable-zipfs --prefix=$INST_DIR
+      working-directory: tcl/unix
+    - name: Build & Install Tcl
+      if: matrix.os == 'ubuntu'
+      run: |
+        make binaries libraries install
+        make shell SCRIPT="$VER_PATH $GITHUB_ENV"
+      working-directory: tcl/unix
+    - name: Configure Tk
+      if: matrix.os == 'ubuntu'
+      run: |
+        ./configure $CFGOPT --with-tcl=$INST_DIR/lib --prefix=$INST_DIR
+      working-directory: tk/unix
+    - name: Build & Install Tk
+      if: matrix.os == 'ubuntu'
+      run: |
+        make binaries libraries install
+      working-directory: tk/unix
+
+
+    # TCL IN MACOS
+    - name: Checkout Tk
+      if: matrix.os == 'macos'
+      uses: actions/checkout@v3
+      with:
+        repository: tcltk/tk
+        path: tk
+    - name: Checkout Tcl 8.7
+      if: matrix.os == 'macos'
+      uses: actions/checkout@v3
+      with:
+        repository: tcltk/tcl
+        ref: core-8-5-branch
+        path: tcl
+    - name: Checkout create-dmg
+      if: matrix.os == 'macos'
+      uses: actions/checkout@v3
+      with:
+        repository: create-dmg/create-dmg
+        ref: v1.0.8
+        path: create-dmg
+    - name: Setup Environment
+      if: matrix.os == 'macos'
+      run: |
+        mkdir -p install/contents
+        touch tcl/generic/tclStubInit.c tcl/generic/tclOOStubInit.c
+        touch tk/generic/tkStubInit.c
+        echo "INST_DIR=$(cd install;pwd)" >> $GITHUB_ENV
+        echo "VER_PATH=$(cd tcl/tools; pwd)/addVerToFile.tcl" >> $GITHUB_ENV
+        echo "CREATE_DMG=$(cd create-dmg;pwd)/create-dmg" >> $GITHUB_ENV
+        echo "CFLAGS=-arch x86_64 -arch arm64e" >> $GITHUB_ENV
+      working-directory: "."
+    - name: Configure Tcl
+      if: matrix.os == 'macos'
+      run: |
+        ./configure $CFGOPT --enable-zipfs --prefix=$INST_DIR
+      working-directory: tcl/unix
+    - name: Build & Install Tcl
+      if: matrix.os == 'macos'
+      run: |
+        make binaries libraries install
+        make shell SCRIPT="$VER_PATH $GITHUB_ENV"
+      working-directory: tcl/unix
+    - name: Configure Tk
+      if: matrix.os == 'macos'
+      run: |
+        ./configure $CFGOPT --with-tcl=$INST_DIR/lib --prefix=$INST_DIR \
+            --enable-aqua
+      working-directory: tk/unix
+    - name: Build & Install Tk
+      if: matrix.os == 'macos'
+      run: |
+        make binaries libraries install
+      working-directory: tk/unix
+
+
+
+    # TCL IN WINDOWS
+    - name: Install MSYS2
+      if: matrix.os == 'windows'
+      uses: msys2/setup-msys2@v2
+      with:
+        #msystem: MINGW64
+        install: git mingw-w64-x86_64-toolchain make zip zlib # INCLUDED ZLIB
+    - name: Checkout Tk
+      if: matrix.os == 'windows'
+      uses: actions/checkout@v3
+      with:
+        repository: tcltk/tk
+        path: tk
+    - name: Checkout Tcl 8.7
+      if: matrix.os == 'windows'
+      uses: actions/checkout@v3
+      with:
+        repository: tcltk/tcl
+        ref: core-8-5-branch
+        path: tcl
+    - name: Setup Environment
+      if: matrix.os == 'windows'
+      run: |
+        mkdir -p install/combined
+        touch tcl/generic/tclStubInit.c tcl/generic/tclOOStubInit.c
+        touch tk/generic/tkStubInit.c
+        echo "INST_DIR=$(cd install;pwd)" >> $GITHUB_ENV
+        echo "VER_PATH=$(cd tcl/tools; pwd)/addVerToFile.tcl" >> $GITHUB_ENV
+      working-directory: "."
+    - name: Configure Tcl
+      if: matrix.os == 'windows'
+      run: |
+        ./configure $CFGOPT --enable-zipfs --prefix=$INST_DIR
+      working-directory: tcl/win
+    - name: Build & Install Tcl
+      if: matrix.os == 'windows'
+      run: |
+        make binaries libraries install
+        $INST_DIR/bin/tclsh* $VER_PATH $GITHUB_ENV
+      working-directory: tcl/win
+    - name: Configure Tk
+      if: matrix.os == 'windows'
+      run: |
+        ./configure $CFGOPT --with-tcl=$INST_DIR/lib --prefix=$INST_DIR
+      working-directory: tk/win
+    - name: Build & Install Tk
+      if: matrix.os == 'windows'
+      run: |
+        make all install
+        echo "TK_BIN=`pwd`/`echo wish*.exe`" >> $GITHUB_ENV
+      working-directory: tk/win
+
+
+
+
+    # - name: Cache pip deps
+    #   uses: actions/cache@v3
+    #   with:
+    #     path: ${{ env.pythonLocation }}
+    #     key:
+    #       ${{ env.pythonLocation }}-pip-${{ runner.os }}-${{ runner.arch }}-${{ hashFiles('dev/dev_env.txt') }}-${{ env.CACHE_NUMBER }}
+    #   env:
+    #     # Increase this value to reset cache if has not changed
+    #     CACHE_NUMBER: 0
+    #   id: cache
+
+
+    - name: Install dependencies
+      run: |
+        python -m pip install -U --upgrade-strategy eager pip
+        pip install -U --upgrade-strategy eager setuptools "numpy>=1.22.4,<1.22.5"
+        pip install -r dev/dev_env.txt
+
+    # - name: Update environment
+    #   run:
+    #     mamba env update -n anaconda-client-env -f dev/dev_env_out.yml
+    #   if: steps.cache.outputs.cache-hit != 'true'
+
+    - name: Install AlloViz
+      run: pip install .
+
+    # - name: Lint with flake8
+    #   run: |
+    #     conda install flake8
+    #     # stop the build if there are Python syntax errors or undefined names
+    #     flake8 . --count --select=E9,F63,F7,F82 --show-source --statistics
+    #     # exit-zero treats all errors as warnings. The GitHub editor is 127 chars wide
+    #     flake8 . --count --exit-zero --max-complexity=10 --max-line-length=127 --statistics
+
+    - name: Test with pytest
+      run: pytest test

@@ -36,14 +36,14 @@ jobs:
       uses: msys2/setup-msys2@v2
       with:
         #msystem: MINGW64
-        install: git mingw-w64-x86_64-toolchain make zlib mingw-w64-python-pip # INCLUDED ZLIB and pip
+        install: git mingw-w64-x86_64-toolchain make zlib python-pip # INCLUDED ZLIB and pip
     - name: Checkout Tk
       uses: actions/checkout@v3
       with:
         repository: tcltk/tk
         ref: core-8-5-branch
         path: tk
-    - name: Checkout Tcl 8.7
+    - name: Checkout Tcl
       uses: actions/checkout@v3
       with:
         repository: tcltk/tcl
