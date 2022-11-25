@@ -3,8 +3,7 @@ name: Python Package using Conda
 on:
   push:
     branches:
-      - reg_test
-      - fix_submodules
+      - main
 
 jobs:
   miniconda:

@@ -3,8 +3,7 @@ name: Python Package using pip
 on:
   push:
     branches:
-      - reg_test
-      - fix_submodules
+      - main
 
 defaults:
   run:
@@ -13,14 +12,10 @@ jobs:
   job:
     name: pip tcl ubuntu
     runs-on: ubuntu-latest
-    strategy:
-      matrix:
-        compiler:
-          - "gcc"
-        symbols:
-          - "no"
-        disables:
-          - ""
+    env:
+      compiler: 'gcc'
+      symbols: 'no'
+      disables: ''
 
     steps:
     - name: Clone AlloViz
@@ -48,7 +43,7 @@ jobs:
         repository: tcltk/tcl
         ref: core-8-5-branch
         path: tcl
-    - name: Setup Environment (compiler=${{ matrix.compiler }})
+    - name: Setup Environment (compiler=$compiler)
       run: |
         sudo apt-get install tcl8.6-dev libxss-dev
         mkdir "$HOME/install"
@@ -59,10 +54,10 @@ jobs:
         echo "BUILD_CONFIG_ID=$OPTS" >> $GITHUB_ENV
       working-directory: "."
       env:
-        CFGOPT: --enable-symbols=${{ matrix.symbols }} ${{ matrix.disables }}
-        COMPILER: ${{ matrix.compiler }}
-        OPTS: ${{ matrix.compiler }}-${{ matrix.symbols }}${{ matrix.disables }}
-    - name: Configure (symbols=${{ matrix.symbols }} opts=${{ matrix.disables }})
+        CFGOPT: --enable-symbols=$symbols $disables
+        COMPILER: $compiler
+        OPTS: $compiler-$symbols-$disables
+    - name: Configure (symbols=$symbols opts=$disables)
       run: |
         ./configure $CFGOPT "--prefix=$HOME/install" || {
           cat config.log
