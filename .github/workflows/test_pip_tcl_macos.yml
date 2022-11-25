@@ -130,10 +130,12 @@ jobs:
     #     CACHE_NUMBER: 0
     #   id: cache
 
+
+    # "numpy>=1.22.4,<1.22.5"
     - name: Install dependencies
       run: |
         pip3 install -U --upgrade-strategy eager pip
-        OPENBLAS="$(brew --prefix openblas)" pip3 install -U --upgrade-strategy eager setuptools "numpy>=1.22.4,<1.22.5" wheel
+        OPENBLAS="$(brew --prefix openblas)" pip3 install -U --upgrade-strategy eager setuptools wheel
         pip3 install -r dev/dev_env.txt
 
     # - name: Update environment
