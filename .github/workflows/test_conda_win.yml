@@ -100,7 +100,7 @@ jobs:
     - name: Set env manually
       run: |
         C:\Miniconda\shell\condabin\conda-hook.ps1
-        conda env create -n runner-env -f dev/win_env.yml -y
+        conda env create -n runner-env -f dev/win_env.yml
         conda activate runner-env
       if: steps.cache.outputs.cache-hit != 'true'
 
