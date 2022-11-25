@@ -4,16 +4,16 @@ on:
   push:
     branches:
       - reg_test
-      # - fix_submodules
+      - fix_submodules
 
 jobs:
   miniconda:
     name: Miniconda ${{ matrix.os }}
     runs-on: ${{ matrix.os }}-latest
-    continue-on-error: ${{ matrix.experimental }} #true
+    continue-on-error: ${{ matrix.experimental }}
     strategy:
       matrix:
-        os: ["ubuntu", "macos"] #, "windows"]
+        os: ["ubuntu", "macos"]
         experimental: [false]
         # include:
         #   - os: "windows"
@@ -27,19 +27,7 @@ jobs:
         submodules: recursive
 
 
-    # INSTALL TCL 8.5 IN WINDOWS BC APPARENTLY THE CONDA THING DOESN'T WORK?
-
-
-    # - uses: conda-incubator/setup-miniconda@v2
-    #   if: matrix.os == 'windows'
-    #   with:
-    #     miniforge-variant: Mambaforge
-    #     miniforge-version: latest
-    #     activate-environment: anaconda-client-env
-    #     use-mamba: true
-    #     environment-file: dev/win_env.yml
     - uses: conda-incubator/setup-miniconda@v2
-      # if: matrix.os != 'windows'
       with:
         miniforge-variant: Mambaforge
         miniforge-version: latest
@@ -48,14 +36,7 @@ jobs:
 
     - name: Process environment file
       run: python dev/cme_parser/create_env.py -i dev/dev_env.yml.meta -o dev/dev_env_out.yml -p -v so ${{ matrix.os }}
-      # run: |
-      #   wget https://raw.githubusercontent.com/silvanmelchior/cme_parser/master/create_env.py
-      #   python create_env.py -i dev/dev_env_meta.yml -o dev/dev_env_out.yml -p
-      # uses: suisei-cn/actions-download-file@v1.3.0
-      # id: downloadfile  # Remember to give an ID if you need the output filename
-      # with:
-      #   url: "https://raw.githubusercontent.com/silvanmelchior/cme_parser/master/create_env.py"
-      #   target: create_env.py
+
     - name: Cache Conda env
       uses: actions/cache@v3
       with:
@@ -66,32 +47,13 @@ jobs:
         # Increase this value to reset cache if etc/example-environment.yml has not changed
         CACHE_NUMBER: 0
       id: cache
+
     - name: Update environment
       run: mamba env update -n anaconda-client-env -f dev/dev_env_out.yml
-      # mamba install -n anaconda-client-env -c conda-forge --force-reinstall -y "tk>=8.5,<8.6"
       if: steps.cache.outputs.cache-hit != 'true'
-
-    # - uses: conda-incubator/setup-miniconda@v2
-    #   with:
-    #     activate-environment: test
-    #     channels: conda-forge
-    #     environment-file: dev/dev_env.yml
-    #     # python-version: "3.10"
-    #     auto-activate-base: false
-    - name: Install tcl with choco
-      if: matrix.os == 'windows'
-      run: choco install activetcl
 
     - name: Install AlloViz
       run: pip install .
-
-    # - name: Lint with flake8
-    #   run: |
-    #     conda install flake8
-    #     # stop the build if there are Python syntax errors or undefined names
-    #     flake8 . --count --select=E9,F63,F7,F82 --show-source --statistics
-    #     # exit-zero treats all errors as warnings. The GitHub editor is 127 chars wide
-    #     flake8 . --count --exit-zero --max-complexity=10 --max-line-length=127 --statistics
 
     - name: Test with pytest
       run: pytest test

@@ -1,10 +1,10 @@
-name: Ubuntu Python Package using pip and tcl
+name: Python Package using pip
 
 on:
   push:
     branches:
       - reg_test
-      #- fix_submodules
+      - fix_submodules
 
 defaults:
   run:
@@ -114,22 +114,12 @@ jobs:
         python -m pip install -U --upgrade-strategy eager pip
         pip install -U --upgrade-strategy eager setuptools "numpy>=1.22.4,<1.22.5" wheel
         pip install -r dev/dev_env.txt
+      # if: steps.cache.outputs.cache-hit != 'true'
 
-    # - name: Update environment
-    #   run:
-    #     mamba env update -n anaconda-client-env -f dev/dev_env_out.yml
-    #   if: steps.cache.outputs.cache-hit != 'true'
 
     - name: Install AlloViz
       run: pip install .
 
-    # - name: Lint with flake8
-    #   run: |
-    #     conda install flake8
-    #     # stop the build if there are Python syntax errors or undefined names
-    #     flake8 . --count --select=E9,F63,F7,F82 --show-source --statistics
-    #     # exit-zero treats all errors as warnings. The GitHub editor is 127 chars wide
-    #     flake8 . --count --exit-zero --max-complexity=10 --max-line-length=127 --statistics
 
     - name: Test with pytest
       run: pytest test
