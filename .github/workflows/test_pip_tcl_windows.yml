@@ -36,8 +36,8 @@ jobs:
       uses: msys2/setup-msys2@v2
       with:
         #msystem: MINGW64
-        install: git make zlib # INCLUDED ZLIB and pip
-        pacboy: toolchain:p gcc:p base-devel:p python-pip:p
+        install: git make zlib base-devel # INCLUDED ZLIB and pip
+        pacboy: toolchain:p gcc:p python-pip:p
     - name: Checkout Tk
       uses: actions/checkout@v3
       with:

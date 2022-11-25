@@ -63,8 +63,7 @@ jobs:
     - name: Update conda
       run: |
         C:\Miniconda\shell\condabin\conda-hook.ps1
-        C:\Miniconda\conda activate powershell
-        C:\Miniconda\conda update conda -y
+        conda update conda -y
 
 
     - name: Process environment file
@@ -100,8 +99,8 @@ jobs:
 
     - name: Set env manually
       run: |
-        C:\Miniconda\conda create -n runner-env --file dev/win_env.yml -y
-        C:\Miniconda\conda activate runner-env
+        conda create -n runner-env --file dev/win_env.yml -y
+        conda activate runner-env
       if: steps.cache.outputs.cache-hit != 'true'
 
     # - uses: conda-incubator/setup-miniconda@v2
