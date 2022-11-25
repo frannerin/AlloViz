@@ -36,8 +36,8 @@ jobs:
       uses: msys2/setup-msys2@v2
       with:
         #msystem: MINGW64
-        install: git base-devel mingw-w64-x86_64-toolchain make zlib python-pip # INCLUDED ZLIB and pip
-        pacboy: toolchain:p gcc:p
+        install: git make zlib # INCLUDED ZLIB and pip
+        pacboy: toolchain:p gcc:p base-devel:p python-pip:p
     - name: Checkout Tk
       uses: actions/checkout@v3
       with:
@@ -111,8 +111,8 @@ jobs:
     - name: Install dependencies
       # python -m 
       run: |
-        pip install -U --upgrade-strategy eager pip
-        pip install -U --upgrade-strategy eager setuptools "numpy>=1.22.4,<1.22.5" wheel
+        pip install -U --upgrade-strategy eager pip setuptools wheel
+        pip install -U --upgrade-strategy eager "numpy>=1.22.4,<1.22.5" 
         pip install -r dev/dev_env.txt
 
     # - name: Update environment

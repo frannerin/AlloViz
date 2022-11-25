@@ -49,13 +49,23 @@ jobs:
     #     activate-environment: anaconda-client-env
     #     use-mamba: true
     #     environment-file: dev/win_env.yml
-    - uses: conda-incubator/setup-miniconda@v2
-      # if: matrix.os != 'windows'
-      with:
-        miniforge-variant: Mambaforge
-        miniforge-version: latest
-        activate-environment: anaconda-client-env
-        use-mamba: true
+
+
+    # - uses: conda-incubator/setup-miniconda@v2
+    #   # if: matrix.os != 'windows'
+    #   with:
+    #     miniforge-variant: Mambaforge
+    #     miniforge-version: latest
+    #     activate-environment: anaconda-client-env
+    #     use-mamba: true
+
+
+    - name: Update conda
+      run: |
+        C:\Miniconda\shell\condabin\conda-hook.ps1
+        C:\Miniconda\conda activate powershell
+        C:\Miniconda\conda update conda -y
+
 
     - name: Process environment file
       run: python dev/cme_parser/create_env.py -i dev/dev_env.yml.meta -o dev/dev_env_out.yml -p -v so windows
@@ -67,6 +77,10 @@ jobs:
       # with:
       #   url: "https://raw.githubusercontent.com/silvanmelchior/cme_parser/master/create_env.py"
       #   target: create_env.py
+
+    
+
+
     - name: Cache Conda env
       uses: actions/cache@v3
       with:
@@ -77,9 +91,17 @@ jobs:
         # Increase this value to reset cache if etc/example-environment.yml has not changed
         CACHE_NUMBER: 0
       id: cache
-    - name: Update environment
-      run: mamba env update -n anaconda-client-env -f dev/dev_env_out.yml
-      # mamba install -n anaconda-client-env -c conda-forge --force-reinstall -y "tk>=8.5,<8.6"
+
+
+    # - name: Update environment
+    #   run: mamba env update -n anaconda-client-env -f dev/dev_env_out.yml
+    #   # mamba install -n anaconda-client-env -c conda-forge --force-reinstall -y "tk>=8.5,<8.6"
+    #   if: steps.cache.outputs.cache-hit != 'true'
+
+    - name: Set env manually
+      run: |
+        C:\Miniconda\conda create -n runner-env --file dev/win_env.yml -y
+        C:\Miniconda\conda activate runner-env
       if: steps.cache.outputs.cache-hit != 'true'
 
     # - uses: conda-incubator/setup-miniconda@v2
