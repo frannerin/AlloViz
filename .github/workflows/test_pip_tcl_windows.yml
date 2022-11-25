@@ -112,7 +112,7 @@ jobs:
       # python -m 
       # pip install -U --upgrade-strategy eager "numpy>=1.22.4,<1.22.5" 
       run: |
-        D:/a/_temp/msys64/mingw64/bin/python.exe -m pip install -U --upgrade-strategy eager pip setuptools wheel "numpy>=1.22.4,<1.22.5"
+        D:/a/_temp/msys64/mingw64/bin/python.exe -m pip install -U --upgrade-strategy eager pip setuptools wheel
         D:/a/_temp/msys64/mingw64/bin/python.exe -m pip install -r dev/dev_env.txt
 
     # - name: Update environment

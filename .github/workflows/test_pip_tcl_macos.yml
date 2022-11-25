@@ -135,7 +135,7 @@ jobs:
     - name: Install dependencies
       run: |
         pip3 install -U --upgrade-strategy eager pip
-        OPENBLAS="$(brew --prefix openblas)" pip3 install -U --upgrade-strategy eager setuptools wheel
+        OPENBLAS="$(brew --prefix openblas)" pip3 install -U --upgrade-strategy eager setuptools wheel numpy
         pip3 install -r dev/dev_env.txt
 
     # - name: Update environment

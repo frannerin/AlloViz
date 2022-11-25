@@ -102,6 +102,9 @@ jobs:
         C:\Miniconda\shell\condabin\conda-hook.ps1
         conda env create -n runner-env -f dev/win_env.yml
         conda activate runner-env
+        conda info
+        pip install .
+        pytest test
       if: steps.cache.outputs.cache-hit != 'true'
 
     # - uses: conda-incubator/setup-miniconda@v2
@@ -115,18 +118,18 @@ jobs:
     #   if: matrix.os == 'windows'
     #   run: choco install activetcl
 
-    - name: Install AlloViz
-      run: |
-        conda info
-        pip install .
-
-    # - name: Lint with flake8
+    # - name: Install AlloViz
     #   run: |
-    #     conda install flake8
-    #     # stop the build if there are Python syntax errors or undefined names
-    #     flake8 . --count --select=E9,F63,F7,F82 --show-source --statistics
-    #     # exit-zero treats all errors as warnings. The GitHub editor is 127 chars wide
-    #     flake8 . --count --exit-zero --max-complexity=10 --max-line-length=127 --statistics
+    #     conda info
+    #     pip install .
 
-    - name: Test with pytest
-      run: pytest test
+    # # - name: Lint with flake8
+    # #   run: |
+    # #     conda install flake8
+    # #     # stop the build if there are Python syntax errors or undefined names
+    # #     flake8 . --count --select=E9,F63,F7,F82 --show-source --statistics
+    # #     # exit-zero treats all errors as warnings. The GitHub editor is 127 chars wide
+    # #     flake8 . --count --exit-zero --max-complexity=10 --max-line-length=127 --statistics
+
+    # - name: Test with pytest
+    #   run: pytest test
