@@ -37,7 +37,7 @@ jobs:
       with:
         #msystem: MINGW64
         install: git base-devel mingw-w64-x86_64-toolchain make zlib python-pip # INCLUDED ZLIB and pip
-        pacboy: toolchain:p
+        pacboy: toolchain:p gcc:p
     - name: Checkout Tk
       uses: actions/checkout@v3
       with:

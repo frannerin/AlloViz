@@ -18,19 +18,25 @@ jobs:
 
 
 
-    defaults:
-      run:
-        shell: msys2 {0}
+    
     steps:
     - uses: actions/checkout@v3
       with:
         submodules: recursive
 
-    - name: Install MSYS2
-      uses: msys2/setup-msys2@v2
-      with:
-        #msystem: MINGW64 # default
-        install: git mingw-w64-x86_64-toolchain make zlib python-pip tcl mingw-w64-x86_64-netcdf
+    # TRYING TO AVOID MSYS
+    # defaults:
+    #   run:
+    #     shell: msys2 {0}
+    # - name: Install MSYS2
+    #   uses: msys2/setup-msys2@v2
+    #   with:
+    #     #msystem: MINGW64 # default
+    #     install: git mingw-w64-x86_64-toolchain make zlib python-pip tcl mingw-w64-x86_64-netcdf
+
+
+
+
 
     # INSTALL TCL 8.5 IN WINDOWS BC APPARENTLY THE CONDA THING DOESN'T WORK?
 
