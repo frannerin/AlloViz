@@ -99,6 +99,7 @@ jobs:
 
     - name: Set env manually
       run: |
+        C:\Miniconda\shell\condabin\conda-hook.ps1
         conda create -n runner-env --file dev/win_env.yml -y
         conda activate runner-env
       if: steps.cache.outputs.cache-hit != 'true'
@@ -115,7 +116,9 @@ jobs:
     #   run: choco install activetcl
 
     - name: Install AlloViz
-      run: pip install .
+      run: |
+        conda info
+        pip install .
 
     # - name: Lint with flake8
     #   run: |

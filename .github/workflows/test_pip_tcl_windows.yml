@@ -37,7 +37,7 @@ jobs:
       with:
         #msystem: MINGW64
         install: git make zlib base-devel # INCLUDED ZLIB and pip
-        pacboy: toolchain:p gcc:p python-pip:p
+        pacboy: toolchain:p gcc:p python-pip:p openblas:p python-numpy:p python:p
     - name: Checkout Tk
       uses: actions/checkout@v3
       with:
@@ -110,9 +110,9 @@ jobs:
 
     - name: Install dependencies
       # python -m 
+      # pip install -U --upgrade-strategy eager "numpy>=1.22.4,<1.22.5" 
       run: |
         pip install -U --upgrade-strategy eager pip setuptools wheel
-        pip install -U --upgrade-strategy eager "numpy>=1.22.4,<1.22.5" 
         pip install -r dev/dev_env.txt
 
     # - name: Update environment
