@@ -473,7 +473,7 @@ class Protein:
     
     
     
-    def filter(self, pkgs="all", filterings="all", **kwargs):
+    def filter(self, pkgs="all", filterings="all", *, GetContacts_threshold=0, Sequence_Neighbor_distance=5, Interresidue_distance=10):
         r"""Filter network edges
         
         Filter the networks according to the selected criteria to perform analyses on
@@ -543,11 +543,14 @@ class Protein:
             if not pkg:
                 print(f"{pkgn} calculation results are needed first")
                 continue
-            result = pkg.filter(filterings, **kwargs)
+            result = pkg.filter(filterings, 
+                                GetContacts_threshold=GetContacts_threshold,
+                                Sequence_Neighbor_distance=Sequence_Neighbor_distance,
+                                Interresidue_distance=Interresidue_distance)
             
         return result if (len(pkgs) == 1) else None
     
-    def analyze(self, pkgs="all", filterings="all", elements="edges", metrics="all", normalize=True, cores=1, **kwargs):
+    def analyze(self, pkgs="all", filterings="all", elements="edges", metrics="all", normalize=True, cores=1, nodes_dict=Analysis.nodes_dict, edges_dict=Analysis.edges_dict, **kwargs):
         r"""Analyzed filtered network
         
         Analyze the selected (un)filtered networks with the passed elements-metrics. It
@@ -593,6 +596,12 @@ class Protein:
             of the analyzed data that the functions produce. Defaults are
             :data:`~AlloViz.AlloViz.Analysis.nodes_dict` and
             :data:`~AlloViz.AlloViz.Analysis.edges_dict`.
+        **kwargs
+            Other optional keyword arguments that will be passed to the NetworkX analysis
+            function(s) that is(are) used on the method call in case they need extra
+            parameters. All keyward arguments will be passed to all analysis function
+            calls, so if the function doesn't accept the arguments there will be an error.
+            `weight` and `normalized` parameters are already specified by AlloViz.
 
         See Also
         --------
@@ -650,7 +659,7 @@ class Protein:
                 #     continue
                 # # result = 
                 # Analysis.analyze(filtered, elements, metrics, normalize, **kwargs)
-                filtered.analyze(elements, metrics, normalize, cores=1, **kwargs)
+                filtered.analyze(elements, metrics, normalize, cores=1, nodes_dict=nodes_dict, edges_dict=edges_dict, **kwargs)
                 
         # # Close the pool
         # mypool.close()
