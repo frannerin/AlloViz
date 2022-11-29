@@ -9,6 +9,10 @@ AlloViz
    :target: https://github.com/psf/black
    :alt: Code style
 
+.. image:: https://github.com/frannerin/AlloViz/actions/workflows/test_conda.yml/badge.svg
+   :target: https://github.com/frannerin/AlloViz/actions/workflows/test_conda.yml
+   :alt: Python Package using Conda
+
 A Python package to interactively compute, analyze and visualize protein
 allosteric communication (residue interaction) networks and
 delta-networks.
