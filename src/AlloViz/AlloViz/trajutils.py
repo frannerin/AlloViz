@@ -183,7 +183,7 @@ def download_GPCRmd_files(GPCRmdid, path):
     links = [
         link.get("href")
         for link in soup
-        if re.search("(xtc|pdb|psf|prm)", link.get("href"))
+        if re.search("(xtc|dcd|pdb|psf|prm)", link.get("href"))
     ]
 
     # Download the files in parallel and save them in `path` with the same original name that they have in GPCRmd (last part of `link`)
@@ -199,17 +199,19 @@ def download_GPCRmd_files(GPCRmdid, path):
     mypool.join()
 
     # Extract the 'parameters' file, remove the tar and transform it in-place to avoid errors with the gRINN network construction method
-    fname = next(get_name(link) for link in links if "prm" in get_name(link))
-    with tarfile.open(fname) as tar:
-        tar.extractall(path)
-    os.remove(fname)
+    if any(["prm" in link for link in links]):
+        fname = next(get_name(link) for link in links if "prm" in get_name(link))
+        if "tar" in fname:
+            with tarfile.open(fname) as tar:
+                tar.extractall(path)
+            os.remove(fname)
 
-    for line in fileinput.input(f"{path}/parameters", inplace=True):
-        if line.strip().startswith("HBOND"):
-            line = "HBOND CUTHB 0.5\n"  # gRINN example parameters file has the 'CUTHB 0.5' in addition to 'HBOND' in its line and seems to be necessary
-        elif line.strip().startswith("END"):
-            line = "END\n"  # gRINN example parameters file has a newline in the end of the file that seems to be necessary
-        sys.stdout.write(line)
+        for line in fileinput.input(f"{path}/parameters", inplace=True):
+            if line.strip().startswith("HBOND"):
+                line = "HBOND CUTHB 0.5\n"  # gRINN example parameters file has the 'CUTHB 0.5' in addition to 'HBOND' in its line and seems to be necessary
+            elif line.strip().startswith("END"):
+                line = "END\n"  # gRINN example parameters file has a newline in the end of the file that seems to be necessary
+            sys.stdout.write(line)
 
     return
 
@@ -250,10 +252,10 @@ def process_input(
     trajs : list
         Filename(s) of the MD trajectory (or trajectories) to read and use. File format
         must be recognized by MDAnalysis (e.g., xtc).
-    trajsf : list
+    trajsf : dict
         Complete relative filename(s) of the processed MD trajectory (or trajectories) to
         save.
-    comtrajsf : list
+    comtrajsf : dict
         Complete relative filename(s) of the processed MD trajectory (or trajectories) of
         the CA atoms to save.
     **kwargs
@@ -274,13 +276,13 @@ def process_input(
 
     # If the input files has the same number of atoms and residue names as the processed entities, avoid re-saving pdb and trajectory(ies) files
     if (
-        whole.atoms.n_atoms == protein.n_atoms
-        and original_resnames == protein.residues.resnames
+        whole.atoms.n_atoms == protein.n_atoms and 
+        (original_resnames == protein.residues.resnames).all()
     ):
         pdbf = pdb
-        trajsf = trajs
+        trajsf = dict(x for x in enumerate(trajs, 1))
         psff = psf
-
+    
     # Make a selection of the CA atoms on the processed protein
     CAs = protein.select_atoms("name CA")
 
@@ -304,12 +306,14 @@ def process_input(
         ]
     ):
         whole.load_new(trajs, continuous=False)
-        if hasattr(whole.trajectory, "readers"):
+        
+        if hasattr(whole.trajectory, "_start_frames"):
             sf = (
                 whole.trajectory._start_frames
             )  # for 3 trajs of 2500 frames each looks like: array([   0, 2500, 5000, 7500])
         else:
-            sf = [0, 2500]
+            sf = [0, whole.trajectory.n_frames]
+            
         iterator = enumerate(
             zip(sf[:-1], sf[1:]), 1
         )  # looks like: (1, (0, 2500)), (2, (2500, 5000)), (3, (5000, 7500))

@@ -1,31 +1,3 @@
-[submodule "src/Packages/correlationplus"]
-	shallow = True
-	path = src/Packages/correlationplus
-	url = https://github.com/frannerin/correlationplus
-[submodule "src/Packages/MD-TASK"]
-	shallow = True
-	path = src/Packages/MD-TASK
-	url = https://github.com/frannerin/MD-TASK
-[submodule "src/Packages/dynetan"]
-	shallow = True
-	path = src/Packages/dynetan
-	url = https://github.com/frannerin/dynetan
-[submodule "src/Packages/getcontacts"]
-	shallow = True
-	path = src/Packages/getcontacts
-	url = https://github.com/frannerin/getcontacts
-[submodule "src/Packages/msmbuilder"]
-	shallow = True
-	path = src/Packages/msmbuilder
-	url = https://github.com/frannerin/msmbuilder
-[submodule "src/Packages/pyinteraph2"]
-	shallow = True
-	path = src/Packages/pyinteraph2
-	url = https://github.com/frannerin/pyinteraph2
-[submodule "src/Packages/gRINN_Bitbucket"]
-	shallow = True
-	path = src/Packages/gRINN_Bitbucket
-	url = https://bitbucket.org/fnerin/grinn_bitbucket.git
 [submodule "src/Packages/mdentropy"]
 	shallow = True
 	path = src/Packages/mdentropy
@@ -34,3 +6,35 @@
 	shallow = True
 	path = src/Packages/NPEET_LNC
 	url = https://github.com/ViktorvdValk/NPEET_LNC
+[submodule "src/Packages/enspara"]
+	shallow = True
+	path = src/Packages/enspara
+	url = https://github.com/bowman-lab/enspara
+[submodule "src/Packages/correlationplus"]
+	shallow = True
+	path = src/Packages/correlationplus
+	url = https://github.com/tekpinar/correlationplus
+[submodule "src/Packages/dynetan"]
+	shallow = True
+	path = src/Packages/dynetan
+	url = https://github.com/melomcr/dynetan
+[submodule "src/Packages/msmbuilder"]
+	shallow = True
+	path = src/Packages/msmbuilder
+	url = https://github.com/msmbuilder/msmbuilder2022
+[submodule "src/Packages/pyinteraph2"]
+	shallow = True
+	path = src/Packages/pyinteraph2
+	url = https://github.com/ELELAB/pyinteraph2
+[submodule "src/Packages/getcontacts"]
+	shallow = True
+	path = src/Packages/getcontacts
+	url = https://github.com/getcontacts/getcontacts
+[submodule "src/Packages/MD-TASK"]
+	shallow = True
+	path = src/Packages/MD-TASK
+	url = https://github.com/RUBi-ZA/MD-TASK
+[submodule "dev/cme_parser"]
+	shallow = True
+	path = dev/cme_parser
+	url = https://github.com/silvanmelchior/cme_parser

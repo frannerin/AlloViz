@@ -23,6 +23,7 @@ from importlib import import_module
 from lazyasd import LazyObject
 
 from ..AlloViz.Filtering import Filtering
+from ..AlloViz.Elements import Edges
 from ..AlloViz.utils import get_pool, rgetattr, rhasattr
 from ..AlloViz import utils
 
@@ -142,7 +143,7 @@ class Base:
                 # If there is only 1 trajectory, simply use its raw data as the "weight" variable
                 df.rename(columns={"1": "weight"}, inplace=True)
                 
-            return df
+            return Edges(df, parent=self.protein)
         
         # Function to call get_raw to read and process the raw data and add it as the "raw" attribute to self
         add_raw = lambda pqs: setattr(self, "raw", get_raw(pqs))
@@ -393,7 +394,7 @@ class Combined_Dihs_Base(Base):
     
     def _calculate(self, xtc):
         # Child classes' names are: correlationplus_Backbone_Dihs_Avg, AlloViz_Sidechain_Dihs_Max, etc... 
-        pkg = self._name.split("_")[0]
+        pkg = self._name.rsplit("_", 3)[0] if ("Sidechain" in self._name or "Backbone" in self._name) else self._name.rsplit("_", 2)[0]
         
         # If any of the dihedral calculations don't exist, raise error
         attrs_exist = {f"{pkg}_{Dih}": rhasattr(self, "protein", f"{pkg}_{Dih}") for Dih in self._dihs}

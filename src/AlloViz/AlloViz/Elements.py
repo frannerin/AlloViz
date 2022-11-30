@@ -50,15 +50,45 @@ class Element(pandas.DataFrame):
     # _internal_names_set = set(_internal_names)
 
     # normal properties; retained after manipulating df; should new methods be here?
+    # _metadata = 
+    
     _metadata = ["_parent"]
     
     @property
     def _constructor(self):
-        return pandas.DataFrame
-
+        return self.__class__._internal_ctor
+    
+    @classmethod
+    def _internal_ctor(cls, *args, **kwargs):
+        kwargs['parent'] = None
+        return cls(*args, **kwargs)
+    
+    
     @property
     def _constructor_sliced(self):
         return pandas.Series
+    
+    
+    
+    def __init__(self, data, parent, index=None, columns=None, dtype=None, copy=True):
+        super().__init__(data=data,
+                          index=index,
+                          columns=columns,
+                          dtype=dtype,
+                          copy=copy)
+        self._parent = parent
+    
+    
+    
+#     @property
+#     def _constructor(self):
+#         return self.__class__
+
+    
+    
+#     def __init__(self, *args, parent):
+#         super().__init__(*args)
+#         self._parent = parent
     
     
     
@@ -189,6 +219,7 @@ class Element(pandas.DataFrame):
         if nv is None:
             nv = nglview.show_mdanalysis(mdau_parent.protein, default=False)
             nv.add_cartoon("protein", color="white")
+            nv.center("protein")
 
         return nv, mdau_parent
 
@@ -288,9 +319,6 @@ class Edges(Element):
     See this class' :meth:`~AlloViz.AlloViz.Elements.Edges._add_element`
     """
 
-    def __init__(self, *args):
-        super().__init__(*args)
-
     def _add_element(self, nv, prot, edge, color, size):
         r"""Add a network element to the representation
 
@@ -336,9 +364,6 @@ class Nodes(Element):
 
     See this class' :meth:`~AlloViz.AlloViz.Elements.Nodes._add_element`
     """
-
-    def __init__(self, *args):
-        super().__init__(*args)
 
     def _add_element(self, nv, prot, node, color, size):
         r"""Add a network element to the representation

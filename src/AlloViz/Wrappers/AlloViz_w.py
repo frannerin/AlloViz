@@ -1,7 +1,7 @@
 """AlloViz's own network construction method wrapper
 
 It calculates the Mutual Information (MI) generalized correlation of the residues'
-backbone dihedral angles (Phi, Psi and Omega) and also their average.
+dihedral angles and also their combinations.
 
 """
 
@@ -157,7 +157,7 @@ class AlloViz_Backbone_Dihs_Avg(Combined_Dihs_Avg, AlloViz_Base):
     """
     def __new__(cls, protein, d):
         new = super().__new__(cls, protein, d)
-        new._dihs = ["Phi", "Psi", "Omega"]
+        new._dihs = ["Phi", "Psi"]#, "Omega"]
         return new
     
 class AlloViz_Backbone_Dihs_Max(Combined_Dihs_Max, AlloViz_Base):
@@ -166,7 +166,7 @@ class AlloViz_Backbone_Dihs_Max(Combined_Dihs_Max, AlloViz_Base):
     """
     def __new__(cls, protein, d):
         new = super().__new__(cls, protein, d)
-        new._dihs = ["Phi", "Psi", "Omega"]
+        new._dihs = ["Phi", "Psi"]#, "Omega"]
         return new
 
 
@@ -263,7 +263,7 @@ class AlloViz_Sidechain_Dihs_Avg(Combined_Dihs_Avg, AlloViz_Base):
     """
     def __new__(cls, protein, d):
         new = super().__new__(cls, protein, d)
-        new.chis = d["chis"] if "chis" in d else 5
+        new.chis = d["chis"] if "chis" in d else 4
         new._dihs = [f"Chi{i+1}" for i in range(new.chis)]
         return new
     
@@ -274,7 +274,7 @@ class AlloViz_Sidechain_Dihs_Max(Combined_Dihs_Max, AlloViz_Base):
     """
     def __new__(cls, protein, d):
         new = super().__new__(cls, protein, d)
-        new.chis = d["chis"] if "chis" in d else 5
+        new.chis = d["chis"] if "chis" in d else 4
         new._dihs = [f"Chi{i+1}" for i in range(new.chis)]
         return new
     
@@ -288,8 +288,8 @@ class AlloViz_Dihs_Avg(Combined_Dihs_Avg, AlloViz_Base):
     """
     def __new__(cls, protein, d):
         new = super().__new__(cls, protein, d)
-        new.chis = d["chis"] if "chis" in d else 5
-        new._dihs = ["Phi", "Psi", "Omega"] + [f"Chi{i+1}" for i in range(new.chis)]
+        new.chis = d["chis"] if "chis" in d else 4
+        new._dihs = ["Phi", "Psi"] + [f"Chi{i+1}" for i in range(new.chis)]#, "Omega"]
         return new
     
     
@@ -299,6 +299,6 @@ class AlloViz_Dihs_Max(Combined_Dihs_Max, AlloViz_Base):
     """
     def __new__(cls, protein, d):
         new = super().__new__(cls, protein, d)
-        new.chis = d["chis"] if "chis" in d else 5
-        new._dihs = ["Phi", "Psi", "Omega"] + [f"Chi{i+1}" for i in range(new.chis)]
+        new.chis = d["chis"] if "chis" in d else 4
+        new._dihs = ["Phi", "Psi"] + [f"Chi{i+1}" for i in range(new.chis)]#, "Omega"]
         return new

@@ -9,6 +9,9 @@ _, dynid, cores, taskcpus = sys.argv
 dynd = d[dynid]
 
 
+# The generic numbering saved in the GPCRmd dictionary is a dictionary itself that looks like: { 2x47:"77-P-A" }
+# The mapper translates the residue names from AlloViz 
+# (for the GPCRmd implementation, they look like: "A:PRO:77"; the normal AlloViz implementation doesn't include the chain)
 from Bio.SeqUtils import seq3
 gen_num = dynd["gpcr_pdb"]
 mapper = {f"{chain}:{seq3(code).upper()}:{num}": key for key, val in gen_num.items()
@@ -16,10 +19,12 @@ mapper = {f"{chain}:{seq3(code).upper()}:{num}": key for key, val in gen_num.ite
 
 
 
+# rsync the files from the .files file from ori to the folder where the job is being run
 rsync(f'rsync -z --no-R --inplace --files-from={running_dir}/slurm_files/{dynid}/{dynid}.files ori:/protwis/sites/files .')
 if not any(["_dynamic.tsv" in f for f in os.listdir()]):
     raise Exception(f"ERROR: {dynid} doesn't have contacts data available yet")
 
+# Change the names and locations (symlink) of the GetContacts' .tsvs so that AlloViz can recognize them when GetContacts calculations are launched
 tsvs = sorted([f for f in os.listdir() if "_dynamic.tsv" in f], key=lambda trajid: trajid.split("_")[0].split("-")[-1]) # filenames look like: {dynid}-{trajid}_dynamic.tsv
 for num, f in enumerate(tsvs, 1):
     if os.path.isfile(f"{num}.tsv"):
@@ -27,6 +32,7 @@ for num, f in enumerate(tsvs, 1):
     os.symlink(f, f"{num}.tsv")
 
 
+# Extract and save the information about the ligand resname/chain from the GPCRmd dictionary so that only the protein is processed later by AlloViz (and not e.g. a peptidic ligand)
 extra_sel = ""
 lig = dynd["lig_sname"]
 if lig and len(lig) > 0:
@@ -36,6 +42,8 @@ print("protein_sel", protein_sel)
         
 
 
+    
+    
 import AlloViz
 
 # pkgs = ['MDTASK', 'pytraj_CA', 'pytraj_CB', 'dynetan', #'dynetan_COM',
@@ -64,12 +72,12 @@ dyn = AlloViz.Protein(pdb = dynd['struc_fname'],
                       #path = out + dynid,
                       protein_sel = protein_sel,
                       special_res = {"HSP": "H"}, # for dyn10
-                      GPCR = mapper,
+                      GPCR = mapper, # In the GPCRmd AlloViz implementation, the GPCR parameter is the generic numbering mapper dictionary
                      )
 
 
-dyn.calculate(pkg="all", cores=int(cores), taskcpus=int(taskcpus), GetContacts_threshold=0.5)
-dyn.filter(pkgs="all", filterings=["All", "GetContacts_edges", "GPCR_Interhelix", "Spatially_distant"]) #
+dyn.calculate(pkg="all", cores=int(cores), taskcpus=int(taskcpus))
+dyn.filter(pkgs="all", filterings=["All", "GetContacts_edges", "GPCR_Interhelix", "Spatially_distant"], GetContacts_threshold=0.5) #
 
 
 dyn.analyze(pkgs="all", filterings="all", elements="edges", metrics="all", normalize=True, cores=int(cores)) #
@@ -78,9 +86,9 @@ dyn.analyze(pkgs="all", filterings="all", elements="edges", metrics="all", norma
 
 
 shutil.move(f"{dynid}.times", f"{running_dir}/slurm_files/{dynid}/{dynid}.times")
-for file in [f for f in os.listdir() if os.path.isfile(f)]:
-    os.remove(file)
-
+# for file in [f for f in os.listdir() if os.path.isfile(f)]:
+#     os.remove(file)
+##################################
     
 
     
@@ -93,6 +101,7 @@ abrvs['LMI'] = abrvs['Linear Mutual Information (LMI)']
 abrvs["Pearson's"] = abrvs['Pearson']
 abrvs["Carbon \u03B1"] = abrvs['Alpha-carbon']
 abrvs["Carbon \u03B2"] = abrvs['Beta-carbon']
+abrvs["Residue COM contacts"] = abrvs['Residue COM']
 # abrvs["Backbone dihedrals"] = abrvs['All dihedrals']
 # abrvs["Alpha angle"] = abrvs['Alpha']
 
@@ -146,9 +155,10 @@ for pkg in [pkg for pkg in dyn.__dict__ if pkg in w]:
     for filterby in [fb for fb in getattr(dyn, pkg).__dict__ if fb in AlloViz.AlloViz.utils.filteringsl]:
         df = AlloViz.AlloViz.utils.rgetattr(dyn, pkg, filterby, "edges")
         if not isinstance(df, bool):
-            df.rename(columns={"weight": "rwd_weight_avg",
-                               "cfb": "cfb_weight_avg",
-                               "btw": "btw_weight_avg"})
+            df.rename(columns={"weight": "rwd_weight", "weight_avg": "rwd_weight",
+                               "cfb": "cfb_weight", "cfb_avg": "cfb_weight",
+                               "btw": "btw_weight", "btw_avg": "btw_weight"},
+                     inplace=True)
             cols = [col for col in df.columns if ("weight" in col or "std" in col)]
             df = df[cols]
 
@@ -163,9 +173,9 @@ for pkg in [pkg for pkg in dyn.__dict__ if pkg in w]:
 
     
     
-rsync(f'rsync -z --remove-source-files ./* ori:/protwis/sites/files/Precomputed/allosteric_com/{dynid}/')
-rsync(f'rsync -zrR data/ ori:/protwis/sites/files/Precomputed/allosteric_com/data/{dynid}') # --remove-source-files
-
+rsync(f'rsync -z ./* ori:/protwis/sites/files/Precomputed/allosteric_com/{dynid}/') # --remove-source-files
+rsync(f'rsync -zr data/ ori:/protwis/sites/files/Precomputed/allosteric_com/data/{dynid}/') # --remove-source-files
+#######################
 
 
 with open(f"{running_dir}/completion.times", "a") as f:

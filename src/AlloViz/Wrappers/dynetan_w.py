@@ -31,7 +31,7 @@ class dynetan(Multicore):
         """"""
         step = {"in_memory": True, "in_memory_step": self.stride} if hasattr(self, "stride") else {}
         
-        obj = _dynetan.DNAproc()
+        obj = _dynetan.DNAproc(notebookMode=False)
         obj.workU = _dynetan.mda.Universe(self._pdbf, self._trajs[xtc], **step)
         
         # prot = obj.getU().select_atoms(self._d["_protein_sel"])

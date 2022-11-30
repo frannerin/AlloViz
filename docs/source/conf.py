@@ -43,6 +43,7 @@ extensions = [
     'sphinx.ext.autosectionlabel',
     "nbsphinx",
     "nbsphinx_link",
+    "matplotlib.sphinxext.plot_directive",
     #"autoapi.extension"
 ]
 
@@ -89,7 +90,11 @@ autosummary_mock_imports = [
 	"libinteract",
 	"prody", 
 	"numba",
-	"pytraj"]
+	"pytraj",
+	"cython", "h5py", "python-louvain", "community", "colorama", #dynetan deps
+	"pyprind", "panedr", "natsort", "click", "PyQt5",
+	"enspara.info_theory.libinfo", "enspara.geometry.libdist", "enspara.msm.libmsm", "tables",
+]
 
 # autodoc
 #autodoc_member_order = "bysource"
@@ -101,6 +106,14 @@ autodoc_default_options = {
 	'show-inheritance': True,
 	#'inherited-members': 'pandas.DataFrame',
 }
+
+# matplotlib plot directive # copied from pandas docs conf.py
+plot_include_source = True
+plot_formats = [("png", 90)]
+plot_html_show_formats = False
+plot_html_show_source_link = False
+plot_pre_code = """import numpy as np
+import pandas as pd"""
 
 # Napoleon settings
 # napoleon_google_docstring = False
@@ -147,7 +160,8 @@ html_theme_options = {
 }
 
 html_sidebars = {
-  "example": []
+  "tutorial": [],
+  "table": [],
 }
 
 
@@ -157,28 +171,41 @@ from AlloViz.AlloViz import info
 
 df = info.df
 
-header = "Available information sources for network generation\n----------------------------------------------------\n\n.. raw:: html\n\n"
+# header = "Network construction methods\n============================\n\n.. raw:: html\n\n"
+firstlines = """
+Network construction methods
+============================
 
-tabulated_table = ""
-for line in df.to_html(header=False).replace(' valign="top"', '').split("\n"):
-	tabulated_table += f"\t{line}\n"
+.. raw:: html
+
+"""
+
+with open("table.rst", "w") as f:
+	f.write(firstlines)
+
+	for line in df.to_html(header=False).replace(' valign="top"', '').split("\n"):
+		f.write(f"\t{line}\n")
+
+# tabulated_table = ""
+# for line in df.to_html(header=False).replace(' valign="top"', '').split("\n"):
+# 	tabulated_table += f"\t{line}\n"
 
 
-import fileinput, sys
+# import fileinput, sys
 
-replace_line = False
-for line in fileinput.input("../../README.rst", inplace=True):
-	if line.startswith('Cite'):
-		replace_line = False
+# replace_line = False
+# for line in fileinput.input("../../README.rst", inplace=True):
+# 	if line.startswith('Cite'):
+# 		replace_line = False
 
-	if replace_line:
-		continue
+# 	if replace_line:
+# 		continue
 
-	if line.startswith('Available information sources for network generation'):
-		line = header + tabulated_table + "\n|\n\n"
-		replace_line = True
+# 	if line.startswith('Available information sources for network generation'):
+# 		line = header + tabulated_table + "\n|\n\n"
+# 		replace_line = True
 
-	sys.stdout.write(line)
+# 	sys.stdout.write(line)
 
 
 sys.path.pop(0)
@@ -186,22 +213,22 @@ sys.path.pop(0)
 
 
 
+with open("../../README.rst", 'r') as f:
+  lines = f.read()
+
+# lines[-3:] = [
+# 	".. _options: table.html\n",
+# 	".. _tutorial: tutorial.html\n",
+# 	".. _documentation: index.html\n",
+# ]
 
 
 
-"""
-protein : :class:`~MDAnalysis.core.universe.Universe`
-        Universe of the processed pdb with only the selected `protein_sel` atoms.
-    u : :class:`~MDAnalysis.core.universe.Universe`
-        Universe of the processed pdb and trajectory files with only the `protein_sel`
-        atoms.
-"""
-
-
-
-"""
-: str
-        Class attribute used to select only protein atoms from the input files with
-        :external:ref:`MDAnalysis selection syntax <selection-commands-label>`. It
-        defaults to "(same segid as protein) and (not segid LIG) and (not chainid L)".
-"""
+with open('README.rst', 'w') as f:
+  f.write(lines.replace(
+  		"`options <https://alloviz.readthedocs.io/en/latest/table.html>`__",
+  		":ref:`options <table:Network construction methods>`"
+  	).replace(
+  		"`tutorial <https://alloviz.readthedocs.io/en/latest/tutorial.html>`__",
+  		":ref:`tutorial <tutorial:Tutorial>`"
+  	))

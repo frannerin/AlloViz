@@ -5,7 +5,7 @@ def rsync(cmd, pw_file=None):
         pw_file = f"{os.path.dirname(os.path.realpath(__file__))}/password.txt" # /gpcr/users/frann/AlloViz_GPCRmd
     
     with open(pw_file, "r") as pw:
-        child = pexpect.spawn(cmd, encoding='utf-8')
+        child = pexpect.spawn(f'bash -c "{cmd}"', encoding='utf-8')
         option = child.expect([".* password:",
                                ".*Are you sure you want to continue connecting.*"
                               ])

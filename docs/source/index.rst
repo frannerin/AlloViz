@@ -5,5 +5,6 @@
    :maxdepth: 2
 
    self
-   example
+   table
+   tutorial
    API reference <API>

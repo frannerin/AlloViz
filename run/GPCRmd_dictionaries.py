@@ -21,10 +21,10 @@ with open(f"{running_dir}/compl_info.json", "r") as f:
     
     
 ac_options = {
-    'cf' : {
-        'at' : ['gc', 'py2'],
+    'ct' : {
+        'cf' : ['gc', 'py2'],
         'rc' : ['py2', 'py2c'],
-        'st' : ['py2'],
+        'cs' : ['py2'],
     },
     
     'mc' : {
@@ -46,13 +46,13 @@ ac_options = {
         'bb' : {
             'ph' : {
                 'pr' : ['cp'],
-                'mi' : ['ad']    },
+                'mi' : ['ad', 'mde']    },
             'ps' : {
                 'pr' : ['cp'],
-                'mi' : ['ad']    },
-            'om' : {
-                'pr' : ['cp'],
-                'mi' : ['ad']    },
+                'mi' : ['ad', 'mde']    },
+            # 'om' : {
+            #     'pr' : ['cp'],
+            #     'mi' : ['ad']    },
             'bba' : {
                 'pr' : ['cp'],
                 'mi' : ['ad', 'mde']    },
@@ -65,7 +65,7 @@ ac_options = {
             'ch2' : {'mi' : ['ad']},
             'ch3' : {'mi' : ['ad']},
             'ch4' : {'mi' : ['ad']},
-            'ch5' : {'mi' : ['ad']},
+            #'ch5' : {'mi' : ['ad']},
             'sca' : {'mi' : ['ad']},
             'scm' : {'mi' : ['ad']}     },
         'all' : {
@@ -78,7 +78,6 @@ ac_options = {
 
 
 ac_options_codes = {
-    #'cf' : 'Contact frequency', ####
     'gc' : 'GetContacts', ####
     'py2' : 'PyInteraph2',
     'mc' : "Atoms' movement correlation", ####
@@ -97,7 +96,7 @@ ac_options_codes = {
     'dh' : "Dihedrals' movement correlation", ####
     'ph' : 'Phi',
     'ps' : 'Psi',
-    'om' : 'Omega',
+    # 'om' : 'Omega',
     'all' : 'All dihedrals',
     'ad' : 'AlloViz',
     # 'gr' : 'gRINN',
@@ -114,17 +113,17 @@ ac_options_codes = {
     'ch2' : 'Chi2',
     'ch3' : 'Chi3',
     'ch4' : 'Chi4',
-    'ch5' : 'Chi5',
+    #'ch5' : 'Chi5',
     'sca' : 'All side-chain dihedrals (average)',
     'scm' : 'All side-chain dihedrals (max. value)',
     'alla' : 'All dihedrals (average)',
     'allm' : 'All dihedrals (max. value)',
     
-    'cf' :  'Contacts',
-    'cof' : 'Contact frequency',
-    'comc' : 'Residue COM contacts',
+    'ct' :  'Contacts',
+    'cf' : 'Contact frequency',
     'cs' : 'Contact strength',
     'py2c' : 'PyInteraph2 (with Rg correction)',
+    
     
     # 'wh' : 'Whole', ######
     # 'in' : 'Incontact', ######

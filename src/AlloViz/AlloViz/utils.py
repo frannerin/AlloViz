@@ -5,7 +5,7 @@ Module containing helper functions and variables used by many other modules
 
 from .info import wrappers
 
-pkgsl = list(wrappers.keys())
+pkgsl = list(set(wrappers.keys()) - {"gRINN_corr",})
 """List of the correct names of available network construction methods
 
 Imported from :data:`AlloViz.AlloViz.info.wrappers`"""
