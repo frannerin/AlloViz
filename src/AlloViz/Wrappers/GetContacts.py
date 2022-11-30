@@ -66,6 +66,7 @@ class GetContacts(Multicore):
         path = self._path
         #ctcs = f"{path}/{xtc}.tsv"
         ctcs = f"/home/{os.environ.get('USER')}/{self._d['name']}/{xtc}.tsv"
+        print(ctcs, os.path.isfile(ctcs))
         freqs = f"{path}/{xtc}_freqs.tsv"
         
         if not os.path.isfile(freqs):# or ow:

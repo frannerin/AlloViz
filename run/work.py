@@ -62,6 +62,17 @@ import AlloViz
 #     while csvize(pkgs) in tested.readlines():
 #         random.shuffle(pkgs)
 #     tested.write(csvize(pkgs))
+pkgs=[
+ 'correlationplus_Psi',
+ 'PyInteraph2_COM_Contacts',
+ 'pytraj_CA',
+ 'dynetan',
+ 'GetContacts',
+    'MDEntropy_AlphaAngle',
+     "g_correlation_COM_LMI",
+    'AlloViz_Chi4',
+    'MDTASK'
+ ]
     
 
 t = datetime.datetime.now()
@@ -76,7 +87,7 @@ dyn = AlloViz.Protein(pdb = dynd['struc_fname'],
                      )
 
 
-dyn.calculate(pkg="all", cores=int(cores), taskcpus=int(taskcpus))
+dyn.calculate(pkgs=pkgs, cores=int(cores), taskcpus=int(taskcpus)) #"all"
 dyn.filter(pkgs="all", filterings=["All", "GetContacts_edges", "GPCR_Interhelix", "Spatially_distant"], GetContacts_threshold=0.5) #
 
 

@@ -27,7 +27,7 @@ dyns = " ".join([f"dyn{dynid}" for dynid in dyns]).split()
 
 # Put in "use" the nodes of gpcr_gpu in which calculations can be sent to
 nodes = set("gimli kili legolas thorin fili dwalin arwen balin bifur bombur aragorn".split())
-use = set(["aragorn"]) #set("kili legolas fili aragorn".split())
+use = set(["kili"]) #set("kili legolas fili aragorn".split())
 
 # Cores and taskcpus for the jobs
 cores = 12
@@ -44,7 +44,8 @@ send = lambda dyn: f"""#!/bin/bash
 #SBATCH --nodes=1-1
 #SBATCH --ntasks={cores}
 #SBATCH --ntasks-per-core=1
-#SBATCH --mem-per-cpu=2500
+##SBATCH --mem-per-cpu=3000
+#SBATCH --mem={cores*2500}
 #SBATCH --output={running_dir}/slurm_files/{dyn}/%x_%j.%N.out # output to shared gpcr folder
 #SBATCH --error={running_dir}/slurm_files/{dyn}/%x_%j.%N.err
 
