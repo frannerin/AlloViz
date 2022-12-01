@@ -62,17 +62,6 @@ import AlloViz
 #     while csvize(pkgs) in tested.readlines():
 #         random.shuffle(pkgs)
 #     tested.write(csvize(pkgs))
-pkgs=[
- 'correlationplus_Psi',
- 'PyInteraph2_COM_Contacts',
- 'pytraj_CA',
- 'dynetan',
- 'GetContacts',
-    'MDEntropy_AlphaAngle',
-     "g_correlation_COM_LMI",
-    'AlloViz_Chi4',
-    'MDTASK'
- ]
     
 
 t = datetime.datetime.now()
@@ -87,7 +76,7 @@ dyn = AlloViz.Protein(pdb = dynd['struc_fname'],
                      )
 
 
-dyn.calculate(pkgs=pkgs, cores=int(cores), taskcpus=int(taskcpus)) #"all"
+dyn.calculate(pkgs="all", cores=int(cores), taskcpus=int(taskcpus)) #"all"
 dyn.filter(pkgs="all", filterings=["All", "GetContacts_edges", "GPCR_Interhelix", "Spatially_distant"], GetContacts_threshold=0.5) #
 
 
@@ -97,9 +86,8 @@ dyn.analyze(pkgs="all", filterings="all", elements="edges", metrics="all", norma
 
 
 shutil.move(f"{dynid}.times", f"{running_dir}/slurm_files/{dynid}/{dynid}.times")
-# for file in [f for f in os.listdir() if os.path.isfile(f)]:
-#     os.remove(file)
-##################################
+for file in [f for f in os.listdir() if os.path.isfile(f)]:
+    os.remove(file)
     
 
     
@@ -115,6 +103,10 @@ abrvs["Carbon \u03B2"] = abrvs['Beta-carbon']
 abrvs["Residue COM contacts"] = abrvs['Residue COM']
 # abrvs["Backbone dihedrals"] = abrvs['All dihedrals']
 # abrvs["Alpha angle"] = abrvs['Alpha']
+abrvs["Atoms' displacements"] = abrvs["Atoms' movement correlation"]
+abrvs["Dihedral angles"] = abrvs["Dihedrals' movement correlation"]
+abrvs["All backbone dihedrals (Phi and psi) (average)"] = abrvs["All backbone dihedrals (average)"]
+abrvs["All backbone dihedrals (Phi and psi) (max. value)"] = abrvs["All backbone dihedrals (max. value)"]
 
 w = AlloViz.AlloViz.info.wrappers
 
@@ -133,10 +125,10 @@ def get_csv_name(pkg, filterby):
     elif value[0] == "Contacts":
         order = [0,3,1]
             
-    elif value[0] == "Atoms' movement correlation":
+    elif value[0] == "Atoms' displacements":
         order = [0,3,2,1]
             
-    elif value[0] == "Dihedrals' movement correlation":
+    elif value[0] == "Dihedral angles":
         if pkg.split("_", 1)[-1] in ["Phi", "Psi", "Omega", "AlphaAngle",
                                      "Backbone_Dihs_Avg", "Backbone_Dihs_Max",
                                      "Dihs"]:
@@ -184,9 +176,8 @@ for pkg in [pkg for pkg in dyn.__dict__ if pkg in w]:
 
     
     
-rsync(f'rsync -z ./* ori:/protwis/sites/files/Precomputed/allosteric_com/{dynid}/') # --remove-source-files
-rsync(f'rsync -zr data/ ori:/protwis/sites/files/Precomputed/allosteric_com/data/{dynid}/') # --remove-source-files
-#######################
+rsync(f'rsync -z --remove-source-files ./* ori:/protwis/sites/files/Precomputed/allosteric_com/{dynid}/')
+rsync(f'rsync -zr --remove-source-files data/ ori:/protwis/sites/files/Precomputed/allosteric_com/data/{dynid}/')
 
 
 with open(f"{running_dir}/completion.times", "a") as f:

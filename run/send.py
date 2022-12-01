@@ -1,5 +1,5 @@
 # RUN IN HYDRA, saved in an accessible, shared folder of /gpcr/users
-# Previously, create an environment in the same folder called "env" (/gpcr/users/whatever/env)
+# Previously, create an environment in the same folder called "env" (/gpcr/users/whatever/env), e.g. with dev/dev_env_ubuntu.yml
 
 import os
 from contextlib import redirect_stdout, redirect_stderr
@@ -22,12 +22,12 @@ if not os.path.isfile(completion_times):
 
 
 # Space-separated list, as a single string, of the dynids to run
-dyns = "36".split()
+dyns = "10".split()
 dyns = " ".join([f"dyn{dynid}" for dynid in dyns]).split()
 
 # Put in "use" the nodes of gpcr_gpu in which calculations can be sent to
 nodes = set("gimli kili legolas thorin fili dwalin arwen balin bifur bombur aragorn".split())
-use = set(["kili"]) #set("kili legolas fili aragorn".split())
+use = set(["aragorn"]) #set("kili legolas fili aragorn".split())
 
 # Cores and taskcpus for the jobs
 cores = 12
@@ -44,14 +44,13 @@ send = lambda dyn: f"""#!/bin/bash
 #SBATCH --nodes=1-1
 #SBATCH --ntasks={cores}
 #SBATCH --ntasks-per-core=1
-##SBATCH --mem-per-cpu=3000
-#SBATCH --mem={cores*2500}
+#SBATCH --mem-per-cpu=2500
 #SBATCH --output={running_dir}/slurm_files/{dyn}/%x_%j.%N.out # output to shared gpcr folder
 #SBATCH --error={running_dir}/slurm_files/{dyn}/%x_%j.%N.err
 
 module load Miniconda3
 eval "$(conda shell.bash hook)"
-conda activate /gpcr/users/frann/networks/dev_expl_nover #{running_dir}/env
+conda activate {running_dir}/env
 
 mkdir -p {dyn}
 cd {dyn}
