@@ -27,7 +27,7 @@ logging.basicConfig(level=logging.INFO,
 _HOST = "localhost"
 _PORT = 9990
 _total_progressbar_steps = 5
-
+_pickle_me = None
 
 def md5sum_file(fn):
     with open(fn, "rb") as f:
@@ -38,7 +38,7 @@ def md5sum_file(fn):
 
 
 # TODO possibly move as inner class.
-class ComputeStep(object):
+class UiStep(object):
     def __init__(self, msg, obj, show_on_statusbar=True, increase_progressbar=True):
         self.msg = msg
         self.obj = obj
@@ -130,14 +130,25 @@ class AlloVizWindow(QMainWindow):
         self.ui.runButton.clicked.connect(self.runAnalysis)
         self.ui.methodTree.itemSelectionChanged.connect(self._updateRunButtonState)
 
-        self.ui.actionSaveAs.triggered.connect(self.saveas)
+        #self.ui.actionSaveAs.triggered.connect(self.saveas)
+        self.ui.actionOpen_Folder.triggered.connect(self.acOpenFolder)
+        self.ui.actionShow_Calculation_Parameters.triggered.connect(self.acShowCalculationParameters)
+        self.ui.actionShow_Analysis_Results.triggered.connect(self.acShowAnalysisResults)
 
         # https://stackoverflow.com/questions/50104163/update-pyqt-gui-from-a-python-thread
         self.updateProgress.connect(self.ui.progressBar.setValue)
 
 
-    def saveas(self):
-        logging.info("SAVEAS called")
+    def acOpenFolder(self):
+        logging.info("TODO called")
+
+    def acShowCalculationParameters(self):
+        QMessageBox.information(self,
+            "Calculation Parameters",
+            "TODO")
+
+    def acShowAnalysisResults(self):
+        logging.info("TODO called")
 
 
     def _updateRunButtonState(self):
@@ -239,10 +250,11 @@ class AlloVizWindow(QMainWindow):
         filters = self._getUiFilters()
 
         pbar.setValue(0)
-        with ComputeStep("Dumping trajectory", self):
+        with UiStep("Dumping trajectory", self):
             try:
                 bn = self.sendVMDCommand(f"::alloviz::dump_trajectory {{{asel}}}")
                 pdbfile = bn + ".pdb"
+                psffile = bn + ".psf"
                 dcdfile = bn + ".dcd"
             except:
                 logging.warning("Cannot communicate with VMD, using test data under dir 117")
@@ -253,27 +265,31 @@ class AlloVizWindow(QMainWindow):
         cache_path = f"/var/tmp/alloviz_gui_{tmp}"
         logging.info(f"Using cache path {cache_path}")
 
-        with ComputeStep("Loading trajectory", self):
+        with UiStep("Loading trajectory", self):
             prot = AlloViz.Protein(pdb=pdbfile, trajs=dcdfile, path=cache_path)
+            prot._uidata={"pdbfile" = pdbfile, "psffile"=psffile, "dcdfile"=dcdfile}
 
-        with ComputeStep("Calculating", self):
+        with UiStep("Calculating", self):
             prot.calculate(method)
+            prot._uidata["method"]=method
 
-        with ComputeStep("Adding getContacts", self):
+        with UiStep("Adding getContacts", self):
             if self.ui.checkbox_GetContacts_edges.isChecked():
                 prot.calculate("GetContacts")
 
-        with ComputeStep("Filtering", self):
+        with UiStep("Filtering", self):
             flist, fargs = self._getUiFilters()
             # The weird syntax requires a list of lists for sequential filtering
             prot.filter(method, filterings=[flist], **fargs)  # "all"?
 
-        with ComputeStep("Analyzing", self):
+        with UiStep("Analyzing", self):
             el, met = self._getUiAnalysisType()
-            # The weird syntax requires a list of lists for sequential filtering
             prot.analyze(method, elements=el, metrics=met) # "all"?
 
         self._showMessage("Ready")
+
+        # import pickle, dill
+        # pickle.dump(prot, open("pickle.pk","wb"))
 
         # Add item to history 
         hitem = QListWidgetItem(method)

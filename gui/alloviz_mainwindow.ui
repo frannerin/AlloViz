@@ -375,9 +375,19 @@
     <string>QQQ&amp;uit</string>
    </property>
   </action>
-  <action name="actionSaveAs">
+  <action name="actionOpen_Folder">
    <property name="text">
-    <string>SaveAs</string>
+    <string>Open Folder</string>
+   </property>
+  </action>
+  <action name="actionShow_Calculation_Parameters">
+   <property name="text">
+    <string>Show Calculation Parameters</string>
+   </property>
+  </action>
+  <action name="actionShow_Analysis_Results">
+   <property name="text">
+    <string>Show Analysis Results</string>
    </property>
   </action>
  </widget>
