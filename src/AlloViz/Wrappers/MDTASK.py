@@ -4,10 +4,17 @@ It calculates the Pearson's correlation of the residues' CA atoms.
 
 """
 
+import os, time, sys
+
+from pkgutil import get_loader
+
 from .Base import lazy_import, Multicore
 
+
+sys.path.append(os.path.dirname(get_loader("AlloViz").path) + "/Packages/MD-TASK")
+
 imports = {
-"_mdtask": ".Packages.MD-TASK.mdtask.calc_correlation",
+"_mdtask": ".Packages.MD-TASK.calc_correlation",
 }
 
 for key, val in imports.items():

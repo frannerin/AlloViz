@@ -1,0 +1,6 @@
+channels:
+  - conda-forge
+  - defaults
+
+dependencies:
+  - tk>=8.5,<8.6

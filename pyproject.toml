@@ -17,6 +17,8 @@ readme = "README.rst"
 #dynamic = ["version"]
 version = "1.0"
 
+dependencies = [ "vmd-python @ git+https://github.com/frannerin/vmd-python@v3.0.6-macosxarm64" ]
+
 # license = {text = "BSD 3-Clause License"}
 classifiers = [
 	# "License :: OSI Approved :: MIT License",
@@ -54,12 +56,14 @@ packages = [
 
 
 
-[tool.poetry]
-name = "AlloViz"
-version = "1.0"
-description = "A Python package to interactively computate, analyze and visualize protein allosteric communication (residue interaction) networks and delta-networks."
-authors = ["Francho Nerín-Fonz <[francho.nerin01@estudiant.upf.edu]>"]
-license = "-"
+
+[tool.pytest.ini_options]
+env = [
+    "test = test"
+]
+
+
+
 
 [tool.poetry.build]
 script = "setup.py"

@@ -1,0 +1,135 @@
+name: Python Package using Conda
+
+on:
+  push:
+    branches:
+      - reg_test
+      - fix_submodules
+
+jobs:
+  miniconda:
+    name: Miniconda windows
+    runs-on: windows-latest
+
+
+
+
+
+
+
+
+    
+    steps:
+    - uses: actions/checkout@v3
+      with:
+        submodules: recursive
+
+    # TRYING TO AVOID MSYS
+    # defaults:
+    #   run:
+    #     shell: msys2 {0}
+    # - name: Install MSYS2
+    #   uses: msys2/setup-msys2@v2
+    #   with:
+    #     #msystem: MINGW64 # default
+    #     install: git mingw-w64-x86_64-toolchain make zlib python-pip tcl mingw-w64-x86_64-netcdf
+
+
+
+
+
+    # INSTALL TCL 8.5 IN WINDOWS BC APPARENTLY THE CONDA THING DOESN'T WORK?
+
+
+    # - uses: conda-incubator/setup-miniconda@v2
+    #   if: matrix.os == 'windows'
+    #   with:
+    #     miniforge-variant: Mambaforge
+    #     miniforge-version: latest
+    #     activate-environment: anaconda-client-env
+    #     use-mamba: true
+    #     environment-file: dev/win_env.yml
+
+
+    # - uses: conda-incubator/setup-miniconda@v2
+    #   # if: matrix.os != 'windows'
+    #   with:
+    #     miniforge-variant: Mambaforge
+    #     miniforge-version: latest
+    #     activate-environment: anaconda-client-env
+    #     use-mamba: true
+
+
+    - name: Update conda
+      run: |
+        C:\Miniconda\shell\condabin\conda-hook.ps1
+        conda update conda -y
+
+
+    - name: Process environment file
+      run: python dev/cme_parser/create_env.py -i dev/dev_env.yml.meta -o dev/dev_env_out.yml -p -v so windows
+      # run: |
+      #   wget https://raw.githubusercontent.com/silvanmelchior/cme_parser/master/create_env.py
+      #   python create_env.py -i dev/dev_env_meta.yml -o dev/dev_env_out.yml -p
+      # uses: suisei-cn/actions-download-file@v1.3.0
+      # id: downloadfile  # Remember to give an ID if you need the output filename
+      # with:
+      #   url: "https://raw.githubusercontent.com/silvanmelchior/cme_parser/master/create_env.py"
+      #   target: create_env.py
+
+    
+
+
+    - name: Cache Conda env
+      uses: actions/cache@v3
+      with:
+        path: ${{ env.CONDA }}/envs
+        key:
+          conda-${{ runner.os }}--${{ runner.arch }}-${{ hashFiles('dev/dev_env_out.yml') }}-${{ env.CACHE_NUMBER }}
+      env:
+        # Increase this value to reset cache if etc/example-environment.yml has not changed
+        CACHE_NUMBER: 0
+      id: cache
+
+
+    # - name: Update environment
+    #   run: mamba env update -n anaconda-client-env -f dev/dev_env_out.yml
+    #   # mamba install -n anaconda-client-env -c conda-forge --force-reinstall -y "tk>=8.5,<8.6"
+    #   if: steps.cache.outputs.cache-hit != 'true'
+
+    - name: Set env manually
+      run: |
+        C:\Miniconda\shell\condabin\conda-hook.ps1
+        conda env create -n runner-env -f dev/win_env.yml
+        conda activate runner-env
+        conda info
+        pip install .
+        pytest test
+      if: steps.cache.outputs.cache-hit != 'true'
+
+    # - uses: conda-incubator/setup-miniconda@v2
+    #   with:
+    #     activate-environment: test
+    #     channels: conda-forge
+    #     environment-file: dev/dev_env.yml
+    #     # python-version: "3.10"
+    #     auto-activate-base: false
+    # - name: Install tcl with choco
+    #   if: matrix.os == 'windows'
+    #   run: choco install activetcl
+
+    # - name: Install AlloViz
+    #   run: |
+    #     conda info
+    #     pip install .
+
+    # # - name: Lint with flake8
+    # #   run: |
+    # #     conda install flake8
+    # #     # stop the build if there are Python syntax errors or undefined names
+    # #     flake8 . --count --select=E9,F63,F7,F82 --show-source --statistics
+    # #     # exit-zero treats all errors as warnings. The GitHub editor is 127 chars wide
+    # #     flake8 . --count --exit-zero --max-complexity=10 --max-line-length=127 --statistics
+
+    # - name: Test with pytest
+    #   run: pytest test

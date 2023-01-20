@@ -42,10 +42,10 @@ wrappers = {
     "dynetan": dynetani + (whole,),
     # "dynetan_COM": dynetani + (COM,),
     
-    "g_correlation_CA_MI": g_correlationi + ("MI", alpha), 
-    "g_correlation_COM_MI": g_correlationi + ("MI", COM), 
-    "g_correlation_CA_LMI": g_correlationi + ("LMI", alpha), 
-    "g_correlation_COM_LMI": g_correlationi + ("LMI", COM),
+    # "g_correlation_CA_MI": g_correlationi + ("MI", alpha), 
+    # "g_correlation_COM_MI": g_correlationi + ("MI", COM), 
+    # "g_correlation_CA_LMI": g_correlationi + ("LMI", alpha), 
+    # "g_correlation_COM_LMI": g_correlationi + ("LMI", COM),
     
     "correlationplus_CA_Pear": correlationplusi + ("Pearson's", alpha),
     "correlationplus_COM_Pear": correlationplusi + ("Pearson's", COM),
@@ -144,8 +144,8 @@ wrappers = {
 
     "PyInteraph2_Energy": ("Interaction energy", "PyInteraph2", "None", whole),
     
-    "gRINN": ("Interaction energy", "gRINN", "None", whole),
-    "gRINN_corr": ("Interaction energy", "gRINN", "Pearson's", whole),
+    # "gRINN": ("Interaction energy", "gRINN", "None", whole),
+    # "gRINN_corr": ("Interaction energy", "gRINN", "Pearson's", whole),
 }
 
 
