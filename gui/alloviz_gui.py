@@ -270,7 +270,7 @@ class AlloVizWindow(QMainWindow):
             except:
                 logging.warning("Cannot communicate with VMD, using test data under dir 117")
                 pdbfile = "../117/11159_dyn_117.pdb"
-                dcdfile = "../117/11157_trj_117.xtc"
+                dcdfile = "../117/11157_trj_117.dcd"
 
         _,tmp = md5sum_file(dcdfile)
         cache_path = f"/var/tmp/alloviz_gui_{tmp}"
@@ -299,13 +299,19 @@ class AlloVizWindow(QMainWindow):
 
         self._showMessage("Ready")
 
-        # import pickle, dill
-        # pickle.dump(prot, open("pickle.pk","wb"))
-
-        # Add item to history 
+        # Create item and add it to history 
         hitem = QListWidgetItem(method)
         hitem.setData(QtCore.Qt.UserRole, prot)
         ht.addItem(hitem)
+
+        from PyQt5.QtCore import pyqtRemoveInputHook, pyqtRestoreInputHook
+        pyqtRemoveInputHook()
+        breakpoint()
+        pyqtRestoreInputHook()
+
+        # import pickle, dill
+        # pickle.dump(prot, open("pickle.pk","wb"))
+
 
         
 
