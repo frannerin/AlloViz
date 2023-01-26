@@ -122,15 +122,17 @@ class AlloVizWindow(QMainWindow):
         #    tree.resizeColumnToContents(i)
 
     def setupHistoryWidget(self):
-        self.ui.historyWidget.addActions([self.ui.actionSaveAs])
+        self.ui.historyWidget.addActions([self.ui.actionSave_As])
 
     def connectSignalsSlots(self):
         self.ui.actionQuit.triggered.connect(self.close)
-        self.ui.actionAbout.triggered.connect(self.about)
+        self.ui.actionAbout.triggered.connect(self.showAboutDialog)
+        self.ui.actionAlloViz_Homepage.triggered.connect(self.openDocumentationURL)
+
         self.ui.runButton.clicked.connect(self.runAnalysis)
         self.ui.methodTree.itemSelectionChanged.connect(self._updateRunButtonState)
 
-        #self.ui.actionSaveAs.triggered.connect(self.saveas)
+        self.ui.actionSave_As.triggered.connect(self.acSaveAs)
         self.ui.actionOpen_Folder.triggered.connect(self.acOpenFolder)
         self.ui.actionShow_Calculation_Parameters.triggered.connect(self.acShowCalculationParameters)
         self.ui.actionShow_Analysis_Results.triggered.connect(self.acShowAnalysisResults)
@@ -140,6 +142,9 @@ class AlloVizWindow(QMainWindow):
 
 
     def acOpenFolder(self):
+        logging.info("TODO called")
+
+    def acSaveAs(self):
         logging.info("TODO called")
 
     def acShowCalculationParameters(self):
@@ -155,14 +160,20 @@ class AlloVizWindow(QMainWindow):
         m = self._getUiMethod()
         self.ui.runButton.setEnabled(m is not None)
 
+    def openDocumentationURL(self):
+        from PyQt5.QtCore import QUrl
+        from PyQt5.QtGui import QDesktopServices
+        QDesktopServices.openUrl(QUrl('https://alloviz.readthedocs.io/en/latest/?badge=latest'))
 
-    def about(self):
+    def showAboutDialog(self):
         QMessageBox.about(
             self,
             "About the AlloViz GUI",
             "<p>The AlloViz Graphical User Interface</p>"
-            "<p>Authors: Francho Nerin, Jana Selent, Toni Giorgino</p>"
-            '<p>Source code: <a href="https://github.com/frannerin/AlloViz">github.com/frannerin/AlloViz</a></p>',
+            "<p>A Python package to interactively compute, analyze and visualize protein allosteric communication (residue interaction) networks and delta-networks.</p>"
+            "<p>Authors: Francho Nerin, Jana Selent, Toni Giorgino.</p>"
+            '<p>Source code: <a href="https://github.com/frannerin/AlloViz">github.com/frannerin/AlloViz</a>.</p>'
+            '<p>Please cite: <a href="https://github.com/frannerin/AlloViz">github.com/frannerin/AlloViz</a>.</p>'
         )
 
     def critical(self, stepname, message):
@@ -267,7 +278,7 @@ class AlloVizWindow(QMainWindow):
 
         with UiStep("Loading trajectory", self):
             prot = AlloViz.Protein(pdb=pdbfile, trajs=dcdfile, path=cache_path)
-            prot._uidata={"pdbfile" = pdbfile, "psffile"=psffile, "dcdfile"=dcdfile}
+            prot._uidata={"pdbfile": pdbfile, "psffile": psffile, "dcdfile": dcdfile}
 
         with UiStep("Calculating", self):
             prot.calculate(method)

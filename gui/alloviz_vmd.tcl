@@ -2,8 +2,8 @@
 # https://www.tcl.tk/man/tcl8.4/TclCmd/vwait.html
 # https://wiki.tcl-lang.org/page/The+simplest+possible+socket+demonstration
 
-set here [file dirname [file normalize [info script]]]
-lappend auto_path $here
+set alloviz_gui_dir [file dirname [file normalize [info script]]]
+lappend auto_path $alloviz_gui_dir
 
 
 package provide alloviz 1.0
@@ -26,9 +26,9 @@ namespace eval alloviz {
     }
     
     proc alloviz_gui_start {} {
-        global here
-        puts "Starting AlloViz GUI Python component $here/run.sh"
-        exec $here/run.sh &
+        global alloviz_gui_dir
+        puts "Starting AlloViz GUI Python component $alloviz_gui_dir/run.sh"
+        exec $alloviz_gui_dir/run.sh &
     }
 
     proc alloviz_tk {} {
