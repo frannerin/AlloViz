@@ -24,6 +24,10 @@ logging.basicConfig(level=logging.INFO,
 # from qtpy.QtWidgets import *
 # from qtpy.uic import loadUi
 
+# import pickle, dill
+# pickle.dump(prot, open("pickle.pk","wb"))
+
+
 _HOST = "localhost"
 _PORT = 9990
 _total_progressbar_steps = 5
@@ -35,6 +39,12 @@ def md5sum_file(fn):
         while chunk := f.read(8192):
             file_hash.update(chunk)
     return file_hash.digest(), file_hash.hexdigest()
+
+def mybreakpoint():
+    from PyQt5.QtCore import pyqtRemoveInputHook, pyqtRestoreInputHook
+    pyqtRemoveInputHook()
+    breakpoint()
+    pyqtRestoreInputHook()
 
 
 # TODO possibly move as inner class.
@@ -122,7 +132,12 @@ class AlloVizWindow(QMainWindow):
         #    tree.resizeColumnToContents(i)
 
     def setupHistoryWidget(self):
-        self.ui.historyWidget.addActions([self.ui.actionSave_As])
+        self.ui.historyWidget.addActions([
+            self.ui.actionShow_Calculation_Parameters,
+            self.ui.actionShow_Analysis_Results,
+            self.ui.actionOpen_Folder,
+            self.ui.actionSave_As,
+        ])
 
     def connectSignalsSlots(self):
         self.ui.actionQuit.triggered.connect(self.close)
@@ -132,10 +147,10 @@ class AlloVizWindow(QMainWindow):
         self.ui.runButton.clicked.connect(self.runAnalysis)
         self.ui.methodTree.itemSelectionChanged.connect(self._updateRunButtonState)
 
-        self.ui.actionSave_As.triggered.connect(self.acSaveAs)
-        self.ui.actionOpen_Folder.triggered.connect(self.acOpenFolder)
         self.ui.actionShow_Calculation_Parameters.triggered.connect(self.acShowCalculationParameters)
         self.ui.actionShow_Analysis_Results.triggered.connect(self.acShowAnalysisResults)
+        self.ui.actionOpen_Folder.triggered.connect(self.acOpenFolder)
+        self.ui.actionSave_As.triggered.connect(self.acSaveAs)
 
         # https://stackoverflow.com/questions/50104163/update-pyqt-gui-from-a-python-thread
         self.updateProgress.connect(self.ui.progressBar.setValue)
@@ -220,6 +235,8 @@ class AlloVizWindow(QMainWindow):
             fargs["Interresidue_distance"]=float(self.ui.edit_Interresidue_distance.text())
         if self.ui.checkbox_GPCR_Interhelix.isChecked():
             flist.append("GPCR_Interhelix")
+        if not flist:
+            flist=["All"]   # not to be confused with "all" :(
         logging.info(f"Filters: {flist}, kwargs {fargs}") 
         return flist, fargs
     
@@ -276,13 +293,18 @@ class AlloVizWindow(QMainWindow):
         cache_path = f"/var/tmp/alloviz_gui_{tmp}"
         logging.info(f"Using cache path {cache_path}")
 
+        uidata={ "pdbfile": pdbfile,
+              "psffile": psffile,
+              "dcdfile": dcdfile,
+              "method": method
+        }
+
         with UiStep("Loading trajectory", self):
             prot = AlloViz.Protein(pdb=pdbfile, trajs=dcdfile, path=cache_path)
-            prot._uidata={"pdbfile": pdbfile, "psffile": psffile, "dcdfile": dcdfile}
+            uidata["prot"] = prot
 
         with UiStep("Calculating", self):
             prot.calculate(method)
-            prot._uidata["method"]=method
 
         with UiStep("Adding getContacts", self):
             if self.ui.checkbox_GetContacts_edges.isChecked():
@@ -291,26 +313,24 @@ class AlloVizWindow(QMainWindow):
         with UiStep("Filtering", self):
             flist, fargs = self._getUiFilters()
             # The weird syntax requires a list of lists for sequential filtering
-            prot.filter(method, filterings=[flist], **fargs)  # "all"?
+            prot.filter(method, filterings=[flist], **fargs)
+            uidata["flist"] = flist
+            uidata["fargs"] = fargs
 
         with UiStep("Analyzing", self):
             el, met = self._getUiAnalysisType()
-            prot.analyze(method, elements=el, metrics=met) # "all"?
+            prot.analyze(method, elements=el, metrics=met)
+            uidata["elements"] = el
+            uidata["metrics"] = met
 
         self._showMessage("Ready")
+        self.ui.progressBar.setValue(0)
 
         # Create item and add it to history 
         hitem = QListWidgetItem(method)
-        hitem.setData(QtCore.Qt.UserRole, prot)
+        hitem.setData(QtCore.Qt.UserRole, uidata)
         ht.addItem(hitem)
 
-        from PyQt5.QtCore import pyqtRemoveInputHook, pyqtRestoreInputHook
-        pyqtRemoveInputHook()
-        breakpoint()
-        pyqtRestoreInputHook()
-
-        # import pickle, dill
-        # pickle.dump(prot, open("pickle.pk","wb"))
 
 
         

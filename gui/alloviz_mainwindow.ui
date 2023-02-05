@@ -322,7 +322,7 @@
      <x>0</x>
      <y>0</y>
      <width>766</width>
-     <height>25</height>
+     <height>24</height>
     </rect>
    </property>
    <widget class="QMenu" name="menuFile">
@@ -382,12 +382,12 @@
   </action>
   <action name="actionShow_Calculation_Parameters">
    <property name="text">
-    <string>Show Calculation Parameters</string>
+    <string>Show Calculation Parameters...</string>
    </property>
   </action>
   <action name="actionShow_Analysis_Results">
    <property name="text">
-    <string>Show Analysis Results</string>
+    <string>Show Analysis Results...</string>
    </property>
   </action>
   <action name="actionSave_As">
