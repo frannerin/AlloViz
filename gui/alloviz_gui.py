@@ -30,7 +30,7 @@ logging.basicConfig(level=logging.INFO,
 
 _HOST = "localhost"
 _PORT = 9990
-_total_progressbar_steps = 5
+_total_progressbar_steps = 6
 _pickle_me = None
 
 def md5sum_file(fn):
@@ -45,6 +45,18 @@ def mybreakpoint():
     pyqtRemoveInputHook()
     breakpoint()
     pyqtRestoreInputHook()
+
+def to_tcl_list(pylist):
+    tcl_list = "{"
+    for item in pylist:
+        if type(item) is list:
+            tcl_list += to_tcl_list(item)
+        else:
+            item = str(item).replace("{", "\\{").replace("}", "\\}").replace(" ", "\\ ")
+            tcl_list += str(item) + " "
+    tcl_list = tcl_list.strip() + "}"
+    return tcl_list
+
 
 
 # TODO possibly move as inner class.
@@ -198,6 +210,15 @@ class AlloVizWindow(QMainWindow):
             f"Error while executing step `{stepname}':<br><br>{message}"
         )
 
+    def checkVMDTopologyConformity(self, idx):
+        """Ensure that each index matches exactly one CA per result"""
+        idx_llist = idx.tolist()
+        idx_flattened = [r for rp in idx_llist for r in rp]
+        idx_uq = list(set(idx_flattened))
+
+
+
+
     def sendVMDCommand(self, cmd):
         try:
             with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
@@ -305,6 +326,7 @@ class AlloVizWindow(QMainWindow):
 
         with UiStep("Calculating", self):
             prot.calculate(method)
+            calc_result = getattr(prot, method) # :( 
 
         with UiStep("Adding getContacts", self):
             if self.ui.checkbox_GetContacts_edges.isChecked():
@@ -316,12 +338,19 @@ class AlloVizWindow(QMainWindow):
             prot.filter(method, filterings=[flist], **fargs)
             uidata["flist"] = flist
             uidata["fargs"] = fargs
+            flist_as_string = "_".join(flist) # :( (((
+            filter_result = getattr(calc_result, flist_as_string)
 
         with UiStep("Analyzing", self):
             el, met = self._getUiAnalysisType()
             prot.analyze(method, elements=el, metrics=met)
             uidata["elements"] = el
             uidata["metrics"] = met
+            if met == "raw":
+                analysis_result = filter_result._filtdata
+            else:
+                _ = getattr(filter_result, el)
+                analysis_result = getattr(_, met)
 
         self._showMessage("Ready")
         self.ui.progressBar.setValue(0)
@@ -331,7 +360,7 @@ class AlloVizWindow(QMainWindow):
         hitem.setData(QtCore.Qt.UserRole, uidata)
         ht.addItem(hitem)
 
-
+        self.checkVMDTopologyConformity(analysis_result.index)
 
         
 

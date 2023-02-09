@@ -7,6 +7,7 @@ lappend auto_path $alloviz_gui_dir
 
 
 package provide alloviz 1.0
+package require json
 
 namespace eval alloviz {
     variable already_registered 0
@@ -54,6 +55,21 @@ namespace eval alloviz {
         animate write dcd $tmpbase.dcd sel $s
         puts "::alloviz::dump_trajectory writing to $tmpbase.{pdb,psf,dcd}"
         return $tmpbase
+    }
+
+    proc check_vmd_topology_conformity {jlist} {
+        set rl [::json::json2dict $jlist]
+        set isok 1
+        foreach rp $rl {
+            lassign $rp rn ri
+            set as [atomselect top "name CA and resid $ri and resname $rn"]
+            set nm [$as num]
+            if {$nm != 1} {
+                set isok 0
+                puts "Residue $ri resname $rn matched $nm times"
+            }
+        }
+        return $isok
     }
 
 }
