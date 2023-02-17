@@ -3,6 +3,7 @@ import os
 import socket
 import logging
 import hashlib
+import json
 
 from PyQt5.QtWidgets import *
 from PyQt5 import QtCore
@@ -54,7 +55,7 @@ def to_tcl_list(pylist):
         else:
             item = str(item).replace("{", "\\{").replace("}", "\\}").replace(" ", "\\ ")
             tcl_list += str(item) + " "
-    tcl_list = tcl_list.strip() + "}"
+    tcl_list = tcl_list.strip() + "} "
     return tcl_list
 
 
@@ -210,16 +211,27 @@ class AlloVizWindow(QMainWindow):
             f"Error while executing step `{stepname}':<br><br>{message}"
         )
 
-    def checkVMDTopologyConformity(self, idx):
+    def checkVMDTopologyConformity(self, asel, idx):
         """Ensure that each index matches exactly one CA per result"""
         idx_llist = idx.tolist()
         idx_flattened = [r for rp in idx_llist for r in rp]
         idx_uq = list(set(idx_flattened))
+        idx_uq_llist = [r.split(":") for r in idx_uq]
+        r = self.doVMDcall("::alloviz::check_vmd_topology_conformity", asel, idx_uq_llist)
+        return r
 
-
+    def doVMDcall(self, fcn, *args):
+        """Automatically serializes (via json) the arguments, then calls VMD"""
+        jargs = []
+        for a in args:
+            jargs.append("{"+json.dumps(a)+"}")
+        tcl = " ".join([fcn]+jargs)
+        r=self.sendVMDCommand(tcl)
+        return r
 
 
     def sendVMDCommand(self, cmd):
+        logging.info("sendVMDCommand sending: " + cmd)
         try:
             with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
                 s.connect((_HOST, _PORT))
@@ -314,10 +326,11 @@ class AlloVizWindow(QMainWindow):
         cache_path = f"/var/tmp/alloviz_gui_{tmp}"
         logging.info(f"Using cache path {cache_path}")
 
-        uidata={ "pdbfile": pdbfile,
-              "psffile": psffile,
-              "dcdfile": dcdfile,
-              "method": method
+        uidata={"pdbfile": pdbfile,
+                "psffile": psffile,
+                "dcdfile": dcdfile,
+                "asel": asel,
+                "method": method
         }
 
         with UiStep("Loading trajectory", self):
@@ -360,7 +373,7 @@ class AlloVizWindow(QMainWindow):
         hitem.setData(QtCore.Qt.UserRole, uidata)
         ht.addItem(hitem)
 
-        self.checkVMDTopologyConformity(analysis_result.index)
+        self.checkVMDTopologyConformity(asel, analysis_result.index)
 
         
 

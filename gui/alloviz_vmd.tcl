@@ -57,12 +57,13 @@ namespace eval alloviz {
         return $tmpbase
     }
 
-    proc check_vmd_topology_conformity {jlist} {
-        set rl [::json::json2dict $jlist]
+    proc check_vmd_topology_conformity {aselj rlistj} {
+        set asel [::json::json2dict $aselj]
+        set rlist [::json::json2dict $rlistj]
         set isok 1
-        foreach rp $rl {
+        foreach rp $rlist {
             lassign $rp rn ri
-            set as [atomselect top "name CA and resid $ri and resname $rn"]
+            set as [atomselect top "($asel) and name CA and resid $ri"]
             set nm [$as num]
             if {$nm != 1} {
                 set isok 0
