@@ -17,7 +17,7 @@ os.makedirs(f"{running_dir}/slurm_files", exist_ok=True)
 completion_times = f"{running_dir}/completion.times"
 if not os.path.isfile(completion_times):
     with open(completion_times, "a") as f:
-        f.write("dynid,node,cores,taskcpus,num_trajs,num_frames,num_residues,time\n") #,pkgs_list
+        f.write("dynid,cores,taskcpus,num_trajs,num_frames,num_residues,time\n") # node removed, because {os.environ['HOSTNAME']} in work doesn't work in shiva
 
 
 # Space-separated list, as a single string, of the dynids to run

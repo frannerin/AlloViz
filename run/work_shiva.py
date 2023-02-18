@@ -88,7 +88,13 @@ print('# Done.\n')
 
 print('# Computing networks...\n')
 # dyn.calculate(pkgs=["all"], cores=int(cores), taskcpus=int(taskcpus)) #"all"
-mypkgs=["MDTASK","pytraj_CA","pytraj_CB","dynetan","correlationplus_CA_Pear","correlationplus_COM_Pear","correlationplus_CA_LMI","correlationplus_COM_LMI","correlationplus_Phi","correlationplus_Psi","correlationplus_Backbone_Dihs_Avg","correlationplus_Backbone_Dihs_Max","AlloViz_Phi","AlloViz_Psi","AlloViz_Backbone_Dihs_Avg","AlloViz_Backbone_Dihs_Max","AlloViz_Chi1","AlloViz_Chi2","AlloViz_Chi3","AlloViz_Chi4","AlloViz_Sidechain_Dihs_Avg","AlloViz_Sidechain_Dihs_Max","AlloViz_Dihs_Avg","MDEntropy_Phi","MDEntropy_Psi","MDEntropy_Dihs","MDEntropy_AlphaAngle","PyInteraph2_Atomic_Contacts_Occurrence","PyInteraph2_Atomic_Contacts_Strength","PyInteraph2_COM_Contacts","PyInteraph2_COM_Contacts_Corrected","PyInteraph2_Energy", "GetContacts"]
+# mypkgs=["MDTASK","pytraj_CA","pytraj_CB","dynetan","correlationplus_CA_Pear","correlationplus_COM_Pear","correlationplus_CA_LMI","correlationplus_COM_LMI","correlationplus_Phi","correlationplus_Psi","correlationplus_Backbone_Dihs_Avg","correlationplus_Backbone_Dihs_Max","AlloViz_Phi","AlloViz_Psi","AlloViz_Backbone_Dihs_Avg","AlloViz_Backbone_Dihs_Max","AlloViz_Chi1","AlloViz_Chi2","AlloViz_Chi3","AlloViz_Chi4","AlloViz_Sidechain_Dihs_Avg","AlloViz_Sidechain_Dihs_Max","AlloViz_Dihs_Avg","MDEntropy_Phi","MDEntropy_Psi","MDEntropy_Dihs","MDEntropy_AlphaAngle","PyInteraph2_Atomic_Contacts_Occurrence","PyInteraph2_Atomic_Contacts_Strength","PyInteraph2_COM_Contacts","PyInteraph2_COM_Contacts_Corrected","PyInteraph2_Energy", "GetContacts"]
+mypkgs = [pkg for pkg in AlloViz.AlloViz.info.wrappers if \
+ "g_correlation" not in i and \
+ "CARDS" not in i and \
+ "_Max" not in i and \
+ "MDEntropy_Contacts" not in i]
+
 dyn.calculate(pkgs=mypkgs, cores=int(cores), taskcpus=int(taskcpus)) 
 print('# Done.\n')
 
@@ -167,6 +173,15 @@ def get_csv_name(pkg, filterby):
     return name + "_" + abrvs[filterby]
 
 
+# Added to be able to map AlloViz-standardized 3-letter residue names back to the original GPCRmd PDB resnames
+from MDAnalysis import Universe
+from Bio.SeqUtils import seq1, seq3
+process = lambda name: seq3(seq1(name, custom_map=dyn._standard_resdict)).upper()
+df.index = df.index.map(lambda idx: tuple(":".join([chain, process(name), num]) for res in idx for chain, name, num in [res.split(":")]))
+original_resmap = {f"{aa.atoms[0].chainID}:{process(aa.resname)}:{aa.resid}": f"{aa.atoms[0].chainID}:{aa.resname}:{aa.resid}" \
+                         for aa in Universe(dyn.pdb).select_atoms(dyn._protein_sel).residues}
+
+
 
 get_gen_num = lambda res: mapper[res] if res in mapper else "-"
 
@@ -180,10 +195,17 @@ for pkg in [pkg for pkg in dyn.__dict__ if pkg in w]:
                      inplace=True)
             cols = [col for col in df.columns if ("weight" in col or "std" in col)]
             df = df[cols]
-
+            
+            # Get the generic numbers for the residues and save them; the gen num mapper was built with standard residue names
             gen_num_ix = df.index.map( lambda ix: (get_gen_num(ix[0]), get_gen_num(ix[1])) )
+            
+            # Change the standardized 3-letter residue names back to the original GPCRmd PDB resnames
+            df.index = df.index.map(lambda idx: tuple(original_resmap[ix] for ix in idx))
+            
+            # Append the saved generic numbers to the de-standardized index
             df.set_index(gen_num_ix, append=True, inplace=True)
 
+            # Save
             df.to_csv(f"{get_csv_name(pkg, filterby)}.csv", index_label=["resid1", "resid2", "resid1_gennum", "resid2_gennum"])
 
 
