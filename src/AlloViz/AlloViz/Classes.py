@@ -325,6 +325,9 @@ class Protein:
         self._compdbf = f"{compath}/ca.pdb"
         self._comtrajs = {num: f"{compath}/{num}.xtc" for num in self._trajs}
         
+        # Changed to save the returned 3-to-1 AA code dictionary in _standard_resdict
+        # because it's needed to save GetContacts results and possibly later as well
+        self._standard_resdict = trajutils.get_standard_resdict(**{"special_res": kwargs["special_res"] if "special_res" in kwargs else {}})
         
         # If the processed filenames don't exist yet as files, process the input files; if special_res kwarg is used it will be passed
         if any(
@@ -335,9 +338,7 @@ class Protein:
                 + [self._pdbf]
             ]
         ):
-            # Changed to save the returned 3-to-1 AA code dictionary in _standard_resdict
-            # because it's needed to save GetContacts results and possibly later as well
-            self._pdbf, self._trajs, self._psff, self._standard_resdict = trajutils.process_input(
+            self._pdbf, self._trajs, self._psff = trajutils.process_input(
                 self.GPCR,
                 self.pdb,
                 self._protein_sel,
@@ -349,7 +350,7 @@ class Protein:
                 self._trajs,
                 self._comtrajs,
                 # **kwargs,
-                **{"special_res": kwargs["special_res"]} if "special_res" in kwargs else {},
+                self._standard_resdict, # Changed to pass the 3-to-1 AA code dictionary here
             )
 
         # Set the protein/pdb and trajectory(ies) MDAnalysis' Universes with the processed files

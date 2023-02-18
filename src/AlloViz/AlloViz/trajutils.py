@@ -17,28 +17,21 @@ from multiprocess import Pool
 from . import utils
 
 
-def standardize_resnames(protein, **kwargs):
-    r"""Change the residue names of a protein to standard 3-letter codes
 
-    Change the residue names of the passed :class:`~MDAnalysis.core.universe.Universe` to
-    standard 3-letter names and also put them in the same segment (the first segment of
-    the Universe by default) to avoid problems with packages not recognizing non-standard
-    residue names or producing unexpected results if residues are in various segments.
+def get_standard_resdict(**kwargs):
+    r"""Get a dictionary mapper of 3-to-1 residue codes
 
-    :mod:`Bio.SeqUtils` is used to change the codes and also retrieve the standard 3-to-1
-    and 1-to-3 residue code mapping, which is also extended with
-    :data:`MDAnalysis.lib.util.inverse_aa_codes`.
+    :mod:`Bio.SeqUtils` is used to retrieve the standard 3-to-1 residue code mapping,
+    which is also extended with :data:`MDAnalysis.lib.util.inverse_aa_codes` and the
+    optionally passed special_res kwarg.
 
     Parameters
     ----------
-    protein : :class:`~MDAnalysis.core.groups.AtomGroup`
-        Atoms of the protein for which to standardize residue names.
     **kwargs
         `special_res` can be passed as an optional kwarg, and it should be a dictionary
         containing a mapping of special residue 3/4-letter code(s) present in the
         structure to the corresponding standard 1-letter code(s).
     """
-    from Bio.SeqUtils import seq1, seq3
     from Bio.SeqUtils import IUPACData
     from MDAnalysis.lib.util import inverse_aa_codes
 
@@ -49,7 +42,31 @@ def standardize_resnames(protein, **kwargs):
     res_d.update(inverse_aa_codes)
     if "special_res" in kwargs and isinstance(kwargs["special_res"], dict):
         res_d.update(kwargs["special_res"])
+    
+    return res_d
+    
 
+
+def standardize_resnames(protein, res_d):
+    r"""Change the residue names of a protein to standard 3-letter codes
+
+    Change the residue names of the passed :class:`~MDAnalysis.core.universe.Universe` to
+    standard 3-letter names and also put them in the same segment (the first segment of
+    the Universe by default) to avoid problems with packages not recognizing non-standard
+    residue names or producing unexpected results if residues are in various segments.
+
+    :mod:`Bio.SeqUtils` is used to change the codes and also retrieve the standard 1-to-3 
+    residue code mapping.
+
+    Parameters
+    ----------
+    protein : :class:`~MDAnalysis.core.groups.AtomGroup`
+        Atoms of the protein for which to standardize residue names.
+    res_d : dict
+        Dictionary of the 3-to-1 letter residue codes mapping.
+    """
+    from Bio.SeqUtils import seq1, seq3
+    
     # Set all residues' segment to the same one to avoid PyInteraph2_Energy problems
     protein.residues.segments = protein.segments[0]
 
@@ -220,7 +237,7 @@ def download_GPCRmd_files(GPCRmdid, path):
 
 
 def process_input(
-    GPCR, pdb, protein_sel, pdbf, compdbf, psf, psff, trajs, trajsf, comtrajsf, **kwargs
+    GPCR, pdb, protein_sel, pdbf, compdbf, psf, psff, trajs, trajsf, comtrajsf, standard_resdict
 ):
     r"""Process the input structure and trajectory(ies) files
 
@@ -272,7 +289,7 @@ def process_input(
 
     # Rename all residues in protein_sel to standard names
     # Changed to return the 3-to-1 AA code dictionary because it's needed to save GetContacts results and possibly later as well
-    standard_resdict = standardize_resnames(protein, **kwargs)
+    standardize_resnames(protein, standard_resdict)
 
     # Retrieve GPCRdb residue generic numbering if it's a GPCR
     if GPCR:
@@ -344,8 +361,8 @@ def process_input(
         mypool.close()
         mypool.join()
     
-    # Changed to return the 3-to-1 AA code dictionary because it's needed to save GetContacts results and possibly later as well
-    return pdbf, trajsf, psff, standard_resdict
+    return pdbf, trajsf, psff
+
 
 
 
