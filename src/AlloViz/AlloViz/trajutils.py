@@ -64,6 +64,9 @@ resname(s) {[res for res in set(protein.residues.resnames) if res not in res_d]}
 Please provide a mapping from 3/4-letter code to 1-letter code as a dictionary with keyword argument 'special_res' upon initialization.
               """
         )
+    
+    # Changed to return the 3-to-1 AA code dictionary because it's needed to save GetContacts results and possibly later as well
+    return res_d
 
 
 def get_GPCRdb_numbering(protein):
@@ -268,7 +271,8 @@ def process_input(
     protein = whole.select_atoms(protein_sel)
 
     # Rename all residues in protein_sel to standard names
-    standardize_resnames(protein, **kwargs)
+    # Changed to return the 3-to-1 AA code dictionary because it's needed to save GetContacts results and possibly later as well
+    standard_resdict = standardize_resnames(protein, **kwargs)
 
     # Retrieve GPCRdb residue generic numbering if it's a GPCR
     if GPCR:
@@ -339,8 +343,9 @@ def process_input(
             )
         mypool.close()
         mypool.join()
-
-    return pdbf, trajsf, psff
+    
+    # Changed to return the 3-to-1 AA code dictionary because it's needed to save GetContacts results and possibly later as well
+    return pdbf, trajsf, psff, standard_resdict
 
 
 

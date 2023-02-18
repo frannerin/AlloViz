@@ -335,7 +335,9 @@ class Protein:
                 + [self._pdbf]
             ]
         ):
-            self._pdbf, self._trajs, self._psff = trajutils.process_input(
+            # Changed to save the returned 3-to-1 AA code dictionary in _standard_resdict
+            # because it's needed to save GetContacts results and possibly later as well
+            self._pdbf, self._trajs, self._psff, self._standard_resdict = trajutils.process_input(
                 self.GPCR,
                 self.pdb,
                 self._protein_sel,

@@ -18,7 +18,7 @@ from ..AlloViz.utils import get_pool
 sys.path.append(os.path.dirname(get_loader("AlloViz").path) + "/Packages/getcontacts")
 
 imports = {
-"_getcontacts_contacts": ".Packages.getcontacts.get_dynamic_contacts",
+# "_getcontacts_contacts": ".Packages.getcontacts.get_dynamic_contacts",
 "_getcontacts_freqs": ".Packages.getcontacts.get_contact_frequencies",
 }
 
@@ -81,5 +81,11 @@ class GetContacts(Multicore):
         df = pandas.read_csv(freqs, sep="\t", skiprows=2,
                              index_col = (0, 1), names = [f"{xtc}"])
         # df.index = df.index.map(lambda idx: tuple(sorted([res.split(":", 1)[-1] for res in idx], key = lambda res: int(res.split(":")[-1]))))
+        
+        # Added to process residue 3-letter codes to change them from the ones in GPCRmd to the standard form that the files used by AlloViz have
+        from Bio.SeqUtils import seq1, seq3
+        process = lambda name: seq3(seq1(name, custom_map=self._d["_standard_resdict"])).upper()
+        df.index = df.index.map(lambda idx: tuple(":".join([chain, process(name), num]) for res in idx for chain, name, num in [res.split(":")]))
+        
         df.index = df.index.map(lambda idx: tuple(sorted(idx, key = lambda res: int(res.split(":")[-1]))))
         df.to_parquet(self._rawpq(xtc))
