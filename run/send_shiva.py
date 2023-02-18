@@ -21,7 +21,7 @@ if not os.path.isfile(completion_times):
 
 
 # Space-separated list, as a single string, of the dynids to run
-dyns = "9".split()
+dyns = "10".split()
 dyns = " ".join([f"dyn{dynid}" for dynid in dyns]).split()
 # print('Computing dynID:', dyns)
 
@@ -41,8 +41,8 @@ dyns = " ".join([f"dyn{dynid}" for dynid in dyns]).split()
 
 ## 'short' queue
 partition = "short"
-nodes = set("node01 node02 node08 node09 node16".split())
-use = set(["node09"]) 
+nodes = set("node02 node08 node16".split())
+use = set(["node02"]) 
 
 ## 'normal' queue
 # partition = "normal"
