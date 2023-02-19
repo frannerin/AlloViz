@@ -75,7 +75,7 @@ class MDEntropy_Contacts(MDEntropy_Base):
         
         
         
-class MDEntropy_Dihs(MDEntropy_Base):
+class MDEntropy_Backbone_Dihs(MDEntropy_Base):
     """MDEntropy's MI of the backbone's dihedrals
     """
     def __new__(cls, protein, d):

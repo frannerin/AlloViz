@@ -125,9 +125,9 @@ class CARDS_{name}_{dih.capitalize()}(Base):
         
         
 for name in ("MI",  "Disorder", "Disorder_mediated", "Holistic"):
-    for approach in ["Avg", "Max"]:
+    for approach in ["", "_Max"]:
         exec(f'''
-class CARDS_{name}_Backbone_Dihs_{approach}(Combined_Dihs_{approach}):
+class CARDS_{name}_Backbone_Dihs{approach}(Combined_Dihs_{approach}):
     """CARDS network construction method's of the combination of the backbone
     dihedrals' {name + " MIs" if name != "MI" else "MIs"} by {approach}
     """
@@ -140,9 +140,9 @@ class CARDS_{name}_Backbone_Dihs_{approach}(Combined_Dihs_{approach}):
         
         
 for name in ("MI",  "Disorder", "Disorder_mediated", "Holistic"):
-    for approach in ["Avg", "Max"]:
+    for approach in ["", "_Max"]:
         exec(f'''
-class CARDS_{name}_Sidechain_Dihs_{approach}(Combined_Dihs_{approach}):
+class CARDS_{name}_Sidechain_Dihs{approach}(Combined_Dihs_{approach}):
     """CARDS network construction method's of the combination of the side-chain
     dihedrals' {name + " MIs" if name != "MI" else "MIs"} by {approach}
     """
@@ -156,9 +156,9 @@ class CARDS_{name}_Sidechain_Dihs_{approach}(Combined_Dihs_{approach}):
         
         
 for name in ("MI",  "Disorder", "Disorder_mediated", "Holistic"):
-    for approach in ["Avg", "Max"]:
+    for approach in ["", "_Max"]:
         exec(f'''
-class CARDS_{name}_Dihs_{approach}(Combined_Dihs_{approach}):
+class CARDS_{name}_Dihs{approach}(Combined_Dihs_{approach}):
     """CARDS network construction method's of the combination of all backbone and
     side-chain dihedrals' {name + " MIs" if name != "MI" else "MIs"} by {approach}
     """

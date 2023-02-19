@@ -151,7 +151,7 @@ class AlloViz_Omega(AlloViz_Base):
         
         
     
-class AlloViz_Backbone_Dihs_Avg(Combined_Dihs_Avg, AlloViz_Base):
+class AlloViz_Backbone_Dihs(Combined_Dihs_Avg, AlloViz_Base):
     """AlloViz network construction method's of the combination of the backbone
     dihedrals' MIs by averaging
     """
@@ -257,7 +257,7 @@ class AlloViz_Chi5(AlloViz_Base):
     
     
     
-class AlloViz_Sidechain_Dihs_Avg(Combined_Dihs_Avg, AlloViz_Base):
+class AlloViz_Sidechain_Dihs(Combined_Dihs_Avg, AlloViz_Base):
     """AlloViz network construction method's of the combination of the side-chain
     dihedrals' MIs by averaging
     """
@@ -282,7 +282,7 @@ class AlloViz_Sidechain_Dihs_Max(Combined_Dihs_Max, AlloViz_Base):
     
     
     
-class AlloViz_Dihs_Avg(Combined_Dihs_Avg, AlloViz_Base):
+class AlloViz_Dihs(Combined_Dihs_Avg, AlloViz_Base):
     """AlloViz network construction method's of the combination of all backbone and
     side-chain dihedrals' MIs by averaging
     """
