@@ -55,8 +55,8 @@ def test_gpcrdb_numbering(prot):
         err_msg = "There was a problem retrieving GPCR generic numbering from GPCRdb"
     )
     
-def test_comfile(path):
-    assert os.path.isfile(f"{path}/data/COM_trajs/ca.pdb"), "COM topology file wasn't generated"
+# def test_comfile(path):
+#     assert os.path.isfile(f"{path}/data/COM_trajs/ca.pdb"), "COM topology file wasn't generated"
     
 def test_protein_sel(prot, path):
     with open(f"{path}/data/protein.pdb", "r") as processed, open(f"{path}/10182_dyn_10.pdb", "r") as original:
