@@ -5,12 +5,22 @@
 set alloviz_gui_dir [file dirname [file normalize [info script]]]
 lappend auto_path $alloviz_gui_dir
 
+# molinfo top 
+# molinfo top get numreps
+# Info) mol delrep 1 0
+# Info) mol color Name
+# Info) mol representation NewCartoon 0.300000 10.000000 4.100000 0
+# Info) mol selection protein
+# Info) mol material Opaque
+# Info) mol addrep 0
+# Info) mol modselect 1 0 all 
 
 package provide alloviz 1.0
 package require json
 
 namespace eval alloviz {
     variable already_registered 0
+    variable current_viz none
 
     proc accept {channel clientaddr clientport} {
         set cmd [ gets $channel ]
@@ -57,20 +67,50 @@ namespace eval alloviz {
         return $tmpbase
     }
 
-    proc check_vmd_topology_conformity {aselj rlistj} {
-        set asel [::json::json2dict $aselj]
-        set rlist [::json::json2dict $rlistj]
+    proc jsonwrap {fcn args} {
+        # Call TCL function fcn with args after un-jsoning them
+        set tclargs {}
+        foreach ja $args {
+            lappend tclargs [::json::json2dict $ja]
+        }
+        set r [$fcn {*}$tclargs]
+        # TODO: json result
+        return $r
+    }
+
+    proc check_vmd_topology_conformity {asel rlist} {
         set isok 1
         foreach rp $rlist {
             lassign $rp rn ri
             set as [atomselect top "($asel) and name CA and resid $ri"]
             set nm [$as num]
+            $as delete
             if {$nm != 1} {
                 set isok 0
                 puts "Residue $ri resname $rn matched $nm times"
             }
         }
         return $isok
+    }
+
+    proc delete_current_viz {} {
+        variable current_viz
+        if {[lindex $current_viz 0] == "rep"} {
+            mol delrep [lindex $current_viz 1] [lindex $current_viz 2]
+        } elseif {[lindex $current_viz 0] == "mol"} {
+            mol delete [lindex $current_viz 1]
+        }
+        set current_viz none
+    }
+
+    proc visualize_nodes {asel rnl rvl} {
+        foreach rn $rnl rv $rvl {
+            set as [atomselect top "($asel) and resid $rn"]
+            $as set beta $rv
+            $as delete
+        }
+        set mn [molinfo top]
+        set ri [molinfo top get numreps]
     }
 
 }

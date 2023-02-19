@@ -47,7 +47,12 @@ def mybreakpoint():
     breakpoint()
     pyqtRestoreInputHook()
 
-def to_tcl_list(pylist):
+def residueNumber(rn):
+    """GLU:27 -> 27"""
+    rnn = rn.split(":")
+    return rnn[1]
+
+""" def to_tcl_list(pylist):
     tcl_list = "{"
     for item in pylist:
         if type(item) is list:
@@ -57,8 +62,7 @@ def to_tcl_list(pylist):
             tcl_list += str(item) + " "
     tcl_list = tcl_list.strip() + "} "
     return tcl_list
-
-
+ """
 
 # TODO possibly move as inner class.
 class UiStep(object):
@@ -211,10 +215,19 @@ class AlloVizWindow(QMainWindow):
             f"Error while executing step `{stepname}':<br><br>{message}"
         )
 
+    def flattenIndex(self,idx):
+        """Flatten 1D or 2D indices as list"""
+        idf = idx.to_frame()
+        ncol = len(idf.columns)
+        r = []
+        for c in range(ncol):
+            r.extend(idf[c].to_list())
+        return r
+
+
     def checkVMDTopologyConformity(self, asel, idx):
         """Ensure that each index matches exactly one CA per result"""
-        idx_llist = idx.tolist()
-        idx_flattened = [r for rp in idx_llist for r in rp]
+        idx_flattened = self.flattenIndex(idx)
         idx_uq = list(set(idx_flattened))
         idx_uq_llist = [r.split(":") for r in idx_uq]
         r = self.doVMDcall("::alloviz::check_vmd_topology_conformity", asel, idx_uq_llist)
@@ -222,10 +235,10 @@ class AlloVizWindow(QMainWindow):
 
     def doVMDcall(self, fcn, *args):
         """Automatically serializes (via json) the arguments, then calls VMD"""
-        jargs = []
+        jargs = ["::alloviz::jsonwrap", fcn]
         for a in args:
             jargs.append("{"+json.dumps(a)+"}")
-        tcl = " ".join([fcn]+jargs)
+        tcl = " ".join(jargs)
         r=self.sendVMDCommand(tcl)
         return r
 
@@ -242,10 +255,20 @@ class AlloVizWindow(QMainWindow):
                 f"Could not connect to VMD ({self.HOST}:{self.PORT}): {e}.\nMake sure the client component is running."
             )
             raise e
-
         ret = data.decode().strip()
         logging.info("sendVMDCommand got " + ret)
         return ret
+
+    def visualizeNodes(self, asel, data):
+        # Assumes that data is a Series
+        rnl = [residueNumber(x) for x in data.index]
+        rvl = data.values
+        doVMDcall("::alloviz::visualize_nodes", asel, rnl, rvl)
+
+
+    def visualizeEdges(self, asel, data):
+        pass
+
 
     def _getUiMethod(self):
         method = self.ui.methodTree.selectedItems()
@@ -317,10 +340,12 @@ class AlloVizWindow(QMainWindow):
                 pdbfile = bn + ".pdb"
                 psffile = bn + ".psf"
                 dcdfile = bn + ".dcd"
+                testmode = False
             except:
                 logging.warning("Cannot communicate with VMD, using test data under dir 117")
                 pdbfile = "../117/11159_dyn_117.pdb"
                 dcdfile = "../117/11157_trj_117.dcd"
+                testmode = True
 
         _,tmp = md5sum_file(dcdfile)
         cache_path = f"/var/tmp/alloviz_gui_{tmp}"
@@ -373,7 +398,23 @@ class AlloVizWindow(QMainWindow):
         hitem.setData(QtCore.Qt.UserRole, uidata)
         ht.addItem(hitem)
 
-        self.checkVMDTopologyConformity(asel, analysis_result.index)
+        if testmode:
+            mybreakpoint()
+            return
+
+        if not self.checkVMDTopologyConformity(asel, analysis_result.index):
+            # TODO Make UiStep
+            self.critical("Error",
+                "Residue numbers are not unique in the selection. Sorry.")
+
+        if el=="nodes":
+            self.visualizeNodes(asel, analysis_result)
+        elif el=="edges":
+            self.visualizeEdges(asel, analysis_result)
+        else:
+            logging.error("Should not happen")
+
+
 
         
 

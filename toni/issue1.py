@@ -19,11 +19,12 @@ if __name__ == "__main__":
     flist_as_string = "_".join(flist) # :( (((
     filter_result = getattr(calc_result, flist_as_string)
 
+    # el="edges"
+    el = "nodes"
 
-    el="edges"
-    # el = "nodes"
     met="btw"
     # met = "raw"
+
     prot.analyze(method, elements=el, metrics=met) 
 
     if met == "raw":
