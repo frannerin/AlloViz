@@ -5,15 +5,6 @@
 set alloviz_gui_dir [file dirname [file normalize [info script]]]
 lappend auto_path $alloviz_gui_dir
 
-# molinfo top 
-# molinfo top get numreps
-# Info) mol delrep 1 0
-# Info) mol color Name
-# Info) mol representation NewCartoon 0.300000 10.000000 4.100000 0
-# Info) mol selection protein
-# Info) mol material Opaque
-# Info) mol addrep 0
-# Info) mol modselect 1 0 all 
 
 package provide alloviz 1.0
 package require json
@@ -24,9 +15,9 @@ namespace eval alloviz {
 
     proc accept {channel clientaddr clientport} {
         set cmd [ gets $channel ]
-        puts "alloviz::accept <-- $cmd"
+        # puts "alloviz::accept <-- $cmd"
         set out [ eval  $cmd]
-        puts "alloviz::accept --> $out"
+        # puts "alloviz::accept --> $out"
         puts $channel $out
         close $channel
     }
@@ -103,14 +94,61 @@ namespace eval alloviz {
         set current_viz none
     }
 
+# molinfo top 
+# molinfo top get numreps
+# Info) mol delrep 1 0
+# Info) mol color Name
+# Info) mol representation NewCartoon 0.300000 10.000000 4.100000 0
+# Info) mol selection protein
+# Info) mol material Opaque
+# Info) mol addrep 0
+# Info) mol modselect 1 0 all 
+
+# Info) mol color Beta
+# Info) mol representation VDW 1.000000 12.000000
+# Info) mol selection protein and name CA
+# Info) mol material Opaque
+# Info) mol addrep 0
+
     proc visualize_nodes {asel rnl rvl} {
+        variable current_viz
         foreach rn $rnl rv $rvl {
             set as [atomselect top "($asel) and resid $rn"]
             $as set beta $rv
             $as delete
         }
+        delete_current_viz
         set mn [molinfo top]
         set ri [molinfo top get numreps]
+        mol color Beta
+        mol representation VDW 1 12
+        mol selection "($asel) and name CA and resid $rnl"
+        mol material Opaque
+        mol addrep $mn
+        set current_viz "rep $ri $mn"
+    }
+
+    proc visualize_edges {asel r1l r2l rvl} {
+        variable current_viz
+
+        set mtop [molinfo top]
+        set mn [mol new]
+        mol rename $mn AlloViz
+
+        delete_current_viz
+        foreach r1 $r1l r2 $r2l rv $rvl {
+            set as1 [atomselect $mtop "($asel) and resid $r1 and name CA"]
+            set as2 [atomselect $mtop "($asel) and resid $r2 and name CA"]
+            set x1 [$as1 get {x y z}]
+            set x2 [$as2 get {x y z}]
+            graphics $mn color white
+            #graphics $mn cylinder $x1 $x2 radius 1 filled yes
+            graphics $mn line $x1 $x2 width 2
+            $as1 delete
+            $as2 delete
+        }
+       
+        set current_viz "mol $mn"
     }
 
 }

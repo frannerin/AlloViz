@@ -31,7 +31,7 @@ logging.basicConfig(level=logging.INFO,
 
 _HOST = "localhost"
 _PORT = 9990
-_total_progressbar_steps = 6
+_total_progressbar_steps = 10
 _pickle_me = None
 
 def md5sum_file(fn):
@@ -237,6 +237,7 @@ class AlloVizWindow(QMainWindow):
         """Automatically serializes (via json) the arguments, then calls VMD"""
         jargs = ["::alloviz::jsonwrap", fcn]
         for a in args:
+            # al = list(a)  # in case a ndarray or so
             jargs.append("{"+json.dumps(a)+"}")
         tcl = " ".join(jargs)
         r=self.sendVMDCommand(tcl)
@@ -262,12 +263,17 @@ class AlloVizWindow(QMainWindow):
     def visualizeNodes(self, asel, data):
         # Assumes that data is a Series
         rnl = [residueNumber(x) for x in data.index]
-        rvl = data.values
-        doVMDcall("::alloviz::visualize_nodes", asel, rnl, rvl)
+        rvl = data.values.tolist()
+        self.doVMDcall("::alloviz::visualize_nodes", asel, rnl, rvl)
 
 
     def visualizeEdges(self, asel, data):
-        pass
+        # Assumes that data is a Series
+        dif = data.index.to_frame()
+        r1l = [residueNumber(x) for x in dif[0]]
+        r2l = [residueNumber(x) for x in dif[1]]
+        rvl = data.values.tolist()
+        self.doVMDcall("::alloviz::visualize_edges", asel, r1l, r2l, rvl)
 
 
     def _getUiMethod(self):
@@ -390,10 +396,8 @@ class AlloVizWindow(QMainWindow):
                 _ = getattr(filter_result, el)
                 analysis_result = getattr(_, met)
 
-        self._showMessage("Ready")
-        self.ui.progressBar.setValue(0)
-
         # Create item and add it to history 
+        logging.info("Adding item to history")
         hitem = QListWidgetItem(method)
         hitem.setData(QtCore.Qt.UserRole, uidata)
         ht.addItem(hitem)
@@ -402,19 +406,23 @@ class AlloVizWindow(QMainWindow):
             mybreakpoint()
             return
 
-        if not self.checkVMDTopologyConformity(asel, analysis_result.index):
-            # TODO Make UiStep
-            self.critical("Error",
-                "Residue numbers are not unique in the selection. Sorry.")
+        with UiStep("Checking VMD residues", self):
+            if not self.checkVMDTopologyConformity(asel, analysis_result.index):
+                # TODO Make UiStep
+                raise Exception("Residue numbers are not unique in the selection.")
 
-        if el=="nodes":
-            self.visualizeNodes(asel, analysis_result)
-        elif el=="edges":
-            self.visualizeEdges(asel, analysis_result)
-        else:
-            logging.error("Should not happen")
+        with UiStep("Transferring data to VMD", self):
+            if el=="nodes":
+                self.visualizeNodes(asel, analysis_result)
+            elif el=="edges":
+                self.visualizeEdges(asel, analysis_result)
+            else:
+                logging.error("Should not happen")
 
+        self._showMessage("Ready")
+        self.ui.progressBar.setValue(0)
 
+  
 
         
 
