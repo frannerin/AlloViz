@@ -4,6 +4,7 @@ import socket
 import logging
 import hashlib
 import json
+from datetime import datetime
 
 from PyQt5.QtWidgets import *
 from PyQt5 import QtCore
@@ -153,7 +154,7 @@ class AlloVizWindow(QMainWindow):
     def setupHistoryWidget(self):
         self.ui.historyWidget.addActions([
             self.ui.actionShow_Calculation_Parameters,
-            self.ui.actionShow_Analysis_Results,
+            self.ui.actionViz_Analysis_Results,
             self.ui.actionOpen_Folder,
             self.ui.actionSave_As,
         ])
@@ -167,7 +168,7 @@ class AlloVizWindow(QMainWindow):
         self.ui.methodTree.itemSelectionChanged.connect(self._updateRunButtonState)
 
         self.ui.actionShow_Calculation_Parameters.triggered.connect(self.acShowCalculationParameters)
-        self.ui.actionShow_Analysis_Results.triggered.connect(self.acShowAnalysisResults)
+        self.ui.actionViz_Analysis_Results.triggered.connect(self.acVizAnalysisResults)
         self.ui.actionOpen_Folder.triggered.connect(self.acOpenFolder)
         self.ui.actionSave_As.triggered.connect(self.acSaveAs)
 
@@ -186,7 +187,7 @@ class AlloVizWindow(QMainWindow):
             "Calculation Parameters",
             "TODO")
 
-    def acShowAnalysisResults(self):
+    def acVizAnalysisResults(self):
         logging.info("TODO called")
 
 
@@ -261,6 +262,18 @@ class AlloVizWindow(QMainWindow):
         ret = data.decode().strip()
         logging.info("sendVMDCommand got " + ret)
         return ret
+
+    def visualize(self, uidata):
+        el = uidata["elements"]
+        if el=="nodes":
+            self.visualizeNodes(uidata["asel"], 
+                                uidata["analysis_shown"])
+        elif el=="edges":
+            self.visualizeEdges(uidata["asel"], 
+                                uidata["analysis_shown"])
+        else:
+            logging.error("Should not happen")
+
 
     def visualizeNodes(self, asel, data):
         # Assumes that data is a Series
@@ -357,8 +370,9 @@ class AlloVizWindow(QMainWindow):
                 testmode = False
             except:
                 logging.warning("Cannot communicate with VMD, using test data under dir 117")
-                pdbfile = "../117/11159_dyn_117.pdb"
-                dcdfile = "../117/11157_trj_117.dcd"
+                pdbfile = "117/11159_dyn_117.pdb"
+                psffile = "117/11160_dyn_117.psf"
+                dcdfile = "117/11156_trj_117_r.dcd"
                 testmode = True
 
         _,tmp = md5sum_file(dcdfile)
@@ -405,14 +419,10 @@ class AlloVizWindow(QMainWindow):
                 analysis_result = getattr(_, met)
             uidata["analysis_result"] = analysis_result
 
-        if testmode:
-            mybreakpoint()
-            return
-
         with UiStep("Checking VMD residues", self):
-            if not self.checkVMDTopologyConformity(asel, analysis_result.index):
-                # TODO Make UiStep
-                raise Exception("Residue numbers are not unique in the selection.")
+            if not testmode:
+                if not self.checkVMDTopologyConformity(asel, analysis_result.index):
+                    raise Exception("Residue numbers are not unique in the selection.")
 
         with UiStep("Transferring data to VMD", self):
             hide_fraction = self._getUiVisualizeOptions()
@@ -420,16 +430,13 @@ class AlloVizWindow(QMainWindow):
             analysis_shown = analysis_result.loc[analysis_result>hide_threshold]
             uidata["hide_fraction"] = hide_fraction
             uidata["analysis_shown"] = analysis_shown
-            if el=="nodes":
-                self.visualizeNodes(asel, analysis_shown)
-            elif el=="edges":
-                self.visualizeEdges(asel, analysis_shown)
-            else:
-                logging.error("Should not happen")
+            if not testmode:
+                self.visualize(uidata)
 
         # Create item and add it to history 
         logging.info("Adding item to history")
-        hitem = QListWidgetItem(method)
+        hname = datetime.now().strftime("%H:%M:%S") + " " + method
+        hitem = QListWidgetItem(hname)
         hitem.setData(QtCore.Qt.UserRole, uidata)
         ht.addItem(hitem)
 

@@ -129,6 +129,11 @@
           </item>
           <item row="0" column="1">
            <widget class="QLabel" name="label">
+            <property name="font">
+             <font>
+              <bold>true</bold>
+             </font>
+            </property>
             <property name="text">
              <string>Threshold</string>
             </property>
@@ -170,8 +175,13 @@
           </item>
           <item row="0" column="0">
            <widget class="QLabel" name="label_6">
+            <property name="font">
+             <font>
+              <bold>true</bold>
+             </font>
+            </property>
             <property name="text">
-             <string>Filtering criteria</string>
+             <string>Criteria</string>
             </property>
             <property name="alignment">
              <set>Qt::AlignCenter</set>
@@ -277,7 +287,7 @@
           <item row="0" column="0">
            <widget class="QLabel" name="label_8">
             <property name="text">
-             <string>Hide elements below (fraction of maximum)</string>
+             <string>Show elements above (fraction of maximum)</string>
             </property>
            </widget>
           </item>
@@ -417,9 +427,12 @@
     <string>Show Calculation Parameters...</string>
    </property>
   </action>
-  <action name="actionShow_Analysis_Results">
+  <action name="actionViz_Analysis_Results">
    <property name="text">
-    <string>Show Analysis Results...</string>
+    <string>Visualize Analysis Results...</string>
+   </property>
+   <property name="toolTip">
+    <string>Visualize Analysis Results</string>
    </property>
   </action>
   <action name="actionSave_As">
