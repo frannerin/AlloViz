@@ -152,34 +152,26 @@ class AlloVizWindow(QMainWindow):
         #    tree.resizeColumnToContents(i)
 
     def setupHistoryActions(self):
+        # Or https://learndataanalysis.org/source-code-how-to-implement-context-menu-to-a-qlistwidget-pyqt5-tutorial/
+        self.ui.actionShow_Calculation_Parameters = QAction("Show Calculation Parameters...")
+        self.ui.actionViz_Analysis_Results = QAction("Visualize Analysis Results...")
+        self.ui.actionOpen_Folder = QAction("Open Folder...")
+        self.ui.actionExport_Table = QAction("Export Table...")
         self.ui.historyWidget.addActions([
             self.ui.actionShow_Calculation_Parameters,
             self.ui.actionViz_Analysis_Results,
             self.ui.actionOpen_Folder,
-            self.ui.actionExport_Table,
+            self.ui.actionExport_Table
         ])
-
-    def connectSignalsSlots(self):
-        self.ui.actionQuit.triggered.connect(self.close)
-        self.ui.actionAbout.triggered.connect(self.showAboutDialog)
-        self.ui.actionAlloViz_Homepage.triggered.connect(self.openDocumentationURL)
-
-        self.ui.runButton.clicked.connect(self.runAnalysis)
-        self.ui.methodTree.itemSelectionChanged.connect(self._updateRunButtonState)
-
         self.ui.actionShow_Calculation_Parameters.triggered.connect(self.historyShowCalculationParameters)
         self.ui.actionViz_Analysis_Results.triggered.connect(self.historyVizAnalysisResults)
         self.ui.actionOpen_Folder.triggered.connect(self.historyOpenFolder)
-        self.ui.actionExport_Table.triggered.connect(self.historySaveAs)
-
-        # https://stackoverflow.com/questions/50104163/update-pyqt-gui-from-a-python-thread
-        self.updateProgress.connect(self.ui.progressBar.setValue)
-
+        self.ui.actionExport_Table.triggered.connect(self.historyExportTable)
 
     def historyOpenFolder(self):
         logging.info("TODO called")
 
-    def historySaveAs(self):
+    def historyExportTable(self):
         logging.info("TODO called")
 
     def historyShowCalculationParameters(self):
@@ -193,6 +185,20 @@ class AlloVizWindow(QMainWindow):
             return
         uidata = sl[0].data(QtCore.Qt.UserRole)
         self.visualize(uidata)
+
+
+    def connectSignalsSlots(self):
+        self.ui.actionQuit.triggered.connect(self.close)
+        self.ui.actionAbout.triggered.connect(self.showAboutDialog)
+        self.ui.actionAlloViz_Homepage.triggered.connect(self.openDocumentationURL)
+
+        self.ui.runButton.clicked.connect(self.runAnalysis)
+        self.ui.methodTree.itemSelectionChanged.connect(self._updateRunButtonState)
+
+        # https://stackoverflow.com/questions/50104163/update-pyqt-gui-from-a-python-thread
+        self.updateProgress.connect(self.ui.progressBar.setValue)
+
+
 
 
     def _updateRunButtonState(self):

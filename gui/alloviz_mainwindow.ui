@@ -424,32 +424,6 @@
     <string>QQQ&amp;uit</string>
    </property>
   </action>
-  <action name="actionOpen_Folder">
-   <property name="text">
-    <string>Open Folder...</string>
-   </property>
-  </action>
-  <action name="actionShow_Calculation_Parameters">
-   <property name="text">
-    <string>Show Calculation Parameters...</string>
-   </property>
-  </action>
-  <action name="actionViz_Analysis_Results">
-   <property name="text">
-    <string>Visualize Analysis Results...</string>
-   </property>
-   <property name="toolTip">
-    <string>Visualize Analysis Results</string>
-   </property>
-  </action>
-  <action name="actionExport_Table">
-   <property name="text">
-    <string>Export Table...</string>
-   </property>
-   <property name="toolTip">
-    <string>Export Table</string>
-   </property>
-  </action>
  </widget>
  <resources/>
  <connections/>
