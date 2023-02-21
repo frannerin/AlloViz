@@ -5,12 +5,14 @@ import logging
 import hashlib
 import json
 from datetime import datetime
+import pandas as pd
 
 from PyQt5.QtWidgets import *
 from PyQt5 import QtCore
-from PyQt5.uic import loadUi
+from PyQt5.QtCore import QUrl
+from PyQt5.QtGui import QDesktopServices
+# from PyQt5.uic import loadUi
 
-import pandas as pd
 
 sys.path.append("gui")
 
@@ -19,7 +21,7 @@ from alloviz_mainwindow_ui import Ui_MainWindow
 
 import AlloViz
 
-logging.basicConfig(level=logging.INFO,
+logging.basicConfig(level=logging.WARNING,
                     format="%(asctime)s %(pathname)s %(levelname)s %(funcName)s %(message)s")
 
 # See https://pypi.org/project/QtPy/
@@ -33,7 +35,6 @@ logging.basicConfig(level=logging.INFO,
 _HOST = "localhost"
 _PORT = 9990
 _total_progressbar_steps = 10
-_pickle_me = None
 
 def md5sum_file(fn):
     with open(fn, "rb") as f:
@@ -42,11 +43,6 @@ def md5sum_file(fn):
             file_hash.update(chunk)
     return file_hash.digest(), file_hash.hexdigest()
 
-def mybreakpoint():
-    from PyQt5.QtCore import pyqtRemoveInputHook, pyqtRestoreInputHook
-    pyqtRemoveInputHook()
-    breakpoint()
-    pyqtRestoreInputHook()
 
 def residueNumber(rn):
     """GLU:27 -> 27"""
@@ -159,8 +155,6 @@ class AlloVizWindow(QMainWindow):
         self.actBrowseCache.triggered.connect(self.historyBrowseCacheFolder)
 
     def historyBrowseCacheFolder(self):
-        from PyQt5.QtCore import QUrl
-        from PyQt5.QtGui import QDesktopServices
         if len( sl := self.ui.historyWidget.selectedItems()) != 1: return
         uidata = sl[0].data(QtCore.Qt.UserRole)
         url = QUrl.fromLocalFile(uidata["cache_path"])
@@ -212,6 +206,7 @@ class AlloVizWindow(QMainWindow):
         self.ui.actionQuit.triggered.connect(self.close)
         self.ui.actionAbout.triggered.connect(self.showAboutDialog)
         self.ui.actionAlloViz_Homepage.triggered.connect(self.openDocumentationURL)
+        self.ui.actionAlloViz_Source.triggered.connect(self.openSourceURL)
 
         self.ui.runButton.clicked.connect(self.runAnalysis)
         self.ui.methodTree.itemSelectionChanged.connect(self._updateRunButtonState)
@@ -227,9 +222,11 @@ class AlloVizWindow(QMainWindow):
         self.ui.runButton.setEnabled(m is not None)
 
     def openDocumentationURL(self):
-        from PyQt5.QtCore import QUrl
-        from PyQt5.QtGui import QDesktopServices
         QDesktopServices.openUrl(QUrl('https://alloviz.readthedocs.io/en/latest/?badge=latest'))
+
+    def openSourceURL(self):
+        QDesktopServices.openUrl(QUrl('https://github.com/frannerin/AlloViz'))
+
 
     def showAboutDialog(self):
         QMessageBox.about(

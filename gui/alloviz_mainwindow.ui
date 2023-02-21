@@ -383,7 +383,6 @@
     </property>
     <addaction name="actionQuit"/>
     <addaction name="separator"/>
-    <addaction name="actionQQuit"/>
    </widget>
    <widget class="QMenu" name="menu_Help">
     <property name="locale">
@@ -393,6 +392,7 @@
      <string>&amp;Help</string>
     </property>
     <addaction name="actionAlloViz_Homepage"/>
+    <addaction name="actionAlloViz_Source"/>
     <addaction name="separator"/>
     <addaction name="actionCitation"/>
     <addaction name="separator"/>
@@ -422,9 +422,9 @@
     <string>&amp;Citation...</string>
    </property>
   </action>
-  <action name="actionQQuit">
+  <action name="actionAlloViz_Source">
    <property name="text">
-    <string>QQQ&amp;uit</string>
+    <string>AlloViz Source...</string>
    </property>
   </action>
  </widget>
