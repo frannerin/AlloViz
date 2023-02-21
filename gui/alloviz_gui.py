@@ -11,6 +11,7 @@ from PyQt5.QtWidgets import *
 from PyQt5 import QtCore
 from PyQt5.QtCore import QUrl
 from PyQt5.QtGui import QDesktopServices
+
 # from PyQt5.uic import loadUi
 
 
@@ -21,8 +22,10 @@ from alloviz_mainwindow_ui import Ui_MainWindow
 
 import AlloViz
 
-logging.basicConfig(level=logging.WARNING,
-                    format="%(asctime)s %(pathname)s %(levelname)s %(funcName)s %(message)s")
+logging.basicConfig(
+    level=logging.WARNING,
+    format="%(asctime)s %(pathname)s %(levelname)s %(funcName)s %(message)s",
+)
 
 # See https://pypi.org/project/QtPy/
 # from qtpy.QtWidgets import *
@@ -35,6 +38,7 @@ logging.basicConfig(level=logging.WARNING,
 _HOST = "localhost"
 _PORT = 9990
 _total_progressbar_steps = 10
+
 
 def md5sum_file(fn):
     with open(fn, "rb") as f:
@@ -64,19 +68,20 @@ class UiStep(object):
         if self.increase_progressbar:
             self.obj._increaseProgressBar()
         logging.info(self.msg)
-    
+
     def __exit__(self, exc_type, exc_value, traceback):
         logging.info("...done")
         if exc_type is not None:
             logging.error("...with exception")
             from traceback import print_tb
+
             print_tb(sys.exc_info()[2])
             self.obj.critical(self.msg, exc_value)
             return True
 
 
 class AlloVizWindow(QMainWindow):
-    updateProgress=QtCore.pyqtSignal(int)
+    updateProgress = QtCore.pyqtSignal(int)
 
     def __init__(self, parent=None):
         super().__init__(parent)
@@ -103,7 +108,7 @@ class AlloVizWindow(QMainWindow):
         self._keyword_column = 4
 
         # Remove gRINN because it requires ff parameters
-        df=df.loc[df.Software != "gRINN"]
+        df = df.loc[df.Software != "gRINN"]
 
         # tree = self.findChild(QTreeWidget,"methodTree")
         tree = self.ui.methodTree
@@ -143,43 +148,45 @@ class AlloVizWindow(QMainWindow):
         self.actVizResults = QAction("Visualize Analysis Results...")
         self.actExportTable = QAction("Export as CSV Table...")
         self.actBrowseCache = QAction("Browse Cache Directory...")
-        self.ui.historyWidget.addActions([
-            self.actShowParameters,
-            self.actVizResults,
-            self.actExportTable,
-            self.actBrowseCache,
-        ])
+        self.ui.historyWidget.addActions(
+            [
+                self.actShowParameters,
+                self.actVizResults,
+                self.actExportTable,
+                self.actBrowseCache,
+            ]
+        )
         self.actShowParameters.triggered.connect(self.historyShowParameters)
         self.actVizResults.triggered.connect(self.historyVizResults)
         self.actExportTable.triggered.connect(self.historyExportTable)
         self.actBrowseCache.triggered.connect(self.historyBrowseCacheFolder)
 
     def historyBrowseCacheFolder(self):
-        if len( sl := self.ui.historyWidget.selectedItems()) != 1: return
+        if len(sl := self.ui.historyWidget.selectedItems()) != 1:
+            return
         uidata = sl[0].data(QtCore.Qt.UserRole)
         url = QUrl.fromLocalFile(uidata["cache_path"])
         QDesktopServices.openUrl(url)
 
-
     def historyExportTable(self):
-        if len( sl := self.ui.historyWidget.selectedItems()) != 1: return
+        if len(sl := self.ui.historyWidget.selectedItems()) != 1:
+            return
         uidata = sl[0].data(QtCore.Qt.UserRole)
-        save_name = QFileDialog.getSaveFileName(self, 
-            'Export CSV File', 
-            "",
-            "CSV files (*.csv);;All Files (*)")
+        save_name = QFileDialog.getSaveFileName(
+            self, "Export CSV File", "", "CSV files (*.csv);;All Files (*)"
+        )
         try:
             uidata["analysis_result"].to_csv(save_name[0])
         except Exception as e:
-            QMessageBox.critical(self,
-               "Error saving file", 
-               "Error saving file:<br>"+str(e))
-
+            QMessageBox.critical(
+                self, "Error saving file", "Error saving file:<br>" + str(e)
+            )
 
     def historyShowParameters(self):
-        if len( sl := self.ui.historyWidget.selectedItems()) != 1: return
+        if len(sl := self.ui.historyWidget.selectedItems()) != 1:
+            return
         uidata = sl[0].data(QtCore.Qt.UserRole)
-        txt=f"""
+        txt = f"""
         <p>The calculation used the following parameters:
         <p>
         <table>   <tbody>
@@ -197,10 +204,10 @@ class AlloVizWindow(QMainWindow):
 
     def historyVizResults(self):
         logging.info("historyVizAnalysisResults called")
-        if len( sl := self.ui.historyWidget.selectedItems()) != 1: return
+        if len(sl := self.ui.historyWidget.selectedItems()) != 1:
+            return
         uidata = sl[0].data(QtCore.Qt.UserRole)
         self.visualize(uidata)
-
 
     def connectSignalsSlots(self):
         self.ui.actionQuit.triggered.connect(self.close)
@@ -214,19 +221,17 @@ class AlloVizWindow(QMainWindow):
         # https://stackoverflow.com/questions/50104163/update-pyqt-gui-from-a-python-thread
         self.updateProgress.connect(self.ui.progressBar.setValue)
 
-
-
-
     def _updateRunButtonState(self):
         m = self._getUiMethod()
         self.ui.runButton.setEnabled(m is not None)
 
     def openDocumentationURL(self):
-        QDesktopServices.openUrl(QUrl('https://alloviz.readthedocs.io/en/latest/?badge=latest'))
+        QDesktopServices.openUrl(
+            QUrl("https://alloviz.readthedocs.io/en/latest/?badge=latest")
+        )
 
     def openSourceURL(self):
-        QDesktopServices.openUrl(QUrl('https://github.com/frannerin/AlloViz'))
-
+        QDesktopServices.openUrl(QUrl("https://github.com/frannerin/AlloViz"))
 
     def showAboutDialog(self):
         QMessageBox.about(
@@ -236,17 +241,15 @@ class AlloVizWindow(QMainWindow):
             "<p>A Python package to interactively compute, analyze and visualize protein allosteric communication (residue interaction) networks and delta-networks.</p>"
             "<p>Authors: Francho Nerin, Jana Selent, Toni Giorgino.</p>"
             '<p>Source code: <a href="https://github.com/frannerin/AlloViz">github.com/frannerin/AlloViz</a>.</p>'
-            '<p>Please cite: <a href="https://github.com/frannerin/AlloViz">github.com/frannerin/AlloViz</a>.</p>'
+            '<p>Please cite: <a href="https://github.com/frannerin/AlloViz">github.com/frannerin/AlloViz</a>.</p>',
         )
 
     def critical(self, stepname, message):
         QMessageBox.critical(
-            self,
-            "Error",
-            f"Error while executing step `{stepname}':<br><br>{message}"
+            self, "Error", f"Error while executing step `{stepname}':<br><br>{message}"
         )
 
-    def flattenIndex(self,idx):
+    def flattenIndex(self, idx):
         """Flatten 1D or 2D indices as list"""
         idf = idx.to_frame()
         ncol = len(idf.columns)
@@ -255,25 +258,25 @@ class AlloVizWindow(QMainWindow):
             r.extend(idf[c].to_list())
         return r
 
-
     def checkVMDTopologyConformity(self, asel, idx):
         """Ensure that each index matches exactly one CA per result"""
         idx_flattened = self.flattenIndex(idx)
         idx_uq = list(set(idx_flattened))
         idx_uq_llist = [r.split(":") for r in idx_uq]
-        r = self.doVMDcall("::alloviz::check_vmd_topology_conformity", asel, idx_uq_llist)
+        r = self.doVMDcall(
+            "::alloviz::check_vmd_topology_conformity", asel, idx_uq_llist
+        )
         return r
 
     def doVMDcall(self, fcn, *args):
         """Automatically serializes (via json) the arguments, then calls VMD"""
         jargs = ["::alloviz::jsonwrap", fcn]
         for a in args:
-            # al = list(a)  # in case a ndarray or so
-            jargs.append("{"+json.dumps(a)+"}")
+            # al = list(a)  # in case a ndarray or so
+            jargs.append("{" + json.dumps(a) + "}")
         tcl = " ".join(jargs)
-        r=self.sendVMDCommand(tcl)
+        r = self.sendVMDCommand(tcl)
         return r
-
 
     def sendVMDCommand(self, cmd):
         logging.info("sendVMDCommand sending: " + cmd)
@@ -293,15 +296,12 @@ class AlloVizWindow(QMainWindow):
 
     def visualize(self, uidata):
         el = uidata["elements"]
-        if el=="nodes":
-            self.visualizeNodes(uidata["asel"], 
-                                uidata["analysis_shown"])
-        elif el=="edges":
-            self.visualizeEdges(uidata["asel"], 
-                                uidata["analysis_shown"])
+        if el == "nodes":
+            self.visualizeNodes(uidata["asel"], uidata["analysis_shown"])
+        elif el == "edges":
+            self.visualizeEdges(uidata["asel"], uidata["analysis_shown"])
         else:
             logging.error("Should not happen")
-
 
     def visualizeNodes(self, asel, data):
         # Assumes that data is a Series
@@ -311,14 +311,13 @@ class AlloVizWindow(QMainWindow):
 
     def visualizeEdges(self, asel, data):
         # Assumes that data is a Series
-        data=data.sort_values()
+        data = data.sort_values()
         # data.to_csv("/tmp/debugme.csv")
         dif = data.index.to_frame()
         r1l = [residueNumber(x) for x in dif[0]]
         r2l = [residueNumber(x) for x in dif[1]]
         rvl = data.values.tolist()
         self.doVMDcall("::alloviz::visualize_edges", asel, r1l, r2l, rvl)
-
 
     def _getUiMethod(self):
         method = self.ui.methodTree.selectedItems()
@@ -332,27 +331,33 @@ class AlloVizWindow(QMainWindow):
         fargs = {}
         if self.ui.checkbox_GetContacts_edges.isChecked():
             flist.append("GetContacts_edges")
-            fargs["GetContacts_threshold"]=float(self.ui.edit_GetContacts_threshold.text())
+            fargs["GetContacts_threshold"] = float(
+                self.ui.edit_GetContacts_threshold.text()
+            )
         if self.ui.checkbox_No_Sequence_Neighbors.isChecked():
             flist.append("No_Sequence_Neighbors")
-            fargs["Sequence_Neighbor_distance"]=int(self.ui.edit_Sequence_Neighbor_distance.text())
+            fargs["Sequence_Neighbor_distance"] = int(
+                self.ui.edit_Sequence_Neighbor_distance.text()
+            )
         if self.ui.checkbox_Spatially_distant.isChecked():
             flist.append("Spatially_distant")
-            fargs["Interresidue_distance"]=float(self.ui.edit_Interresidue_distance.text())
+            fargs["Interresidue_distance"] = float(
+                self.ui.edit_Interresidue_distance.text()
+            )
         if self.ui.checkbox_GPCR_Interhelix.isChecked():
             flist.append("GPCR_Interhelix")
         if not flist:
-            flist=["All"]   # not to be confused with "all" :(
-        logging.info(f"Filters: {flist}, kwargs {fargs}") 
+            flist = ["All"]  # not to be confused with "all" :(
+        logging.info(f"Filters: {flist}, kwargs {fargs}")
         return flist, fargs
-    
+
     def _getUiAnalysisType(self):
         if self.ui.anEdgeBtwCheck.isChecked():
             el, met = "edges", "btw"
         elif self.ui.anEdgeCurrentCheck.isChecked():
             el, met = "edges", "cfb"
         elif self.ui.anEdgeRawCheck.isChecked():
-            el, met = "edges", "raw" # ?????
+            el, met = "edges", "raw"  # ?????
         elif self.ui.anNodeBtwCheck.isChecked():
             el, met = "nodes", "btw"
         elif self.ui.anNodeCurrentCheck.isChecked():
@@ -363,15 +368,15 @@ class AlloVizWindow(QMainWindow):
         return el, met
 
     def _getUiVisualizeOptions(self):
-        hide_fraction=float(self.ui.edit_hide_fraction.text())
+        hide_fraction = float(self.ui.edit_hide_fraction.text())
         return hide_fraction
 
     def _increaseProgressBar(self):
         pbar = self.ui.progressBar
         i = pbar.value()
         logging.info(f"Updating progressbar {i} -> {i+1}")
-        self.updateProgress.emit(i+1)
-        #pbar.repaint()
+        self.updateProgress.emit(i + 1)
+        # pbar.repaint()
         self.app.processEvents()
 
     def _showMessage(self, msg):
@@ -396,22 +401,25 @@ class AlloVizWindow(QMainWindow):
                 dcdfile = bn + ".dcd"
                 testmode = False
             except:
-                logging.warning("Cannot communicate with VMD, using test data under dir 117")
+                logging.warning(
+                    "Cannot communicate with VMD, using test data under dir 117"
+                )
                 pdbfile = "117/11159_dyn_117.pdb"
                 psffile = "117/11160_dyn_117.psf"
                 dcdfile = "117/11156_trj_117_r.dcd"
                 testmode = True
 
-        _,tmp = md5sum_file(dcdfile)
+        _, tmp = md5sum_file(dcdfile)
         cache_path = f"/var/tmp/alloviz_gui_{tmp}"
         logging.info(f"Using cache path {cache_path}")
 
-        uidata={"pdbfile": pdbfile,
-                "psffile": psffile,
-                "dcdfile": dcdfile,
-                "cache_path": cache_path,
-                "asel": asel,
-                "method": method
+        uidata = {
+            "pdbfile": pdbfile,
+            "psffile": psffile,
+            "dcdfile": dcdfile,
+            "cache_path": cache_path,
+            "asel": asel,
+            "method": method,
         }
 
         with UiStep("Loading trajectory", self):
@@ -420,7 +428,7 @@ class AlloVizWindow(QMainWindow):
 
         with UiStep("Calculating", self):
             prot.calculate(method)
-            calc_result = getattr(prot, method) # :( 
+            calc_result = getattr(prot, method)  # :(
 
         with UiStep("Adding getContacts", self):
             if self.ui.checkbox_GetContacts_edges.isChecked():
@@ -432,7 +440,7 @@ class AlloVizWindow(QMainWindow):
             prot.filter(method, filterings=[flist], **fargs)
             uidata["flist"] = flist
             uidata["fargs"] = fargs
-            flist_as_string = "_".join(flist) # :( (((
+            flist_as_string = "_".join(flist)  # :( (((
             filter_result = getattr(calc_result, flist_as_string)
 
         with UiStep("Analyzing", self):
@@ -455,15 +463,15 @@ class AlloVizWindow(QMainWindow):
         with UiStep("Transferring data to VMD", self):
             hide_fraction = self._getUiVisualizeOptions()
             max_value = analysis_result.max()
-            hide_threshold = max_value * hide_fraction/100.0
-            analysis_shown = analysis_result.loc[analysis_result>hide_threshold]
+            hide_threshold = max_value * hide_fraction / 100.0
+            analysis_shown = analysis_result.loc[analysis_result > hide_threshold]
             uidata["hide_fraction"] = hide_fraction
             uidata["max_value"] = max_value
             uidata["analysis_shown"] = analysis_shown
             if not testmode:
                 self.visualize(uidata)
 
-        # Create item and add it to history 
+        # Create item and add it to history
         logging.info("Adding item to history")
         hname = datetime.now().strftime("%H:%M:%S") + " " + method
         hitem = QListWidgetItem(hname)
@@ -472,10 +480,6 @@ class AlloVizWindow(QMainWindow):
 
         self._showMessage("Ready")
         self.ui.progressBar.setValue(0)
-
-  
-
-        
 
 
 if __name__ == "__main__":
