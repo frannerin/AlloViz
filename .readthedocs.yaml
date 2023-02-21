@@ -6,6 +6,9 @@ build:
   os: ubuntu-22.04
   tools:
     python: "3.10"
+  jobs:
+    pre_install:
+      -  sed -i "s/dependencies = .*//g" pyproject.toml
 
 sphinx:
   fail_on_warning: false

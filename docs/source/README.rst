@@ -9,6 +9,10 @@ AlloViz
    :target: https://github.com/psf/black
    :alt: Code style
 
+.. image:: https://github.com/frannerin/AlloViz/actions/workflows/test_conda.yml/badge.svg
+   :target: https://github.com/frannerin/AlloViz/actions/workflows/test_conda.yml
+   :alt: Python Package using Conda
+
 A Python package to interactively compute, analyze and visualize protein
 allosteric communication (residue interaction) networks and
 delta-networks.
@@ -55,7 +59,7 @@ installed with conda.
 .. code:: bash
 
    git clone --recursive --shallow-submodules -j 9 https://github.com/frannerin/AlloViz
-   conda create AlloViz --file AlloViz/conda_explicit.txt
+   conda create -n AlloViz --file AlloViz/conda_explicit.txt
    conda activate AlloViz
 
 Then go to the package folder (``cd AlloViz``) and install the package,

@@ -35,13 +35,13 @@ def single_traj(test_path, path):
     
 
 pkgs = [ "MDTASK", "pytraj_CB", "dynetan",
-         "correlationplus_COM_LMI", 
+         "correlationplus_CA_LMI", 
          "correlationplus_Phi", "correlationplus_Phi", 
-         "correlationplus_Backbone_Dihs_Avg", "correlationplus_Backbone_Dihs_Max",
+         "correlationplus_Backbone_Dihs", #"correlationplus_Backbone_Dihs_Max",
          "CARDS_MI_Phi", #"AlloViz_Chi4",
          #"MDEntropy_Phi", "MDEntropy_AlphaAngle",
          "GetContacts", 
-         "PyInteraph2_Atomic_Contacts_Occurrence", "PyInteraph2_COM_Contacts_Corrected"]
+         "PyInteraph2_Atomic_Contacts_Occurrence", "PyInteraph2_COM_Contacts"]
 ######## MDEntropy-related and AlloViz_Chi4 can't be included in the regression tests because the data in the raw attribute is normalized in comparison to the saved .pq
 
     
