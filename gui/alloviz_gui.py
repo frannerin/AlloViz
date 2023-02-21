@@ -102,7 +102,7 @@ class AlloVizWindow(QMainWindow):
         # self.ui.statusbar.addWidget(QLabel("Prova"))
         self.ui.statusbar.showMessage("Ready")
         self.fillMethodsTree()
-        self.setupHistoryWidget()
+        self.setupHistoryActions()
         self.connectSignalsSlots()
 
     def fillMethodsTree(self):
@@ -151,12 +151,12 @@ class AlloVizWindow(QMainWindow):
         # for i in range(len(df.columns)):
         #    tree.resizeColumnToContents(i)
 
-    def setupHistoryWidget(self):
+    def setupHistoryActions(self):
         self.ui.historyWidget.addActions([
             self.ui.actionShow_Calculation_Parameters,
             self.ui.actionViz_Analysis_Results,
             self.ui.actionOpen_Folder,
-            self.ui.actionSave_As,
+            self.ui.actionExport_Table,
         ])
 
     def connectSignalsSlots(self):
@@ -167,28 +167,32 @@ class AlloVizWindow(QMainWindow):
         self.ui.runButton.clicked.connect(self.runAnalysis)
         self.ui.methodTree.itemSelectionChanged.connect(self._updateRunButtonState)
 
-        self.ui.actionShow_Calculation_Parameters.triggered.connect(self.acShowCalculationParameters)
-        self.ui.actionViz_Analysis_Results.triggered.connect(self.acVizAnalysisResults)
-        self.ui.actionOpen_Folder.triggered.connect(self.acOpenFolder)
-        self.ui.actionSave_As.triggered.connect(self.acSaveAs)
+        self.ui.actionShow_Calculation_Parameters.triggered.connect(self.historyShowCalculationParameters)
+        self.ui.actionViz_Analysis_Results.triggered.connect(self.historyVizAnalysisResults)
+        self.ui.actionOpen_Folder.triggered.connect(self.historyOpenFolder)
+        self.ui.actionExport_Table.triggered.connect(self.historySaveAs)
 
         # https://stackoverflow.com/questions/50104163/update-pyqt-gui-from-a-python-thread
         self.updateProgress.connect(self.ui.progressBar.setValue)
 
 
-    def acOpenFolder(self):
+    def historyOpenFolder(self):
         logging.info("TODO called")
 
-    def acSaveAs(self):
+    def historySaveAs(self):
         logging.info("TODO called")
 
-    def acShowCalculationParameters(self):
+    def historyShowCalculationParameters(self):
         QMessageBox.information(self,
             "Calculation Parameters",
             "TODO")
 
-    def acVizAnalysisResults(self):
-        logging.info("TODO called")
+    def historyVizAnalysisResults(self):
+        sl = self.ui.historyWidget.selectedItems()
+        if len(sl) != 1:
+            return
+        uidata = sl[0].data(QtCore.Qt.UserRole)
+        self.visualize(uidata)
 
 
     def _updateRunButtonState(self):
