@@ -53,17 +53,6 @@ def residueNumber(rn):
     rnn = rn.split(":")
     return rnn[1]
 
-""" def to_tcl_list(pylist):
-    tcl_list = "{"
-    for item in pylist:
-        if type(item) is list:
-            tcl_list += to_tcl_list(item)
-        else:
-            item = str(item).replace("{", "\\{").replace("}", "\\}").replace(" ", "\\ ")
-            tcl_list += str(item) + " "
-    tcl_list = tcl_list.strip() + "} "
-    return tcl_list
- """
 
 # TODO possibly move as inner class.
 class UiStep(object):
@@ -169,20 +158,36 @@ class AlloVizWindow(QMainWindow):
         self.ui.actionExport_Table.triggered.connect(self.historyExportTable)
 
     def historyOpenFolder(self):
-        logging.info("TODO called")
+        logging.info("historyOpenFolder called")
 
     def historyExportTable(self):
-        logging.info("TODO called")
+        if len( sl := self.ui.historyWidget.selectedItems()) != 1: return
+        uidata = sl[0].data(QtCore.Qt.UserRole)
+        name = QFileDialog.getSaveFileName(self, 'Export CSV File')
+        uidata["analysis_result"].to_csv(name)
+
 
     def historyShowCalculationParameters(self):
-        QMessageBox.information(self,
-            "Calculation Parameters",
-            "TODO")
+        if len( sl := self.ui.historyWidget.selectedItems()) != 1: return
+        uidata = sl[0].data(QtCore.Qt.UserRole)
+        txt=f"""
+        <p>The calculation used the following parameters:
+        <p>
+        <table>   <tbody>
+        <tr><td>Atom selection</td><td>{uidata["asel"]}</td></tr>
+        <tr><td>Method</td><td>{uidata["method"]}</td></tr>
+        <tr><td>Filter list</td><td>{uidata["flist"]}</td></tr>
+        <tr><td>Filter options</td><td>{uidata["fargs"]}</td></tr>
+        <tr><td>Elements</td><td>{uidata["elements"]}</td></tr>
+        <tr><td>Metrics</td><td>{uidata["metrics"]}</td></tr>
+        <tr><td>Hide fraction</td><td>{uidata["hide_fraction"]}</td></tr>
+        </tbody> </table>
+        """
+        QMessageBox.information(self, "Calculation Parameters", txt)
 
     def historyVizAnalysisResults(self):
-        sl = self.ui.historyWidget.selectedItems()
-        if len(sl) != 1:
-            return
+        logging.info("historyVizAnalysisResults called")
+        if len( sl := self.ui.historyWidget.selectedItems()) != 1: return
         uidata = sl[0].data(QtCore.Qt.UserRole)
         self.visualize(uidata)
 
@@ -436,7 +441,7 @@ class AlloVizWindow(QMainWindow):
 
         with UiStep("Transferring data to VMD", self):
             hide_fraction = self._getUiVisualizeOptions()
-            hide_threshold = analysis_result.max() * hide_fraction
+            hide_threshold = analysis_result.max() * hide_fraction/100.0
             analysis_shown = analysis_result.loc[analysis_result>hide_threshold]
             uidata["hide_fraction"] = hide_fraction
             uidata["analysis_shown"] = analysis_shown
