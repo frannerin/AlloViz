@@ -1,7 +1,7 @@
 import AlloViz
 
 pdbfile = "117/11159_dyn_117.pdb"
-dcdfile = "117/11156_trj_117.dcd"
+dcdfile = "117/11156_trj_117_r.dcd"
 cache_path="deleteme"
 
 if __name__ == "__main__":
@@ -22,8 +22,8 @@ if __name__ == "__main__":
     el="edges"
     # el = "nodes"
 
-    met="btw"
-    # met = "raw"
+    # met="btw"
+    met = "raw"
 
     prot.analyze(method, elements=el, metrics=met) 
 

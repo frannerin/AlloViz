@@ -135,7 +135,7 @@ namespace eval alloviz {
         set mn [mol new]
         mol rename $mn AlloViz
 
-        set rl [lsort -unique [concat $r1l $r2l]]
+        set rl [lsort -unique -integer [concat $r1l $r2l]]
         set coors [dict create]
         foreach r $rl {
             set as [atomselect $mtop "($asel) and resid $r and name CA"]
@@ -144,13 +144,34 @@ namespace eval alloviz {
             $as delete
         }
 
+        set rvls [lsort -real $rvl]
+        set vmin [lindex $rvls 0]
+        set vmax [lindex $rvls end]
+        set vrange [expr $vmax-$vmin]
+
+        # colorscalebar.tcl
+        set mincolorid [colorinfo num]
+        set maxcolorid [expr [colorinfo max] - 1]
+        set numscaleids [expr $maxcolorid - $mincolorid]
+
+        set minthickness 0.0
+        set maxthickness 1.0
+
         delete_current_viz
-        graphics $mn color white
-        graphics $mn materials off
+        # graphics $mn materials off
+        # graphics $mn material Transparent
         foreach r1 $r1l r2 $r2l rv $rvl {
             #graphics $mn cylinder $x1 $x2 radius 1 filled yes
-            graphics $mn line {*}[dict get $coors $r1] {*}[dict get $coors $r2] width 2
+            if {$rv == 0.0} continue
+            set rv_norm [expr ($rv-$vmin)/$vrange]
+            set colid [expr int($rv_norm*$numscaleids+$mincolorid)]
+            set thk [expr $rv_norm*($maxthickness-$minthickness)+$minthickness]
+            graphics $mn color $colid
+            # graphics $mn line {*}[dict get $coors $r1] {*}[dict get $coors $r2] width 1
+            graphics $mn cylinder {*}[dict get $coors $r1] {*}[dict get $coors $r2] radius $thk filled yes
         }
+        mol top $mtop
+        display resetview ;# Why is it needed?
 
         set current_viz "mol $mn"
     }

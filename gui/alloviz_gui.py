@@ -82,7 +82,9 @@ class UiStep(object):
     def __exit__(self, exc_type, exc_value, traceback):
         logging.info("...done")
         if exc_type is not None:
-            logging.info("(with exception)")
+            logging.error("...with exception")
+            from traceback import print_tb
+            print_tb(sys.exc_info()[2])
             self.obj.critical(self.msg, exc_value)
             return True
 
@@ -269,6 +271,8 @@ class AlloVizWindow(QMainWindow):
 
     def visualizeEdges(self, asel, data):
         # Assumes that data is a Series
+        data=data.sort_values()
+        data.to_csv("/tmp/debugme.csv")
         dif = data.index.to_frame()
         r1l = [residueNumber(x) for x in dif[0]]
         r2l = [residueNumber(x) for x in dif[1]]
@@ -317,6 +321,10 @@ class AlloVizWindow(QMainWindow):
             logging.error("No radio button selected, should not happen")
         logging.info(f"Analysis: {el}, {met}")
         return el, met
+
+    def _getUiVisualizeOptions(self):
+        hide_fraction=float(self.ui.edit_hide_fraction.text())
+        return hide_fraction
 
     def _increaseProgressBar(self):
         pbar = self.ui.progressBar
@@ -391,16 +399,11 @@ class AlloVizWindow(QMainWindow):
             uidata["elements"] = el
             uidata["metrics"] = met
             if met == "raw":
-                analysis_result = filter_result._filtdata
+                analysis_result = filter_result._filtdata.weight
             else:
                 _ = getattr(filter_result, el)
                 analysis_result = getattr(_, met)
-
-        # Create item and add it to history 
-        logging.info("Adding item to history")
-        hitem = QListWidgetItem(method)
-        hitem.setData(QtCore.Qt.UserRole, uidata)
-        ht.addItem(hitem)
+            uidata["analysis_result"] = analysis_result
 
         if testmode:
             mybreakpoint()
@@ -412,12 +415,23 @@ class AlloVizWindow(QMainWindow):
                 raise Exception("Residue numbers are not unique in the selection.")
 
         with UiStep("Transferring data to VMD", self):
+            hide_fraction = self._getUiVisualizeOptions()
+            hide_threshold = analysis_result.max() * hide_fraction
+            analysis_shown = analysis_result.loc[analysis_result>hide_threshold]
+            uidata["hide_fraction"] = hide_fraction
+            uidata["analysis_shown"] = analysis_shown
             if el=="nodes":
-                self.visualizeNodes(asel, analysis_result)
+                self.visualizeNodes(asel, analysis_shown)
             elif el=="edges":
-                self.visualizeEdges(asel, analysis_result)
+                self.visualizeEdges(asel, analysis_shown)
             else:
                 logging.error("Should not happen")
+
+        # Create item and add it to history 
+        logging.info("Adding item to history")
+        hitem = QListWidgetItem(method)
+        hitem.setData(QtCore.Qt.UserRole, uidata)
+        ht.addItem(hitem)
 
         self._showMessage("Ready")
         self.ui.progressBar.setValue(0)
