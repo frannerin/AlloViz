@@ -142,32 +142,46 @@ class AlloVizWindow(QMainWindow):
 
     def setupHistoryActions(self):
         # Or https://learndataanalysis.org/source-code-how-to-implement-context-menu-to-a-qlistwidget-pyqt5-tutorial/
-        self.ui.actionShow_Calculation_Parameters = QAction("Show Calculation Parameters...")
-        self.ui.actionViz_Analysis_Results = QAction("Visualize Analysis Results...")
-        self.ui.actionOpen_Folder = QAction("Open Folder...")
-        self.ui.actionExport_Table = QAction("Export Table...")
+        self.actShowParameters = QAction("Show Calculation Parameters...")
+        self.actVizResults = QAction("Visualize Analysis Results...")
+        self.actExportTable = QAction("Export as CSV Table...")
+        self.actBrowseCache = QAction("Browse Cache Directory...")
         self.ui.historyWidget.addActions([
-            self.ui.actionShow_Calculation_Parameters,
-            self.ui.actionViz_Analysis_Results,
-            self.ui.actionOpen_Folder,
-            self.ui.actionExport_Table
+            self.actShowParameters,
+            self.actVizResults,
+            self.actExportTable,
+            self.actBrowseCache,
         ])
-        self.ui.actionShow_Calculation_Parameters.triggered.connect(self.historyShowCalculationParameters)
-        self.ui.actionViz_Analysis_Results.triggered.connect(self.historyVizAnalysisResults)
-        self.ui.actionOpen_Folder.triggered.connect(self.historyOpenFolder)
-        self.ui.actionExport_Table.triggered.connect(self.historyExportTable)
+        self.actShowParameters.triggered.connect(self.historyShowParameters)
+        self.actVizResults.triggered.connect(self.historyVizResults)
+        self.actExportTable.triggered.connect(self.historyExportTable)
+        self.actBrowseCache.triggered.connect(self.historyBrowseCacheFolder)
 
-    def historyOpenFolder(self):
-        logging.info("historyOpenFolder called")
+    def historyBrowseCacheFolder(self):
+        from PyQt5.QtCore import QUrl
+        from PyQt5.QtGui import QDesktopServices
+        if len( sl := self.ui.historyWidget.selectedItems()) != 1: return
+        uidata = sl[0].data(QtCore.Qt.UserRole)
+        url = QUrl.fromLocalFile(uidata["cache_path"])
+        QDesktopServices.openUrl(url)
+
 
     def historyExportTable(self):
         if len( sl := self.ui.historyWidget.selectedItems()) != 1: return
         uidata = sl[0].data(QtCore.Qt.UserRole)
-        name = QFileDialog.getSaveFileName(self, 'Export CSV File')
-        uidata["analysis_result"].to_csv(name)
+        save_name = QFileDialog.getSaveFileName(self, 
+            'Export CSV File',
+            "",
+            "CSV files (*.csv);;All Files (*)")
+        try:
+            uidata["analysis_result"].to_csv(save_name[0])
+        except Exception as e:
+            QMessageBox.critical(self,
+               "Error saving file", 
+               "Error saving file:<br>"+str(e))
 
 
-    def historyShowCalculationParameters(self):
+    def historyShowParameters(self):
         if len( sl := self.ui.historyWidget.selectedItems()) != 1: return
         uidata = sl[0].data(QtCore.Qt.UserRole)
         txt=f"""
@@ -180,12 +194,13 @@ class AlloVizWindow(QMainWindow):
         <tr><td>Filter options</td><td>{uidata["fargs"]}</td></tr>
         <tr><td>Elements</td><td>{uidata["elements"]}</td></tr>
         <tr><td>Metrics</td><td>{uidata["metrics"]}</td></tr>
-        <tr><td>Hide fraction</td><td>{uidata["hide_fraction"]}</td></tr>
+        <tr><td>Hide threshold %</td><td>{uidata["hide_fraction"]}</td></tr>
+        <tr><td>Hide threshold</td><td>{uidata["hide_threshold"]}</td></tr>
         </tbody> </table>
         """
         QMessageBox.information(self, "Calculation Parameters", txt)
 
-    def historyVizAnalysisResults(self):
+    def historyVizResults(self):
         logging.info("historyVizAnalysisResults called")
         if len( sl := self.ui.historyWidget.selectedItems()) != 1: return
         uidata = sl[0].data(QtCore.Qt.UserRole)
@@ -296,11 +311,10 @@ class AlloVizWindow(QMainWindow):
         rvl = data.values.tolist()
         self.doVMDcall("::alloviz::visualize_nodes", asel, rnl, rvl)
 
-
     def visualizeEdges(self, asel, data):
         # Assumes that data is a Series
         data=data.sort_values()
-        data.to_csv("/tmp/debugme.csv")
+        # data.to_csv("/tmp/debugme.csv")
         dif = data.index.to_frame()
         r1l = [residueNumber(x) for x in dif[0]]
         r2l = [residueNumber(x) for x in dif[1]]
@@ -397,6 +411,7 @@ class AlloVizWindow(QMainWindow):
         uidata={"pdbfile": pdbfile,
                 "psffile": psffile,
                 "dcdfile": dcdfile,
+                "cache_path": cache_path,
                 "asel": asel,
                 "method": method
         }
@@ -444,6 +459,7 @@ class AlloVizWindow(QMainWindow):
             hide_threshold = analysis_result.max() * hide_fraction/100.0
             analysis_shown = analysis_result.loc[analysis_result>hide_threshold]
             uidata["hide_fraction"] = hide_fraction
+            uidata["hide_threshold"] = hide_threshold
             uidata["analysis_shown"] = analysis_shown
             if not testmode:
                 self.visualize(uidata)
