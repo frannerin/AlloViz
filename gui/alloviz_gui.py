@@ -15,7 +15,8 @@ from PyQt5.QtGui import QDesktopServices
 # from PyQt5.uic import loadUi
 
 
-sys.path.append("gui")
+#sys.path.append("gui")
+sys.path.append(os.environ["ALLOVIZ_GUI_DIR"])
 
 # pyuic5 alloviz_mainwindow.ui >alloviz_mainwindow_ui.py
 from alloviz_mainwindow_ui import Ui_MainWindow

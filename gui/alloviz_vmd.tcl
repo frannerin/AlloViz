@@ -4,6 +4,7 @@
 
 set alloviz_gui_dir [file dirname [file normalize [info script]]]
 lappend auto_path $alloviz_gui_dir
+set ::env(ALLOVIZ_GUI_DIR) $alloviz_gui_dir
 
 
 package provide alloviz 1.0
@@ -29,8 +30,8 @@ namespace eval alloviz {
     
     proc alloviz_gui_start {} {
         global alloviz_gui_dir
-        puts "Starting AlloViz GUI Python component $alloviz_gui_dir/run.sh"
-        exec $alloviz_gui_dir/run.sh &
+        puts "Starting AlloViz GUI Python component $alloviz_gui_dir/run_standalone.sh"
+        exec $alloviz_gui_dir/run_standalone.sh &
     }
 
     proc alloviz_tk {} {
