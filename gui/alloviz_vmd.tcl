@@ -135,19 +135,23 @@ namespace eval alloviz {
         set mn [mol new]
         mol rename $mn AlloViz
 
-        delete_current_viz
-        foreach r1 $r1l r2 $r2l rv $rvl {
-            set as1 [atomselect $mtop "($asel) and resid $r1 and name CA"]
-            set as2 [atomselect $mtop "($asel) and resid $r2 and name CA"]
-            set x1 [$as1 get {x y z}]
-            set x2 [$as2 get {x y z}]
-            graphics $mn color white
-            #graphics $mn cylinder $x1 $x2 radius 1 filled yes
-            graphics $mn line $x1 $x2 width 2
-            $as1 delete
-            $as2 delete
+        set rl [lsort -unique [concat $r1l $r2l]]
+        set coors [dict create]
+        foreach r $rl {
+            set as [atomselect $mtop "($asel) and resid $r and name CA"]
+            set x [$as get {x y z}]
+            dict set coors $r $x
+            $as delete
         }
-       
+
+        delete_current_viz
+        graphics $mn color white
+        graphics $mn materials off
+        foreach r1 $r1l r2 $r2l rv $rvl {
+            #graphics $mn cylinder $x1 $x2 radius 1 filled yes
+            graphics $mn line {*}[dict get $coors $r1] {*}[dict get $coors $r2] width 2
+        }
+
         set current_viz "mol $mn"
     }
 
