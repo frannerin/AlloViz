@@ -89,6 +89,7 @@ class AlloVizWindow(QMainWindow):
         self.ui.setupUi(self)
         self.ui.progressBar.setRange(0, _total_progressbar_steps)
         # self.ui.statusbar.addWidget(QLabel("Prova"))
+        self.ui.btnDelta.setVisible(False)
         self.ui.statusbar.showMessage("Ready")
         self.fillMethodsTree()
         self.setupHistoryActions()
@@ -170,7 +171,7 @@ class AlloVizWindow(QMainWindow):
         if len( sl := self.ui.historyWidget.selectedItems()) != 1: return
         uidata = sl[0].data(QtCore.Qt.UserRole)
         save_name = QFileDialog.getSaveFileName(self, 
-            'Export CSV File',
+            'Export CSV File', 
             "",
             "CSV files (*.csv);;All Files (*)")
         try:
@@ -194,8 +195,8 @@ class AlloVizWindow(QMainWindow):
         <tr><td>Filter options</td><td>{uidata["fargs"]}</td></tr>
         <tr><td>Elements</td><td>{uidata["elements"]}</td></tr>
         <tr><td>Metrics</td><td>{uidata["metrics"]}</td></tr>
+        <tr><td>Max. value</td><td>{uidata["max_value"]:.4g}</td></tr>
         <tr><td>Hide threshold %</td><td>{uidata["hide_fraction"]}</td></tr>
-        <tr><td>Hide threshold</td><td>{uidata["hide_threshold"]}</td></tr>
         </tbody> </table>
         """
         QMessageBox.information(self, "Calculation Parameters", txt)
@@ -456,10 +457,11 @@ class AlloVizWindow(QMainWindow):
 
         with UiStep("Transferring data to VMD", self):
             hide_fraction = self._getUiVisualizeOptions()
-            hide_threshold = analysis_result.max() * hide_fraction/100.0
+            max_value = analysis_result.max()
+            hide_threshold = max_value * hide_fraction/100.0
             analysis_shown = analysis_result.loc[analysis_result>hide_threshold]
             uidata["hide_fraction"] = hide_fraction
-            uidata["hide_threshold"] = hide_threshold
+            uidata["max_value"] = max_value
             uidata["analysis_shown"] = analysis_shown
             if not testmode:
                 self.visualize(uidata)

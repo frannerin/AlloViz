@@ -287,7 +287,7 @@
           <item row="0" column="0">
            <widget class="QLabel" name="label_8">
             <property name="text">
-             <string>Only show values above</string>
+             <string>Only visualize values above</string>
             </property>
            </widget>
           </item>
@@ -351,12 +351,15 @@
         </widget>
        </item>
        <item>
-        <widget class="QPushButton" name="pushButton_7">
+        <widget class="QPushButton" name="btnDelta">
          <property name="enabled">
           <bool>false</bool>
          </property>
          <property name="text">
           <string>Compute Δ network</string>
+         </property>
+         <property name="flat">
+          <bool>false</bool>
          </property>
         </widget>
        </item>
