@@ -3,6 +3,8 @@ import pytest
 import AlloViz
 import multiprocess
 
+# IT DIDN'T WORK WHEN I TRIED TO USE __NEW__ IN ALLOVIZ.PROTEIN BUT NOW IT'D PROBABLY WORK
+
 
 pytestmark = pytest.mark.filterwarnings("ignore:::MDAnalysis", "ignore::DeprecationWarning", "ignore::PendingDeprecationWarning")
 
