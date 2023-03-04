@@ -44,6 +44,8 @@ dependencies:
 
   # jupyter and viz
   - nglview>=3.0
+  - ipywidgets<8
+
   #notebook # might be faster than installing the more complex jupyterlab
 
 

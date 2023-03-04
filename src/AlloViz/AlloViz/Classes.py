@@ -321,7 +321,7 @@ class Protein:
 
         # Names of the directories and files of the future pdb and trajectory(ies) of the residues' Center Of Mass
         compath = f"{self._datadir}/COM_trajs"
-        os.makedirs(compath, exist_ok=True)
+        # os.makedirs(compath, exist_ok=True)
         self._compdbf = f"{compath}/ca.pdb"
         self._comtrajs = {num: f"{compath}/{num}.xtc" for num in self._trajs}
         
@@ -331,7 +331,7 @@ class Protein:
             [
                 not os.path.isfile(f)
                 for f in list(self._trajs.values())
-                + list(self._comtrajs.values())
+                # + list(self._comtrajs.values())
                 + [self._pdbf]
             ]
         ):
