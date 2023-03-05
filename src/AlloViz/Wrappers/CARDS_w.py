@@ -125,11 +125,11 @@ class CARDS_{name}_{dih.capitalize()}(Base):
         
         
 for name in ("MI",  "Disorder", "Disorder_mediated", "Holistic"):
-    for approach in ["Avg", "Max"]:
-        exec(f'''
-class CARDS_{name}_Backbone_Dihs_{approach}(Combined_Dihs_{approach}):
+    # for approach in ["", "_Max"]:
+    exec(f'''
+class CARDS_{name}_Backbone_Dihs(Combined_Dihs_Avg):
     """CARDS network construction method's of the combination of the backbone
-    dihedrals' {name + " MIs" if name != "MI" else "MIs"} by {approach}
+    dihedrals' {name + " MIs" if name != "MI" else "MIs"} by averaging.
     """
     def __new__(cls, protein, d):
         new = super().__new__(cls, protein, d)
@@ -140,11 +140,11 @@ class CARDS_{name}_Backbone_Dihs_{approach}(Combined_Dihs_{approach}):
         
         
 for name in ("MI",  "Disorder", "Disorder_mediated", "Holistic"):
-    for approach in ["Avg", "Max"]:
-        exec(f'''
-class CARDS_{name}_Sidechain_Dihs_{approach}(Combined_Dihs_{approach}):
+    # for approach in ["", "_Max"]:
+    exec(f'''
+class CARDS_{name}_Sidechain_Dihs(Combined_Dihs_Avg):
     """CARDS network construction method's of the combination of the side-chain
-    dihedrals' {name + " MIs" if name != "MI" else "MIs"} by {approach}
+    dihedrals' {name + " MIs" if name != "MI" else "MIs"} by averaging.
     """
     def __new__(cls, protein, d):
         new = super().__new__(cls, protein, d)
@@ -156,11 +156,11 @@ class CARDS_{name}_Sidechain_Dihs_{approach}(Combined_Dihs_{approach}):
         
         
 for name in ("MI",  "Disorder", "Disorder_mediated", "Holistic"):
-    for approach in ["Avg", "Max"]:
-        exec(f'''
-class CARDS_{name}_Dihs_{approach}(Combined_Dihs_{approach}):
+    # for approach in ["", "_Max"]:
+    exec(f'''
+class CARDS_{name}_Dihs(Combined_Dihs_Avg):
     """CARDS network construction method's of the combination of all backbone and
-    side-chain dihedrals' {name + " MIs" if name != "MI" else "MIs"} by {approach}
+    side-chain dihedrals' {name + " MIs" if name != "MI" else "MIs"} by averaging.
     """
     def __new__(cls, protein, d):
         new = super().__new__(cls, protein, d)

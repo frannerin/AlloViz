@@ -5,13 +5,9 @@ AlloViz
     :target: https://alloviz.readthedocs.io/en/latest/?badge=latest
     :alt: Documentation Status
 
-.. image:: https://img.shields.io/badge/code%20style-black-000000.svg
-   :target: https://github.com/psf/black
-   :alt: Code style
-
 .. image:: https://github.com/frannerin/AlloViz/actions/workflows/test_conda.yml/badge.svg
    :target: https://github.com/frannerin/AlloViz/actions/workflows/test_conda.yml
-   :alt: Python Package using Conda
+   :alt: Test Python Package using Conda
 
 A Python package to interactively compute, analyze and visualize protein
 allosteric communication (residue interaction) networks and

@@ -165,26 +165,38 @@ html_sidebars = {
 }
 
 
+# These folders are copied to the documentation's HTML output
+html_static_path = ['_static']
 
-sys.path.insert(0, os.path.abspath('../..'))
-from AlloViz.AlloViz import info
+# These paths are either relative to html_static_path
+# or fully qualified paths (eg. https://...)
+html_css_files = [
+    'css/custom.css',
+]
 
-df = info.df
 
-# header = "Network construction methods\n============================\n\n.. raw:: html\n\n"
-firstlines = """
-Network construction methods
-============================
 
-.. raw:: html
 
-"""
+####### Just commented to avoid automatic html table generation
+# sys.path.insert(0, os.path.abspath('../..'))
+# from AlloViz.AlloViz import info
 
-with open("table.rst", "w") as f:
-	f.write(firstlines)
+# df = info.df
 
-	for line in df.to_html(header=False).replace(' valign="top"', '').split("\n"):
-		f.write(f"\t{line}\n")
+# # header = "Network construction methods\n============================\n\n.. raw:: html\n\n"
+# firstlines = """
+# Network construction methods
+# ============================
+
+# .. raw:: html
+
+# """
+
+# with open("table.rst", "w") as f:
+# 	f.write(firstlines)
+
+# 	for line in df.to_html(header=False).replace(' valign="top"', '').split("\n"):
+# 		f.write(f"\t{line}\n")
 
 # tabulated_table = ""
 # for line in df.to_html(header=False).replace(' valign="top"', '').split("\n"):

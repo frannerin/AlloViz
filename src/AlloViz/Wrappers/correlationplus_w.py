@@ -87,7 +87,7 @@ class correlationplus_Omega(correlationplus_Psi):
 
         
         
-class correlationplus_Backbone_Dihs_Avg(Combined_Dihs_Avg, correlationplus_CA_Pear):
+class correlationplus_Backbone_Dihs(Combined_Dihs_Avg, correlationplus_CA_Pear):
     """correlationplus' combination of the backbone dihedrals' Pearson's correlations by
     averaging
     """
