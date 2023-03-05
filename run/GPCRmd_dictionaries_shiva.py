@@ -20,20 +20,20 @@ with open(f"{running_dir}/compl_info.json", "r") as f:
 ac_options = {
     'ct' : {
         'cf' : ['gc', 'py2'],
-        'rc' : ['py2', 'py2c'],
+        'rc' : ['py2'],#, 'py2c'],
         'cs' : ['py2'],
     },
     
     'mc' : {
         'wr' : {'mi' : ['dt']},
-        'rc' : {
-            'mi' : ['g_c'],
-            'lmi': ['g_c', 'cp'],
-            'pr' : ['cp']
-        },
+        # 'rc' : {
+        #     'mi' : ['g_c'],
+        #     'lmi': ['g_c', 'cp'],
+        #     'pr' : ['cp']
+        # },
         'ac' : {
-            'mi' : ['g_c'],
-            'lmi': ['g_c', 'cp'],
+            # 'mi' : ['g_c'],
+            'lmi': ['cp'],#, 'g_c'],
             'pr' : ['cp', 'pt', 'mdt']
         },
         'bc' : {'pr' : ['pt']}
@@ -43,31 +43,44 @@ ac_options = {
         'bb' : {
             'ph' : {
                 'pr' : ['cp'],
-                'mi' : ['ad', 'mde']    },
+                'mi' : ['ad', 'mde', 'cds'],
+                'hmi' : ['cds'], 'pdmi' : ['cds'], 'dmmi' : ['cds']
+                    },
             'ps' : {
                 'pr' : ['cp'],
-                'mi' : ['ad', 'mde']    },
+                'mi' : ['ad', 'mde', 'cds'],
+                'hmi' : ['cds'], 'pdmi' : ['cds'], 'dmmi' : ['cds']
+                    },
             # 'om' : {
             #     'pr' : ['cp'],
             #     'mi' : ['ad']    },
             'bba' : {
                 'pr' : ['cp'],
-                'mi' : ['ad', 'mde']    },
-            'bbm' : {
-                'pr' : ['cp'],
-                'mi' : ['ad']    },
+                'mi' : ['ad', 'mde', 'cds'],
+                'hmi' : ['cds'], 'pdmi' : ['cds'], 'dmmi' : ['cds']
+                    },
+            # 'bbm' : {
+            #     'pr' : ['cp'],
+            #     'mi' : ['ad']    },
             'ap' : {'mi' : ['mde']} },
         'sc' : {
-            'ch1' : {'mi' : ['ad']},
-            'ch2' : {'mi' : ['ad']},
-            'ch3' : {'mi' : ['ad']},
-            'ch4' : {'mi' : ['ad']},
+            'ch1' : {'mi' : ['ad', 'cds'],
+                     'hmi' : ['cds'], 'pdmi' : ['cds'], 'dmmi' : ['cds']},
+            'ch2' : {'mi' : ['ad', 'cds'],
+                     'hmi' : ['cds'], 'pdmi' : ['cds'], 'dmmi' : ['cds']},
+            'ch3' : {'mi' : ['ad', 'cds'],
+                     'hmi' : ['cds'], 'pdmi' : ['cds'], 'dmmi' : ['cds']},
+            'ch4' : {'mi' : ['ad', 'cds'],
+                     'hmi' : ['cds'], 'pdmi' : ['cds'], 'dmmi' : ['cds']},
             #'ch5' : {'mi' : ['ad']},
-            'sca' : {'mi' : ['ad']},
-            'scm' : {'mi' : ['ad']}     },
+            'sca' : {'mi' : ['ad', 'cds'],
+                     'hmi' : ['cds'], 'pdmi' : ['cds'], 'dmmi' : ['cds']}
+                }
+            # 'scm' : {'mi' : ['ad']}     },
         'all' : {
-            'alla' : {'mi' : ['ad']},
-            'allm' : {'mi' : ['ad']}    },
+            'alla' : {'mi' : ['ad', 'cds'],
+                     'hmi' : ['cds'], 'pdmi' : ['cds'], 'dmmi' : ['cds']} }
+            # 'allm' : {'mi' : ['ad']}    },
     },
     
     'en' : ['py2']
@@ -84,7 +97,7 @@ ac_options_codes = {
     'rc' : 'Residue COM',
     'lmi' : 'Linear Mutual Information (LMI)',
     'pr' : 'Pearson',
-    'g_c' : 'g_correlation',
+    # 'g_c' : 'g_correlation',
     'cp' : 'correlationplus',
     'pt' : 'pytraj',
     'mdt': 'MD-TASK',
@@ -102,24 +115,29 @@ ac_options_codes = {
     'mde' : 'MDEntropy',
     'ap' : 'Alpha angle',
     
+    'cds' : 'CARDS',
+    'hmi' : 'Holistic MI',
+    'pdmi' : 'Pure-disorder MI',
+    'dmmi' : 'Disorder-mediated MI',
+    
     'bb' : 'Backbone dihedrals',
-    'bba' : 'All backbone dihedrals (average)',
-    'bbm' : 'All backbone dihedrals (max. value)',
+    'bba' : 'All backbone dihedrals', # (average)',
+    # 'bbm' : 'All backbone dihedrals (max. value)',
     'sc' : 'Side-chain dihedrals',
     'ch1' : 'Chi1',
     'ch2' : 'Chi2',
     'ch3' : 'Chi3',
     'ch4' : 'Chi4',
     #'ch5' : 'Chi5',
-    'sca' : 'All side-chain dihedrals (average)',
-    'scm' : 'All side-chain dihedrals (max. value)',
-    'alla' : 'All dihedrals (average)',
-    'allm' : 'All dihedrals (max. value)',
+    'sca' : 'All side-chain dihedrals', # (average)',
+    # 'scm' : 'All side-chain dihedrals (max. value)',
+    'alla' : 'All dihedrals',# (average)',
+    # 'allm' : 'All dihedrals (max. value)',
     
-    'ct' :  'Contacts',
+    'ct' : 'Contacts',
     'cf' : 'Contact frequency',
     'cs' : 'Contact strength',
-    'py2c' : 'PyInteraph2 (with Rg correction)',
+    # 'py2c' : 'PyInteraph2 (with Rg correction)',
     
     
     # 'wh' : 'Whole', ######

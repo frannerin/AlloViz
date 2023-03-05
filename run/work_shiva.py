@@ -124,13 +124,13 @@ abrvs['LMI'] = abrvs['Linear Mutual Information (LMI)']
 abrvs["Pearson's"] = abrvs['Pearson']
 abrvs["Carbon \u03B1"] = abrvs['Alpha-carbon']
 abrvs["Carbon \u03B2"] = abrvs['Beta-carbon']
-abrvs["Residue COM contacts"] = abrvs['Residue COM']
+# abrvs["Residue COM contacts"] = abrvs['Residue COM']
 # abrvs["Backbone dihedrals"] = abrvs['All dihedrals']
 # abrvs["Alpha angle"] = abrvs['Alpha']
 abrvs["Atoms' displacements"] = abrvs["Atoms' movement correlation"]
 abrvs["Dihedral angles"] = abrvs["Dihedrals' movement correlation"]
-abrvs["All backbone dihedrals (Phi and psi) (average)"] = abrvs["All backbone dihedrals (average)"]
-abrvs["All backbone dihedrals (Phi and psi) (max. value)"] = abrvs["All backbone dihedrals (max. value)"]
+abrvs["All backbone dihedrals (Phi and psi)"] = abrvs["All backbone dihedrals"]
+# abrvs["All backbone dihedrals (Phi and psi) (max. value)"] = abrvs["All backbone dihedrals (max. value)"]
 
 w = AlloViz.AlloViz.info.wrappers
 
@@ -151,15 +151,13 @@ def get_csv_name(pkg, filterby):
         order = [0,3,2,1]
             
     elif value[0] == "Dihedral angles":
-        if pkg.split("_", 1)[-1] in ["Phi", "Psi", "Omega", "AlphaAngle",
-                                     "Backbone_Dihs_Avg", "Backbone_Dihs_Max",
-                                     "Dihs"]:
+        if any([i in pkg for i in ["Phi", "Psi", "AlphaAngle", "Backbone_Dihs"]]): #"Omega",
             value.insert(4, "Backbone dihedrals")
             
         elif "Chi" in pkg or "Sidechain" in pkg:
             value.insert(4, "Side-chain dihedrals")
             
-        elif "AlloViz_Dihs" in pkg:
+        elif "AlloViz_Dihs" in pkg or ("CARDS" in pkg and "_MI_Dihs" in pkg):
             value.insert(4, "All dihedrals")
             
         order = [0,4,3,2,1]
