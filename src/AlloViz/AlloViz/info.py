@@ -137,9 +137,9 @@ wrappers = {
     
     "GetContacts": ("Contacts", "GetContacts", "None", "Contacts occurrence"),
     
-    "PyInteraph2_Atomic_Contacts_Occurrence": pyinteraphi + ("Atomic contacts frequency",),
-    "PyInteraph2_Atomic_Contacts_Strength": pyinteraphi + ("Atomic contacts strength",),
     "PyInteraph2_Contacts": pyinteraphi + ("Contacts occurrence",),
+    "PyInteraph2_Atomic_Contacts_Occurrence": pyinteraphi + ("Atomic contacts occurrence",),
+    "PyInteraph2_Atomic_Contacts_Strength": pyinteraphi + ("Atomic contacts strength",),
     # "PyInteraph2_Contacts_Corrected": ("Contacts", "PyInteraph2 (with Rg correction)", "None", "Contacts occurrence"),
     # it would be better to use the Rg corrected version
 
