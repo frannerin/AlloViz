@@ -36,14 +36,14 @@ from .AlloViz_w import AlloViz_Dihs#, AlloViz_Dihs_Max
 
 
 from .correlationplus_w import correlationplus_CA_Pear, correlationplus_CA_LMI
-from .correlationplus_w import correlationplus_COM_Pear, correlationplus_COM_LMI
+#from .correlationplus_w import correlationplus_COM_Pear, correlationplus_COM_LMI
 
 from .correlationplus_w import correlationplus_Phi, correlationplus_Psi, correlationplus_Omega
 from .correlationplus_w import correlationplus_Backbone_Dihs#_Avg, correlationplus_Backbone_Dihs_Max
 
 
 
-from .PyInteraph2_w import PyInteraph2_COM_Contacts#, PyInteraph2_COM_Contacts_Corrected # would be better to used the corrected as default
+from .PyInteraph2_w import PyInteraph2_Contacts#, PyInteraph2_Contacts_Corrected # would be better to used the corrected as default
 from .PyInteraph2_w import PyInteraph2_Atomic_Contacts_Strength, PyInteraph2_Atomic_Contacts_Occurrence
 from .PyInteraph2_w import PyInteraph2_Energy
 
