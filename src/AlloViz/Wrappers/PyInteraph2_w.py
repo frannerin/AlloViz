@@ -36,7 +36,7 @@ class PyInteraph2_Base(Base):
     
     
     
-class PyInteraph2_COM_Contacts(PyInteraph2_Base):
+class PyInteraph2_Contacts(PyInteraph2_Base):
     """PyInteraph2's side-chain contact frequencies
     
     Contact frequencies based on the fulfillment of a distance threshold (5 angstroms)
@@ -65,7 +65,7 @@ class PyInteraph2_COM_Contacts(PyInteraph2_Base):
     
     
     
-class PyInteraph2_COM_Contacts_Corrected(PyInteraph2_COM_Contacts):
+class PyInteraph2_Contacts_Corrected(PyInteraph2_Contacts):
     """PyInteraph2's corrected side-chain contact frequencies
     
     Contact frequencies based on the fulfillment of a distance threshold requirement
@@ -96,7 +96,7 @@ class PyInteraph2_Atomic_Contacts_Strength(PyInteraph2_Base):
         return new
     
     
-class PyInteraph2_Atomic_Contacts_Occurrence(PyInteraph2_COM_Contacts):
+class PyInteraph2_Atomic_Contacts_Occurrence(PyInteraph2_Contacts):
     """PyInteraph2's atomic contacts occurrence
     
      Atom pair distance-based residue pairs' contacts occurrence/"persistence"/frequency.

@@ -11,7 +11,7 @@ def rsync(cmd, pw_file=None):
     
     with open(pw_file, "r") as pw:
         child = pexpect.spawn(f'bash -c "{cmd}"', encoding='utf-8')
-        print(child)
+        # print(child)
         option = child.expect([".* password:",".*Are you sure you want to continue connecting.*"])
         if option == 1:
             child.sendline("yes")

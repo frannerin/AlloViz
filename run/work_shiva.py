@@ -109,6 +109,19 @@ dyn.analyze(pkgs="all", filterings="all", elements="edges", metrics="all", norma
 # dyn.analyze(pkgs="pytraj_CA", filterings="Spatially_distant", elements="edges", metrics="all", normalize=True, cores=int(cores))
 print('# Done.\n\n')
 
+
+print('### Preparations to change AlloViz standard 3-letter residue codes to the original PDB ones ###\n')
+# Added to be able to map AlloViz-standardized 3-letter residue names back to the original GPCRmd PDB resnames
+from MDAnalysis import Universe
+from Bio.SeqUtils import seq1, seq3
+process = lambda name: seq3(seq1(name, custom_map=dyn._standard_resdict)).upper()
+# df.index = df.index.map(lambda idx: tuple(":".join([chain, process(name), num]) for res in idx for chain, name, num in [res.split(":")]))
+# Mapper to transform AlloViz-standardized 3-letter residue names back to the original GPCRmd PDB resnames for saving
+original_resmap = {f"{aa.atoms[0].chainID}:{process(aa.resname)}:{aa.resid}": f"{aa.atoms[0].chainID}:{aa.resname}:{aa.resid}" \
+                         for aa in Universe(dynd['struc_fname']).select_atoms(dyn._protein_sel).residues}
+
+
+
 print('### Reorganizing outfiles ###\n')
 shutil.move(f"{dynid}.times", f"{running_dir}/slurm_files/{dynid}/{dynid}.times")
 for file in [f for f in os.listdir() if os.path.isfile(f)]:
@@ -171,14 +184,6 @@ def get_csv_name(pkg, filterby):
     return name + "_" + abrvs[filterby]
 
 
-# Added to be able to map AlloViz-standardized 3-letter residue names back to the original GPCRmd PDB resnames
-from MDAnalysis import Universe
-from Bio.SeqUtils import seq1, seq3
-process = lambda name: seq3(seq1(name, custom_map=dyn._standard_resdict)).upper()
-df.index = df.index.map(lambda idx: tuple(":".join([chain, process(name), num]) for res in idx for chain, name, num in [res.split(":")]))
-original_resmap = {f"{aa.atoms[0].chainID}:{process(aa.resname)}:{aa.resid}": f"{aa.atoms[0].chainID}:{aa.resname}:{aa.resid}" \
-                         for aa in Universe(dyn.pdb).select_atoms(dyn._protein_sel).residues}
-
 
 
 get_gen_num = lambda res: mapper[res] if res in mapper else "-"
@@ -211,8 +216,8 @@ for pkg in [pkg for pkg in dyn.__dict__ if pkg in w]:
 
     
 print('### Removing files from cluster ###\n')   
-rsync(f'rsync -z --remove-source-files ./* ori.prib.upf.edu:/protwis/sites/files/Precomputed/allosteric_com/{dynid}/')
-rsync(f'rsync -zr --remove-source-files data/ ori.prib.upf.edu:/protwis/sites/files/Precomputed/allosteric_com/data/{dynid}/')
+rsync(f'rsync -z ./* ori.prib.upf.edu:/protwis/sites/files/Precomputed/allosteric_com/{dynid}/') # --remove-source-files
+rsync(f'rsync -zr data/ ori.prib.upf.edu:/protwis/sites/files/Precomputed/allosteric_com/data/{dynid}/') # --remove-source-files
 
 print('### Writting completion.times ###\n')
 with open(f"{running_dir}/completion.times", "a") as f:

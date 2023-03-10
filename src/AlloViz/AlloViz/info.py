@@ -133,14 +133,14 @@ wrappers = {
     "MDEntropy_Psi": ("Dihedral angles",) + MDEntropyi + ("Psi",),
     "MDEntropy_Backbone_Dihs": ("Dihedral angles",) + MDEntropyi + (Dihs,),
     "MDEntropy_AlphaAngle": ("Dihedral angles",) + MDEntropyi + ("Alpha angle",),
-#     "MDEntropy_Contacts": ("Contacts",) + MDEntropyi + ("Contact frequency",),
+#     "MDEntropy_Contacts": ("Contacts",) + MDEntropyi + ("Contacts occurrence",),
     
-    "GetContacts": ("Contacts", "GetContacts", "None", "Contact frequency"),
+    "GetContacts": ("Contacts", "GetContacts", "None", "Contacts occurrence"),
     
-    "PyInteraph2_Atomic_Contacts_Occurrence": pyinteraphi + ("Contact frequency",),
-    "PyInteraph2_Atomic_Contacts_Strength": pyinteraphi + ("Contact strength",),
-    "PyInteraph2_COM_Contacts": pyinteraphi + ("Residue COM contacts",),
-    # "PyInteraph2_COM_Contacts_Corrected": ("Contacts", "PyInteraph2 (with Rg correction)", "None", "Residue COM contacts"),
+    "PyInteraph2_Atomic_Contacts_Occurrence": pyinteraphi + ("Atomic contacts frequency",),
+    "PyInteraph2_Atomic_Contacts_Strength": pyinteraphi + ("Atomic contacts strength",),
+    "PyInteraph2_Contacts": pyinteraphi + ("Contacts occurrence",),
+    # "PyInteraph2_Contacts_Corrected": ("Contacts", "PyInteraph2 (with Rg correction)", "None", "Contacts occurrence"),
     # it would be better to use the Rg corrected version
 
     "PyInteraph2_Energy": ("Interaction energy", "PyInteraph2", "None", whole),

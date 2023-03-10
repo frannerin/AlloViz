@@ -75,7 +75,7 @@ ac_options = {
             #'ch5' : {'mi' : ['ad']},
             'sca' : {'mi' : ['ad', 'cds'],
                      'hmi' : ['cds'], 'pdmi' : ['cds'], 'dmmi' : ['cds']}
-                }
+                },
             # 'scm' : {'mi' : ['ad']}     },
         'all' : {
             'alla' : {'mi' : ['ad', 'cds'],
