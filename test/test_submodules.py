@@ -41,7 +41,7 @@ pkgs = [ "MDTASK", "pytraj_CB", "dynetan",
          "CARDS_MI_Phi", #"AlloViz_Chi4",
          #"MDEntropy_Phi", "MDEntropy_AlphaAngle",
          "GetContacts", 
-         "PyInteraph2_Atomic_Contacts_Occurrence", "PyInteraph2_COM_Contacts"]
+         "PyInteraph2_Atomic_Contacts_Occurrence", "PyInteraph2_Contacts"]
 ######## MDEntropy-related and AlloViz_Chi4 can't be included in the regression tests because the data in the raw attribute is normalized in comparison to the saved .pq
 
     
