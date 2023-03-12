@@ -82,6 +82,9 @@ class GetContacts(Multicore):
                              index_col = (0, 1), names = [f"{xtc}"])
         # df.index = df.index.map(lambda idx: tuple(sorted([res.split(":", 1)[-1] for res in idx], key = lambda res: int(res.split(":")[-1]))))
         
+        # Filter out rows that contain contacts with the ligand; ligand resid won't be in the Protein's "protein" attribute
+        df = df[[all(int(res.split(":")[-1]) in self._d["protein"].residues.resids for res in ix) for ix in df.index]]
+        
         # Added to process residue 3-letter codes to change them from the ones in GPCRmd to the standard form that the files used by AlloViz have
         from Bio.SeqUtils import seq1, seq3
         process = lambda name: seq3(seq1(name, custom_map=self._d["_standard_resdict"])).upper()

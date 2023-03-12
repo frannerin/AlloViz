@@ -20,7 +20,8 @@ with open(f"{running_dir}/compl_info.json", "r") as f:
 ac_options = {
     'ct' : {
         'cf' : ['gc', 'py2'],
-        'rc' : ['py2'],#, 'py2c'],
+        'acf' : ['py2'],
+        #'rc' : ['py2'],#, 'py2c'],
         'cs' : ['py2'],
     },
     
@@ -135,8 +136,9 @@ ac_options_codes = {
     # 'allm' : 'All dihedrals (max. value)',
     
     'ct' : 'Contacts',
-    'cf' : 'Contact frequency',
-    'cs' : 'Contact strength',
+    'cf' : 'Contacts occurrence',
+    'cs' : 'Atomic contacts strength',
+    'acf' : 'Atomic contacts occurrence',
     # 'py2c' : 'PyInteraph2 (with Rg correction)',
     
     

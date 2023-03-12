@@ -119,6 +119,8 @@ process = lambda name: seq3(seq1(name, custom_map=dyn._standard_resdict)).upper(
 # Mapper to transform AlloViz-standardized 3-letter residue names back to the original GPCRmd PDB resnames for saving
 original_resmap = {f"{aa.atoms[0].chainID}:{process(aa.resname)}:{aa.resid}": f"{aa.atoms[0].chainID}:{aa.resname}:{aa.resid}" \
                          for aa in Universe(dynd['struc_fname']).select_atoms(dyn._protein_sel).residues}
+print(dynd['struc_fname'], dyn._protein_sel, len(original_resmap))
+print(original_resmap)
 
 
 
@@ -204,7 +206,7 @@ for pkg in [pkg for pkg in dyn.__dict__ if pkg in w]:
             
             # Change the standardized 3-letter residue names back to the original GPCRmd PDB resnames
             df.index = df.index.map(lambda idx: tuple(original_resmap[ix] for ix in idx))
-            
+
             # Append the saved generic numbers to the de-standardized index
             df.set_index(gen_num_ix, append=True, inplace=True)
 
@@ -216,8 +218,8 @@ for pkg in [pkg for pkg in dyn.__dict__ if pkg in w]:
 
     
 print('### Removing files from cluster ###\n')   
-rsync(f'rsync -z ./* ori.prib.upf.edu:/protwis/sites/files/Precomputed/allosteric_com/{dynid}/') # --remove-source-files
-rsync(f'rsync -zr data/ ori.prib.upf.edu:/protwis/sites/files/Precomputed/allosteric_com/data/{dynid}/') # --remove-source-files
+rsync(f'rsync -z --remove-source-files ./* ori.prib.upf.edu:/protwis/sites/files/Precomputed/allosteric_com/{dynid}/') # --remove-source-files
+rsync(f'rsync -zr --remove-source-files data/ ori.prib.upf.edu:/protwis/sites/files/Precomputed/allosteric_com/data/{dynid}/') # --remove-source-files
 
 print('### Writting completion.times ###\n')
 with open(f"{running_dir}/completion.times", "a") as f:

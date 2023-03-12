@@ -21,8 +21,8 @@ if not os.path.isfile(completion_times):
 
 
 # Space-separated list, as a single string, of the dynids to run
-dyns = "10".split()
-dyns = " ".join([f"dyn{dynid}" for dynid in dyns]).split()
+dyns = "9".split(" ")
+dyns = " ".join([f"dyn{dynid}" for dynid in dyns]).split(" ")
 # print('Computing dynID:', dyns)
 
 ### HYDRA CLUSTER
@@ -41,8 +41,8 @@ dyns = " ".join([f"dyn{dynid}" for dynid in dyns]).split()
 
 ## 'short' queue
 partition = "short"
-nodes = set("node02 node08 node16".split())
-use = set(["node02"]) 
+nodes = set("node02 node08 node16".split(" "))
+use = set("node02 node08".split(" ")) 
 
 ## 'normal' queue
 # partition = "normal"
