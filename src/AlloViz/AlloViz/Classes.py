@@ -512,10 +512,10 @@ class Protein:
                 pkg = comb.split("_")[0]
                 if pkg == "CARDS":
                     if "Sidechain" in comb or "Backbone" in comb:
-                        pkg = comb.rsplit("_", 3)[0]
-                    else:
                         pkg = comb.rsplit("_", 2)[0]
-                dihs = bb if "Backbone" in comb else sc if "Sidechain" in comb else bb if "MDEntropy" in comb else bb+sc
+                    else:
+                        pkg = comb.rsplit("_", 1)[0]
+                dihs = bb if "Backbone" in comb else sc if "Sidechain" in comb else bb+sc
             pkgs += [f"{pkg}_{dih}" for dih in dihs]
 
         # Objects from the classes in the Wrappers module need to be passed a dictionary "d" containing all the attributes of the source Protein object and the passed kwargs
