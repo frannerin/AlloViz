@@ -516,7 +516,7 @@ class Protein:
                     else:
                         pkg = comb.rsplit("_", 1)[0]
                 dihs = bb if "Backbone" in comb else sc if "Sidechain" in comb else bb+sc
-            pkgs += [f"{pkg}_{dih}" for dih in dihs]
+                pkgs += [f"{pkg}_{dih}" for dih in dihs]
 
         # Objects from the classes in the Wrappers module need to be passed a dictionary "d" containing all the attributes of the source Protein object and the passed kwargs
         d = self.__dict__.copy()
@@ -533,8 +533,10 @@ class Protein:
             
         if any(["CARDS" in pkg for pkg in pkgs]):
             Wrappers.CARDS_w.CARDS(self, d)
+        print("cards calc has finished")
 
         for pkg in set(pkgs) - set(combined_dihs):
+            print(pkg)
             # Establish the corresponding Wrappers' class
             pkgclass = eval(f"Wrappers.{utils.pkgname(pkg)}")
 

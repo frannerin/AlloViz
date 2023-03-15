@@ -7,7 +7,7 @@ of the disorder), and also their combinations.
 
 """
 
-import pandas, os
+import pandas, os, time
 import numpy as np
 
 from .Base import lazy_import, Base, Multicore, Combined_Dihs_Avg, Combined_Dihs_Max
@@ -36,13 +36,25 @@ class CARDS(Multicore):
         
         return new
     
+    
+    def __init__(self, *args):
+        super().__init__(*args)
+        
+        # Wait for the calculations to finish before finishing class instance creation; calcs are needed to proceed with other CARDS Wrappers
+        pqs = [self._rawpq(xtc) for xtc in self._trajs]
+        no_exist = lambda pqs: [not os.path.isfile(pq) for pq in pqs]
+        while any(no_exist(pqs)):
+            time.sleep(5)
+    
+    
     def _computation(self, xtc):
         """"""
         class args: pass
         args.trajectories = [[self._trajs[xtc]]]
         args.topology = [self._pdbf]
         
-        result = _cards.cards(_enspara.load_trajs(args), 15, self.taskcpus)
+        
+        result = _cards.cards(_enspara.load_trajs(args), self.buffer, self.taskcpus)
         
 #         import dill
         
