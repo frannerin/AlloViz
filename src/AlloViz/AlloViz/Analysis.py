@@ -245,7 +245,7 @@ def analyze(filtered, elements, metrics, normalize, nodes_dict, edges_dict, **kw
         if not rhasattr(filtered, elem):
             if elem == "edges":
                 # cols = ["weight" in col for col in filtered._filtdata.columns]
-                data = filtered._filtdata #.loc[:, cols]
+                data = filtered._graph_distances #.loc[:, cols]
             elif elem == "nodes":
                 data = pandas.DataFrame()
         # Else, retrieve the Element's attribute DataFrame to add columns to it

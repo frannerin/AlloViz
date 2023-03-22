@@ -283,14 +283,14 @@ def process_input(
         trajsf = dict(x for x in enumerate(trajs, 1))
         psff = psf
     
-    # Make a selection of the CA atoms on the processed protein
-    CAs = protein.select_atoms("name CA")
+    # # Make a selection of the CA atoms on the processed protein
+    # CAs = protein.select_atoms("name CA")
 
     # Write protein pdb file
     if not os.path.isfile(pdbf):
         protein.write(pdbf)
-    if not os.path.isfile(compdbf):
-        CAs.write(compdbf)
+    # if not os.path.isfile(compdbf):
+    #     CAs.write(compdbf)
 
     # Write protein psf file if it exists
     if psff and not os.path.isfile(psff):
@@ -302,7 +302,7 @@ def process_input(
     if any(
         [
             not os.path.isfile(f)
-            for f in list(trajsf.values()) + list(comtrajsf.values())
+            for f in list(trajsf.values())# + list(comtrajsf.values())
         ]
     ):
         whole.load_new(trajs, continuous=False)
@@ -321,14 +321,14 @@ def process_input(
         def write_protein_trajs(start, stop, t, comt):
             if not os.path.isfile(t):
                 protein.write(t, frames=whole.trajectory[start:stop])
-            if not os.path.isfile(comt):
-                # Retrieve the residues' COM trajectory
-                COMs = AnalysisFromFunction(lambda atoms: atoms.center_of_mass(compound="residues"),
-                                            protein).run(start=start, stop=stop)
-                # Create a new universe with the CA atoms as topology and the COMs' trajectory
-                COMu = mda.Merge(CAs).load_new(COMs.results['timeseries'], 
-                                               format = mda.coordinates.memory.MemoryReader)
-                COMu.atoms.write(comt, frames="all")
+            # if not os.path.isfile(comt):
+            #     # Retrieve the residues' COM trajectory
+            #     COMs = AnalysisFromFunction(lambda atoms: atoms.center_of_mass(compound="residues"),
+            #                                 protein).run(start=start, stop=stop)
+            #     # Create a new universe with the CA atoms as topology and the COMs' trajectory
+            #     COMu = mda.Merge(CAs).load_new(COMs.results['timeseries'], 
+            #                                    format = mda.coordinates.memory.MemoryReader)
+            #     COMu.atoms.write(comt, frames="all")
                 
 
         # For each trajectory asynchronously (with `multiprocess` Pool), write the protein and residues' COM trajectories if the files don't already exist

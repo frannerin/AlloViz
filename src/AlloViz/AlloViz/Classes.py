@@ -321,7 +321,7 @@ class Protein:
 
         # Names of the directories and files of the future pdb and trajectory(ies) of the residues' Center Of Mass
         compath = f"{self._datadir}/COM_trajs"
-        os.makedirs(compath, exist_ok=True)
+        # os.makedirs(compath, exist_ok=True)
         self._compdbf = f"{compath}/ca.pdb"
         self._comtrajs = {num: f"{compath}/{num}.xtc" for num in self._trajs}
         
@@ -331,7 +331,7 @@ class Protein:
             [
                 not os.path.isfile(f)
                 for f in list(self._trajs.values())
-                + list(self._comtrajs.values())
+                # + list(self._comtrajs.values())
                 + [self._pdbf]
             ]
         ):
@@ -512,11 +512,11 @@ class Protein:
                 pkg = comb.split("_")[0]
                 if pkg == "CARDS":
                     if "Sidechain" in comb or "Backbone" in comb:
-                        pkg = comb.rsplit("_", 3)[0]
-                    else:
                         pkg = comb.rsplit("_", 2)[0]
-                dihs = bb if "Backbone" in comb else sc if "Sidechain" in comb else bb if "MDEntropy" in comb else bb+sc
-            pkgs += [f"{pkg}_{dih}" for dih in dihs]
+                    else:
+                        pkg = comb.rsplit("_", 1)[0]
+                dihs = bb if "Backbone" in comb else sc if "Sidechain" in comb else bb+sc
+                pkgs += [f"{pkg}_{dih}" for dih in dihs]
 
         # Objects from the classes in the Wrappers module need to be passed a dictionary "d" containing all the attributes of the source Protein object and the passed kwargs
         d = self.__dict__.copy()
@@ -533,8 +533,10 @@ class Protein:
             
         if any(["CARDS" in pkg for pkg in pkgs]):
             Wrappers.CARDS_w.CARDS(self, d)
+        print("cards calc has finished")
 
         for pkg in set(pkgs) - set(combined_dihs):
+            print(pkg)
             # Establish the corresponding Wrappers' class
             pkgclass = eval(f"Wrappers.{utils.pkgname(pkg)}")
 

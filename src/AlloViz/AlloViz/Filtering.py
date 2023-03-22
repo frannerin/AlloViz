@@ -267,9 +267,13 @@ class Filtering:
             filtfunc = eval(filt)
             data = filtfunc(self._pkg, data, 
                             GetContacts_threshold=GetContacts_threshold, 
-                            Sequence_Neighbor_distance=Sequence_Neighbor_distance, 
+                            Sequence_Neighbor_distance=Sequence_Neighbor_distance,
                             Interresidue_distance=Interresidue_distance)
         self._filtdata = data
+        
+        self._graph_distances = -np.log(abs(self._filtdata))
+        # un-transform standard error columns
+        self._graph_distances.loc[:,["std" in c for c in self._graph_distances.columns]] = data.loc[:,["std" in c for c in data.columns]]
 
         # # For each column in the filtered data that is not a standard error, create an analyzable NetworkX's graph and save it as an attribute
         # for col in [c for c in self._filtdata if "std" not in c]:
@@ -277,9 +281,12 @@ class Filtering:
         
         # For each column in the filtered data that is not a standard error, create an analyzable NetworkX's graph and save it
         self.graphs = {}
-        for col in [c for c in self._filtdata if "std" not in c]:
+        for col in [c for c in self._graph_distances if "std" not in c]:
             try:
-                self.graphs[col] = self._get_G(self._filtdata[col])
+                # The approach in lit. is to use -log10(|corr|) as edge weights/distances in the network for analyses
+                # e.g., https://www.pnas.org/doi/full/10.1073/pnas.0810961106            
+                self.graphs[col] = self._get_G(self._graph_distances[col])
+                # self.graphs[col] = self._get_G(self._filtdata[col])
             except NoNetworkException as e:
                 print(e)
                 
@@ -341,7 +348,7 @@ class Filtering:
     
     def analyze(self, elements="edges", metrics="all", normalize=True, cores=1, nodes_dict=Analysis.nodes_dict, edges_dict=Analysis.edges_dict, **kwargs):
         r"""Analyze the filtered network
-
+        
         Send the analyses of the filtered network for the passed combinations of
         elements-metrics. The individual :external:ref:`Graphs <graph>` saved as private
         attributes upon object initialization are analyzed independently with the
