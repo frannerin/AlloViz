@@ -269,9 +269,10 @@ class Filtering:
                             GetContacts_threshold=GetContacts_threshold, 
                             Sequence_Neighbor_distance=Sequence_Neighbor_distance,
                             Interresidue_distance=Interresidue_distance)
-        self._filtdata = data
+        # Drop all-0 rows (not taking into account weight_std column if it's present)
+        self._filtdata = data.drop(data[(data.drop(columns=[c for c in data.columns if "std" in c]) == 0).all(axis=1)].index, axis=0)
         
-        self._graph_distances = -np.log(abs(self._filtdata))
+        self._graph_distances = -np.log(abs(self._filtdata) + 10E-10) + 10E-10
         # un-transform standard error columns
         self._graph_distances.loc[:,["std" in c for c in self._graph_distances.columns]] = data.loc[:,["std" in c for c in data.columns]]
 

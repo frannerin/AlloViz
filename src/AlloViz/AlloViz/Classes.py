@@ -533,7 +533,6 @@ class Protein:
             
         if any(["CARDS" in pkg for pkg in pkgs]):
             Wrappers.CARDS_w.CARDS(self, d)
-        print("cards calc has finished")
 
         for pkg in set(pkgs) - set(combined_dihs):
             print(pkg)
