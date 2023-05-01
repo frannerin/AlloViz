@@ -6,5 +6,6 @@
 
    self
    table
-   tutorial
+   notebooks
+..
    API reference <API>

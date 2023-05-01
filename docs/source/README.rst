@@ -5,13 +5,9 @@ AlloViz
     :target: https://alloviz.readthedocs.io/en/latest/?badge=latest
     :alt: Documentation Status
 
-.. image:: https://img.shields.io/badge/code%20style-black-000000.svg
-   :target: https://github.com/psf/black
-   :alt: Code style
-
 .. image:: https://github.com/frannerin/AlloViz/actions/workflows/test_conda.yml/badge.svg
    :target: https://github.com/frannerin/AlloViz/actions/workflows/test_conda.yml
-   :alt: Python Package using Conda
+   :alt: Test Python Package using Conda
 
 A Python package to interactively compute, analyze and visualize protein
 allosteric communication (residue interaction) networks and
@@ -25,10 +21,12 @@ that provide different ways of calculating residue interactions:
 `PyInteraph2 <https://github.com/ELELAB/pyinteraph2>`__,
 `pytraj <https://github.com/Amber-MD/pytraj>`__,
 `MD-TASK <https://github.com/RUBi-ZA/MD-TASK>`__,
-`gRINN <https://bitbucket.org/onursercinoglu/grinn>`__ (needs
-`namd <https://www.ks.uiuc.edu/Research/namd/>`__),
 `MDEntropy <https://github.com/msmbuilder/mdentropy>`__ and 
 `CARDS <https://github.com/sukritsingh/cardsReader>`__.
+
+..
+    `gRINN <https://bitbucket.org/onursercinoglu/grinn>`__ (needs
+    `namd <https://www.ks.uiuc.edu/Research/namd/>`__),
 
 For the same topology and molecular dynamics (MD) trajectory, the
 network can be constructed based on residue contacts,
@@ -70,7 +68,7 @@ preferably with ``pip install .``.
 Tutorial
 --------
 
-Check the :ref:`tutorial <tutorial:Tutorial>`.
+Check the :ref:`tutorial <notebooks/quickstart:Quickstart>`.
 
 Cite
 -------

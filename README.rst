@@ -21,10 +21,12 @@ that provide different ways of calculating residue interactions:
 `PyInteraph2 <https://github.com/ELELAB/pyinteraph2>`__,
 `pytraj <https://github.com/Amber-MD/pytraj>`__,
 `MD-TASK <https://github.com/RUBi-ZA/MD-TASK>`__,
-`gRINN <https://bitbucket.org/onursercinoglu/grinn>`__ (needs
-`namd <https://www.ks.uiuc.edu/Research/namd/>`__),
 `MDEntropy <https://github.com/msmbuilder/mdentropy>`__ and 
 `CARDS <https://github.com/sukritsingh/cardsReader>`__.
+
+..
+    `gRINN <https://bitbucket.org/onursercinoglu/grinn>`__ (needs
+    `namd <https://www.ks.uiuc.edu/Research/namd/>`__),
 
 For the same topology and molecular dynamics (MD) trajectory, the
 network can be constructed based on residue contacts,
