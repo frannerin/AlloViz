@@ -7,5 +7,4 @@
    self
    table
    notebooks
-..
    API reference <API>

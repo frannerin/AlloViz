@@ -117,10 +117,10 @@ class Element(pandas.DataFrame):
             .set_index("aln_pos")
         )
 
-        # Select the columns that the two have in common for delta-network calculation
-        cols = [col for col in selfdf.columns if col in otherdf.columns]
-
-        # The columns to be subtracted are the ones that are not standard errors; cells with equivalent "aln_pos" (index) are subtracted and NA are dropped in the end
+        # Select the columns that the two have in common for delta-network calculation and that also averages and not from an individual trajectory (e.g., not _1, _2...)
+        cols = [col for col in selfdf.columns if col in otherdf.columns and not any([str(i) in col for i in self._parent._trajs])]
+        
+        # The columns to be subtracted are the ones that are averages and also not standard errors; cells with equivalent "aln_pos" (index) are subtracted and NA are dropped in the end
         subs = [col for col in cols if "std" not in col]
         sub = pandas.DataFrame.sub(
             selfdf[subs], otherdf[subs], axis=0, level="aln_pos"

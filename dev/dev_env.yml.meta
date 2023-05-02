@@ -35,6 +35,7 @@ dependencies:
   #t-coffee>=13.45 # FROM BIOCONDA for structural alignment
   #tmalign
   #compilers
+  - pymol-open-source
 
   # for downloading files
   - beautifulsoup4>=4.0

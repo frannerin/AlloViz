@@ -459,10 +459,6 @@ class Protein:
             Optional kwarg pointing to the namd2 executable location; if the `namd`
             command is accessible through the CLI it is automatically retrieved with the
             `distutils` package.
-        GetContacts_threshold : float, optional
-            Optional kwarg to specify the minimum contact frequency (0-1, default 0)
-            threshold for GetContacts results, which will be used to filter out contacts
-            with a frequency (average) lower than it.
         chis : int, optional
             Optional kwarg to specify the number of side-chain chi dihedral angles (up to
             5) to combine when sending the calculation of a child of the Combined_Dihs
@@ -993,8 +989,9 @@ class Protein:
 
         # Define a function to retrieve the corresponding Element attribute of the passed elem and check that it exists
         get_element = lambda element: rgetattr(
-            self, pkg, filtering.capitalize(), element.lower()
+            self, pkg, filtering, element
         )
+        
         if isinstance(get_element(elements[0]), bool):
             raise Exception(
                 f"{elements[0]} analysis with {filtering} filtering needs to be sent first."
