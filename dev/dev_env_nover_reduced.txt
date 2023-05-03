@@ -1,0 +1,19 @@
+python>=3.9,<3.10 # 3.10 or above provokes numba import fail
+mdanalysis>=2.2,<2.3 # 2.3 or above fails with non-complying "formalcharges" last column of PDBs (GPCRmd PDBs)
+ipywidgets<8 # 8 or above messes with nglview
+
+multiprocess
+lazyasd
+pandas
+pyarrow
+numpy
+numba
+networkx
+pymol-open-source
+ambertools # not in pypi
+jupyterlab
+nglview
+prody
+mdtraj
+python-louvain
+compilers

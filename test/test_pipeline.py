@@ -3,8 +3,6 @@ import pytest
 import AlloViz
 import multiprocess
 
-# IT DIDN'T WORK WHEN I TRIED TO USE __NEW__ IN ALLOVIZ.PROTEIN BUT NOW IT'D PROBABLY WORK
-
 
 pytestmark = pytest.mark.filterwarnings("ignore:::MDAnalysis", "ignore::DeprecationWarning", "ignore::PendingDeprecationWarning")
 
@@ -24,19 +22,18 @@ def prot(test_path, path):
     prot = AlloViz.Protein(pdb = f"{test_path}/data/protein.pdb",
                            trajs = [f"{test_path}/data/traj_2.xtc",
                                     f"{test_path}/data/traj_3.xtc"],
-                           path = f"{test_path}/pipetest")
+                           path = path) #f"{test_path}/pipetest")
     yield prot
     del prot
     
 def test_calculation(prot, test_path, path):
-    prot.calculate(["correlationplus_CA_Pear", "GetContacts"], cores=2)
+    prot.calculate(["correlationplus_CA_Pear", "GetContacts"], cores=2, taskcpus=2)
     assert prot.pdb == f"{test_path}/data/protein.pdb"
     assert os.path.isfile(prot.pdb)
     assert f"{test_path}/data/traj_2.xtc" in prot._trajs.values()
     assert os.path.isfile(f"{test_path}/data/traj_2.xtc")
     assert f"{test_path}/data/traj_3.xtc" in prot._trajs.values()
     assert os.path.isfile(f"{test_path}/data/traj_3.xtc")
-    assert os.path.isfile(prot._comtrajs[1])
     
 def test_pool(prot, test_path, path):
     def func(prot):
@@ -52,13 +49,13 @@ def test_pool(prot, test_path, path):
 # def test_calculation_results(prot, test_path):
     
     
-# def test_filterings(prot):
-#     prot.filter(filterings=["GetContacts_edges", "All", ["Spatially_distant", "No_Sequence_Neighbors"]], Sequence_Neighbor_distance=6)
-#     assert True
+def test_filterings(prot):
+    prot.filter(filterings=["GetContacts_edges", "All", ["Spatially_distant", "No_Sequence_Neighbors"]], Sequence_Neighbor_distance=6)
+    assert True
 
-# def test_analysis(prot):
-#     prot.correlationplus_CA_Pear.GetContacts_edges.analyze(["edges", "nodes"], cores=2)
-#     assert True
+def test_analysis(prot):
+    prot.correlationplus_CA_Pear.GetContacts_edges.analyze(["edges", "nodes"], cores=2)
+    assert True
     
 # def test_viz(prot):
 #     nv = prot.correlationplus_CA_Pear.GetContacts_edges.edges.view("btw")

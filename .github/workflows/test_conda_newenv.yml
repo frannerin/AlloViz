@@ -1,0 +1,56 @@
+name: Python Package using Conda
+
+on:
+  push:
+    branches:
+      - main
+      - devel
+
+jobs:
+  miniconda:
+    name: Miniconda ${{ matrix.os }}
+    runs-on: ${{ matrix.os }}-latest
+    continue-on-error: ${{ matrix.experimental }}
+    strategy:
+      matrix:
+        os: ["ubuntu", "macos"]
+        experimental: [false]
+        # include:
+        #   - os: "windows"
+        #     experimental: true
+    defaults:
+      run:
+        shell: bash -el {0}
+    steps:
+    - uses: actions/checkout@v3
+      with:
+        submodules: recursive
+
+
+    - uses: conda-incubator/setup-miniconda@v2
+      with:
+        miniforge-variant: Mambaforge
+        miniforge-version: latest
+        activate-environment: anaconda-client-env
+        use-mamba: true
+        
+    - name: Cache Conda env
+      uses: actions/cache@v3
+      with:
+        path: ${{ env.CONDA }}/envs
+        key:
+          conda-${{ runner.os }}-${{ runner.arch }}-${{ hashFiles('dev/dev_env_nover_reduced.txt') }}-${{ env.CACHE_NUMBER }}
+      env:
+        # Increase this value to reset cache if etc/example-environment.yml has not changed
+        CACHE_NUMBER: 0
+      id: cache
+
+    - name: Update environment
+      run: mamba update -n anaconda-client-env -f dev/dev_env_nover_reduced.txt
+      if: steps.cache.outputs.cache-hit != 'true'
+
+    - name: Install AlloViz
+      run: pip install .
+
+    - name: Test with pytest
+      run: pytest test
