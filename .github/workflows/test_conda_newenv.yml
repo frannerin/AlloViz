@@ -56,4 +56,6 @@ jobs:
     - name: Test with pytest
       run: |
         conda install pytest -y
-        pytest test
+        pytest test/test_submodules.py
+        pytest test/test_pipeline.py
+        pytest test/test_downloads.py

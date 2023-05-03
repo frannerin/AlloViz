@@ -122,4 +122,6 @@ jobs:
     - name: Test with pytest
       run: |
         pip install pytest
-        pytest test
+        pytest test/test_submodules.py
+        pytest test/test_pipeline.py
+        pytest test/test_downloads.py
