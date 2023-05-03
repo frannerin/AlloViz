@@ -1,4 +1,4 @@
-name: Python Package using Conda
+name: Python Package using Conda reduced
 
 on:
   push:
@@ -31,6 +31,7 @@ jobs:
       with:
         miniforge-variant: Mambaforge
         miniforge-version: latest
+        python-version: 3.9.16
         activate-environment: anaconda-client-env
         use-mamba: true
         
@@ -53,4 +54,6 @@ jobs:
       run: pip install .
 
     - name: Test with pytest
-      run: pytest test
+      run: |
+        conda install pytest -y
+        pytest test

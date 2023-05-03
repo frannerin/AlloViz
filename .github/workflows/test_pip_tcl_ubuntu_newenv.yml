@@ -1,4 +1,4 @@
-name: Python Package using pip
+name: Python Package using pip reduced
 
 on:
   push:
@@ -120,4 +120,6 @@ jobs:
 
 
     - name: Test with pytest
-      run: pytest test
+      run: |
+        pip install pytest
+        pytest test
