@@ -17,4 +17,4 @@ prody
 mdtraj
 python-louvain
 compilers
-libnetcdf
+# libnetcdf # is this really needed for github actions?

@@ -47,7 +47,7 @@ jobs:
       id: cache
 
     - name: Update environment
-      run: mamba install -n anaconda-client-env -f dev/dev_env_nover_reduced.txt
+      run: mamba install -n anaconda-client-env --file dev/dev_env_nover_reduced.txt
       if: steps.cache.outputs.cache-hit != 'true'
 
     - name: Install AlloViz
