@@ -36,15 +36,19 @@ jobs:
       with:
         path: ${{ env.CONDA }}/envs
         key:
-          conda-${{ runner.os }}-${{ runner.arch }}-${{ hashFiles('dev/dev_env_nover_reduced.txt') }}-${{ env.CACHE_NUMBER }}
+          conda-${{ runner.os }}-${{ runner.arch }}-${{ hashFiles('conda_environment.txt') }}-${{ env.CACHE_NUMBER }}
       env:
         # Increase this value to reset cache if etc/example-environment.yml has not changed
         CACHE_NUMBER: 0
       id: cache
 
     - name: Update environment
-      run: mamba install -n anaconda-client-env --file dev/dev_env_nover_reduced.txt
+      run: mamba install -n anaconda-client-env --file conda_environment.txt
       if: steps.cache.outputs.cache-hit != 'true'
+
+    - name: Install libexpact in MAC
+      run: mamba install -n anaconda-client-env libexpat
+      if: runner.os == 'macOS'
 
     - name: Install AlloViz
       run: pip install .

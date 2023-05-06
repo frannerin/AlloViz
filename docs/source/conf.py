@@ -18,7 +18,7 @@ sys.path.insert(0, os.path.abspath('..'))
 # -- Project information -----------------------------------------------------
 
 project = 'AlloViz'
-copyright = '2022, Francho Nerín-Fonz'
+copyright = '2023'
 author = 'Francho Nerín-Fonz'
 
 # The full version, including alpha/beta/rc tags

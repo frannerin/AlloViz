@@ -28,7 +28,7 @@ jobs:
       with:
         python-version: "3.9.16"
         cache: "pip"
-        cache-dependency-path: dev/dev_env_nover_reduced_pip.txt
+        cache-dependency-path: pip_requirements.txt
 
 
     # TCL IN UBUNTU
@@ -99,7 +99,7 @@ jobs:
     #   with:
     #     path: ${{ env.pythonLocation }}
     #     key:
-    #       ${{ env.pythonLocation }}-pip-${{ runner.os }}-${{ runner.arch }}-${{ hashFiles('dev/dev_env.txt') }}-${{ env.CACHE_NUMBER }}
+    #       ${{ env.pythonLocation }}-pip-${{ runner.os }}-${{ runner.arch }}-${{ hashFiles('pip_requirements.txt') }}-${{ env.CACHE_NUMBER }}
     #   env:
     #     # Increase this value to reset cache if has not changed
     #     CACHE_NUMBER: 0
@@ -110,9 +110,9 @@ jobs:
         sudo apt-get update
         sudo apt-get install libnetcdf-dev
         python -m pip install -U --upgrade-strategy eager pip
-        pip install -U --upgrade-strategy eager setuptools "numpy>=1.22.4,<1.22.5" wheel
-        pip install -r dev/dev_env_nover_reduced_pip.txt
-      # if: steps.cache.outputs.cache-hit != 'true' "numpy==1.23.5"
+        pip install -U --upgrade-strategy eager setuptools "numpy==1.23.5" wheel
+        pip install -r pip_requirements.txt
+      # if: steps.cache.outputs.cache-hit != 'true'
 
 
     - name: Install AlloViz
@@ -121,7 +121,7 @@ jobs:
 
     - name: Test with pytest
       run: |
-        conda install pytest -y
+        pip install pytest
         pytest test/test_submodules.py
     - name: Test pipeline
       run: pytest test/test_pipeline.py
