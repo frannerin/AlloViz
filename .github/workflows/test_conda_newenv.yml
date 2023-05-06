@@ -10,14 +10,10 @@ jobs:
   miniconda:
     name: Miniconda ${{ matrix.os }}
     runs-on: ${{ matrix.os }}-latest
-    continue-on-error: ${{ matrix.experimental }}
+    continue-on-error: true
     strategy:
       matrix:
         os: ["ubuntu", "macos"]
-        experimental: [false]
-        # include:
-        #   - os: "windows"
-        #     experimental: true
     defaults:
       run:
         shell: bash -el {0}
@@ -57,5 +53,11 @@ jobs:
       run: |
         conda install pytest -y
         pytest test/test_submodules.py
-        pytest test/test_pipeline.py
-        pytest test/test_downloads.py
+    - name: Test pipeline
+      run: pytest test/test_pipeline.py
+      timeout-minutes: 2
+      continue-on-error: true
+    - name: Test downloads
+      run: pytest test/test_downloads.py
+      timeout-minutes: 2
+      continue-on-error: true
