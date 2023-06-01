@@ -3,6 +3,8 @@ import pytest
 import AlloViz
 import numpy as np
 
+# DOWNLOADS (AND GETTING FILES DIRECTLY FROM GPCRmd IN GENERAL) ONLY WORKS WITH MDANALYSIS 2.2, on 2.3 last column of the PDB must be atom charges but in GPCRmd it's atomtype
+
 pytestmark = pytest.mark.filterwarnings("ignore:::MDAnalysis")
 
 @pytest.fixture(scope="module")

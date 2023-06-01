@@ -1,0 +1,67 @@
+name: Python Package using Conda reduced
+
+on:
+  push:
+    branches:
+      - main
+      - devel
+
+jobs:
+  miniconda:
+    name: Miniconda ${{ matrix.os }}
+    runs-on: ${{ matrix.os }}-latest
+    continue-on-error: true
+    strategy:
+      matrix:
+        os: ["ubuntu", "macos"]
+    defaults:
+      run:
+        shell: bash -el {0}
+    steps:
+    - uses: actions/checkout@v3
+      with:
+        submodules: recursive
+
+
+    - uses: conda-incubator/setup-miniconda@v2
+      with:
+        miniforge-variant: Mambaforge
+        miniforge-version: latest
+        python-version: 3.9.16
+        activate-environment: anaconda-client-env
+        use-mamba: true
+        
+    - name: Cache Conda env
+      uses: actions/cache@v3
+      with:
+        path: ${{ env.CONDA }}/envs
+        key:
+          conda-${{ runner.os }}-${{ runner.arch }}-${{ hashFiles('conda_environment.txt') }}-${{ env.CACHE_NUMBER }}
+      env:
+        # Increase this value to reset cache if etc/example-environment.yml has not changed
+        CACHE_NUMBER: 0
+      id: cache
+
+    - name: Update environment
+      run: mamba install -n anaconda-client-env --file conda_environment.txt
+      if: steps.cache.outputs.cache-hit != 'true'
+
+    - name: Install libexpact in MAC
+      run: mamba install -n anaconda-client-env libexpat
+      if: runner.os == 'macOS'
+
+    - name: Install AlloViz
+      run: pip install .
+
+    - name: Test with pytest
+      run: |
+        conda install pytest -y
+        pytest test/test_submodules.py
+    - name: Test pipeline
+      run: pytest test/test_pipeline.py
+      timeout-minutes: 2
+      continue-on-error: true
+    - name: Test downloads
+      run: pytest test/test_downloads.py
+      timeout-minutes: 2
+      continue-on-error: true

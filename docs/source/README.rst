@@ -5,13 +5,9 @@ AlloViz
     :target: https://alloviz.readthedocs.io/en/latest/?badge=latest
     :alt: Documentation Status
 
-.. image:: https://img.shields.io/badge/code%20style-black-000000.svg
-   :target: https://github.com/psf/black
-   :alt: Code style
-
 .. image:: https://github.com/frannerin/AlloViz/actions/workflows/test_conda.yml/badge.svg
    :target: https://github.com/frannerin/AlloViz/actions/workflows/test_conda.yml
-   :alt: Python Package using Conda
+   :alt: Test Python Package using Conda
 
 A Python package to interactively compute, analyze and visualize protein
 allosteric communication (residue interaction) networks and
@@ -25,10 +21,12 @@ that provide different ways of calculating residue interactions:
 `PyInteraph2 <https://github.com/ELELAB/pyinteraph2>`__,
 `pytraj <https://github.com/Amber-MD/pytraj>`__,
 `MD-TASK <https://github.com/RUBi-ZA/MD-TASK>`__,
-`gRINN <https://bitbucket.org/onursercinoglu/grinn>`__ (needs
-`namd <https://www.ks.uiuc.edu/Research/namd/>`__),
 `MDEntropy <https://github.com/msmbuilder/mdentropy>`__ and 
 `CARDS <https://github.com/sukritsingh/cardsReader>`__.
+
+..
+    `gRINN <https://bitbucket.org/onursercinoglu/grinn>`__ (needs
+    `namd <https://www.ks.uiuc.edu/Research/namd/>`__),
 
 For the same topology and molecular dynamics (MD) trajectory, the
 network can be constructed based on residue contacts,
@@ -49,28 +47,43 @@ visualized in an interactive Python Notebook (i.e.,
 Install
 -------
 
-It is recommended to use a virtual environment
-(`Miniconda <https://docs.conda.io/en/latest/miniconda.html>`__). This
-repository includes submodules that need to be appropriately cloned
-alongside the main repository using the ``--recursive`` flag. At
-present, virtual environment dependencies can only be correctly
-installed with conda.
+The repository must be cloned along with all the submodules using the ``--recursive`` flag.
+Additional flags are recommended for speed:
+
+.. code:: bash
+   
+   git clone --recursive --shallow-submodules -j 9 https://github.com/frannerin/AlloViz
+
+
+A virtual environment can be created with `Miniconda <https://docs.conda.io/en/latest/miniconda.html>`__
+or similars using the ``conda-forge`` channel (a fast dependency solver is recommended for speed: 
+`Mamba <https://mamba.readthedocs.io/en/latest/>`__ or 
+`libamba solver for Miniconda <https://conda.github.io/conda-libmamba-solver/getting-started/>`__):
 
 .. code:: bash
 
-   git clone --recursive --shallow-submodules -j 9 https://github.com/frannerin/AlloViz
-   conda create -n AlloViz --file AlloViz/conda_explicit.txt
+   conda create -n AlloViz -c conda-forge --solver libmamba --file AlloViz/conda_environment.txt
    conda activate AlloViz
 
-Then go to the package folder (``cd AlloViz``) and install the package,
-preferably with ``pip install .``.
+The virtual environment can also be created with pip:
 
-   If environment creation with `conda_explicit.txt` fails, the non-explicit requirements/dependencies file `conda_minimal.txt` can be used, providing the conda channel `conda-forge` (`-c conda-forge`).
+.. code:: bash
+
+   python -m venv AlloViz/env
+   source AlloViz/env/bin/activate
+   pip install -r AlloViz/pip_requirements.txt
+
+.. note::
+   Python <3.10 is recommended (i.e., 3.9.16). ``pytraj`` and the construction of delta-networks won't be available, 
+   as `AmberTools <http://ambermd.org/AmberTools.php>`__ and `pymol-open-source <https://github.com/schrodinger/pymol-open-source/>`__ 
+   are needed (respectively) for that, and they aren't distributed through PyPi. Other additional dependencies might also need to be installed by hand.
+
+Finally, AlloViz is installed into the environment with ``pip install ./AlloViz``.
 
 Tutorial
 --------
 
-Check the :ref:`tutorial <tutorial:Tutorial>`.
+Check the :ref:`tutorial <notebooks/quickstart:Quickstart>`.
 
 Cite
 -------
