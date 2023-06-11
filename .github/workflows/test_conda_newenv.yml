@@ -47,8 +47,11 @@ jobs:
       if: steps.cache.outputs.cache-hit != 'true'
 
     - name: Install libexpact in MAC
-      run: mamba install -n anaconda-client-env libexpat
+      run: |
+        mamba install -n base libexpat
+        mamba install -n anaconda-client-env libexpat
       if: runner.os == 'macOS'
+      # alternatively, install libexpat with conda instead of mamba, or install it in base env last
 
     - name: Install AlloViz
       run: pip install .
