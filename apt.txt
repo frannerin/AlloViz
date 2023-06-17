@@ -1,5 +1,0 @@
-libsqlite3-dev
-libexpat1-dev
-libnetcdf-dev
-tcl8.5-dev
-libopengl0
