@@ -62,20 +62,16 @@ def analyze_graph(args):
         NetworkX function to analyze data. It must be written as if it were an
         absolute import
         (e.g., "networkx.algorithms.centrality.betweenness_centrality").
-    normalize : bool
-        Passed to the NetworkX functions that calculate the metrics, to output
-        normalized results or not.
     colname : str
         Name of the analyzed column that it will have in the final DataFrame for saving.
     """
-    graph, metricf, normalize, colname = args
+    graph, metricf, colname = args
     nodes = {} # Temporary fix for future use of source-sink network analyses
 
     # Try to apply the NetworkX's analysis function to the selected Graph
     try:
         analyzed = metricf(
             graph,
-            normalized=normalize,
             weight="weight",
             **nodes,
         )
@@ -96,7 +92,7 @@ def analyze_graph(args):
 
 
 
-def single_analysis(graphs, metricf, metric, elem, normalize, pq, **kwargs):
+def single_analysis(graphs, metricf, metric, elem, pq, **kwargs):
     r"""Analyze raw data with a single element-metric
 
     Analyze stored, filtered raw data with the passed combination of
@@ -115,9 +111,6 @@ def single_analysis(graphs, metricf, metric, elem, normalize, pq, **kwargs):
         `edges_dict` dictionaries.
     elem : str or list, {"edges", "nodes"}
         Network element for which the analysis is performed.
-    normalize : bool
-        Passed to the NetworkX functions that calculate the metrics, to output
-        normalized results or not.
     pq : str
         Name of the parquet (.pq) file in which to save the analysis results.
         
@@ -135,7 +128,7 @@ def single_analysis(graphs, metricf, metric, elem, normalize, pq, **kwargs):
     get_colname = lambda metric, col: f"{metric}_{col}" if len(graphs) > 1 else metric
     # Analyze all columns in parallel, returning a Series for each (or False if it couldn't be analyzed)
     with Pool(len(graphs)) as p:
-        args = [(graph, metricf, normalize, get_colname(metric, col)) for col, graph in graphs.items()]
+        args = [(graph, metricf, get_colname(metric, col)) for col, graph in graphs.items()]
         results = list(p.map(analyze_graph, args))
         p.shutdown()
     
@@ -148,7 +141,7 @@ def single_analysis(graphs, metricf, metric, elem, normalize, pq, **kwargs):
                 pq,
                 f[0],
                 elem,
-                metricf.__name__,
+                metric,
                 "\n",
                 f[-1],
             )
@@ -198,7 +191,7 @@ def add_data(pqs, elem, data, filtered):
     
 
 
-def analyze(filtered, elements, metrics, normalize, nodes_dict, edges_dict, **kwargs):
+def analyze(filtered, elements, metrics, nodes_dict, edges_dict, **kwargs):
     r"""Analyze the filtered network
 
     Send the analyses of the passed filtered network for the specified combinations of
@@ -217,9 +210,6 @@ def analyze(filtered, elements, metrics, normalize, nodes_dict, edges_dict, **kw
     metrics : str or list
         Network metrics to compute, which must be keys in the `nodes_dict` or
         `edges_dict` dictionaries.
-    normalize : bool
-        Passed to the NetworkX functions that calculate the metrics, to output
-        normalized results or not.
 
     Other Parameters
     ----------------
@@ -280,7 +270,6 @@ def analyze(filtered, elements, metrics, normalize, nodes_dict, edges_dict, **kw
                         d[metric],
                         metric,
                         elem,
-                        normalize,
                         filtered._datapq(elem, metric)
                     ),
                 )

@@ -633,7 +633,7 @@ class Protein:
             
         return result if (len(pkgs) == 1) else None
     
-    def analyze(self, pkgs="all", filterings="all", elements="edges", metrics="all", normalize=True, cores=1, nodes_dict=Analysis.nodes_dict, edges_dict=Analysis.edges_dict, **kwargs):
+    def analyze(self, pkgs="all", filterings="all", elements="edges", metrics="all", cores=1, nodes_dict=Analysis.nodes_dict, edges_dict=Analysis.edges_dict, **kwargs):
         r"""Analyzed filtered network
         
         Analyze the selected (un)filtered networks with the passed elements-metrics. It
@@ -659,9 +659,6 @@ class Protein:
             `edges_dict` dictionaries. Default is "all" and it sends the computation for
             all the metrics defined in the corresponding dictionary of the selected
             elements in `element`.
-        normalize : bool, default: True
-            Passed to the NetworkX functions that calculate the metrics, to output
-            normalized results or not.
         cores : int, default: 1
             Number of cores to use for parallelization with a `multiprocess` Pool.
             Default value only uses 1 core with a custom :class:`AlloViz.utils.dummypool`
@@ -684,7 +681,7 @@ class Protein:
             function(s) that is(are) used on the method call in case they need extra
             parameters. All keyward arguments will be passed to all analysis function
             calls, so if the function doesn't accept the arguments there will be an error.
-            `weight` and `normalized` parameters are already specified by AlloViz.
+            `weight` parameter is already specified by AlloViz.
 
         See Also
         --------
@@ -741,8 +738,8 @@ class Protein:
                 #     print(f"{utils.pkgname(pkg)} {filtering} is not a connected network (or subnetwork)")
                 #     continue
                 # # result = 
-                # Analysis.analyze(filtered, elements, metrics, normalize, **kwargs)
-                filtered.analyze(elements, metrics, normalize, cores=1, nodes_dict=nodes_dict, edges_dict=edges_dict, **kwargs)
+                # Analysis.analyze(filtered, elements, metrics, **kwargs)
+                filtered.analyze(elements, metrics, cores=1, nodes_dict=nodes_dict, edges_dict=edges_dict, **kwargs)
                 
         # # Close the pool
         # mypool.close()

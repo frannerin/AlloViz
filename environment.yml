@@ -7,4 +7,4 @@ dependencies:
   - ambertools
   - pip
   - pip:
-      - -r requirements.txt
+      - -r pip_requirements.txt

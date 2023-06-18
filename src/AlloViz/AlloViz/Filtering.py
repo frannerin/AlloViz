@@ -347,7 +347,7 @@ class Filtering:
 
             return network
     
-    def analyze(self, elements="edges", metrics="all", normalize=True, cores=1, nodes_dict=Analysis.nodes_dict, edges_dict=Analysis.edges_dict, **kwargs):
+    def analyze(self, elements="edges", metrics="all", cores=1, nodes_dict=Analysis.nodes_dict, edges_dict=Analysis.edges_dict, **kwargs):
         r"""Analyze the filtered network
         
         Send the analyses of the filtered network for the passed combinations of
@@ -367,9 +367,6 @@ class Filtering:
             `edges_dict` dictionaries. Default is "all" and it sends the computation for
             all the metrics defined in the corresponding dictionary of the selected
             elements in `element`.
-        normalize : bool, default: True
-            Passed to the NetworkX functions that calculate the metrics, to output
-            normalized results or not.
         cores : int, default: 1
             Number of cores to use for parallelization with a `multiprocess` Pool.
             Default value only uses 1 core with a custom :class:`AlloViz.utils.dummypool`
@@ -404,7 +401,7 @@ class Filtering:
         if self._filtdata.size == 0:
             print(f"{self._pkg._name} {self._name} is not a connected network (or subnetwork)")
         else:
-            Analysis.analyze(self, elements, metrics, normalize, nodes_dict, edges_dict, **kwargs)
+            Analysis.analyze(self, elements, metrics, nodes_dict, edges_dict, **kwargs)
         
         # if cores > 1:
         # Close the pool
