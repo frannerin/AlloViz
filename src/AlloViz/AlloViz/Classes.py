@@ -919,7 +919,7 @@ class Protein:
         self,
         pkg,
         metric,
-        filtering="Whole",
+        filtering="All",
         element="edges",
         num: int = 20,
         colors: list = ["orange", "turquoise"],
@@ -939,7 +939,7 @@ class Protein:
             Package/Network construction method for which to show the network.
         metric : str
             Network metric for which to show the network.
-        filtering : str, {"Whole", "Incontact", "Intercontact"}
+        filtering : str
             Filtering scheme for which to show the network.
         element : str or list, {"edges", "nodes"}
             Network element or elements to show on the protein structure representing the
@@ -1192,7 +1192,7 @@ class Delta:
         self,
         pkg,
         metric,
-        filtering="Whole",
+        filtering="All",
         element="edges",
         num=20,
         colors=["orange", "turquoise"],
@@ -1216,7 +1216,7 @@ class Delta:
             Package/Network construction method for which to show the delta-network.
         metric : str, default: "all"
             Network metric for which to show the delta-network.
-        filtering : str, {"Whole", "Incontact", "Intercontact"}
+        filtering : str
             Filtering scheme for which to show the delta-network.
         element : str or list, {"edges", "nodes"}
             Delta-network element or elements to show on the protein structure

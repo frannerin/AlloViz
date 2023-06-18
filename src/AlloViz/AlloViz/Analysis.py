@@ -67,7 +67,7 @@ def analyze_graph(args):
     """
     graph, metricf, colname = args
     nodes = {} # Temporary fix for future use of source-sink network analyses
-
+    
     # Try to apply the NetworkX's analysis function to the selected Graph
     try:
         analyzed = metricf(
@@ -85,7 +85,6 @@ def analyze_graph(args):
         for k in result
     }
     result = sort_index(analyzed) if len(list(analyzed.keys())[0]) == 2 else analyzed
-
     # Return a series
     return pandas.Series(result, name=colname)
 
