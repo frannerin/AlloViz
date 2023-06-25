@@ -1,15 +1,17 @@
 Notebooks
 #########
 
-.. toctree::
-   :maxdepth: 1
-   :hidden:
+## Basic workflow of AlloViz
 
-   notebooks/quickstart
-   notebooks/delta
+.. image:: https://mybinder.org/badge_logo.svg
+ :target: https://mybinder.org/v2/gh/frannerin/AlloViz/HEAD?labpath=notebooks%2Fquickstart.ipynb   
+ 
+## Calculation of the delta-network of two proteins
 
+.. image:: https://mybinder.org/badge_logo.svg
+ :target: https://mybinder.org/v2/gh/frannerin/AlloViz/HEAD?labpath=notebooks%2Fdelta.ipynb 
 
-======================================================== = 
-`Quickstart <notebooks/quickstart:Quickstart>`_          Basic workflow of AlloViz
-`Delta network <notebooks/delta:Delta network>`_         Calculation of the delta-network of two proteins
-======================================================== =
+## Use other NetworkX analyses
+
+.. image:: https://mybinder.org/badge_logo.svg
+ :target: https://mybinder.org/v2/gh/frannerin/AlloViz/HEAD?labpath=notebooks%2Fnetworkx.ipynb 
