@@ -1,7 +1,6 @@
 name: AlloViz
 channels:
   - conda-forge
-  - defaults
 dependencies:
   - pymol-open-source
   - ambertools
