@@ -1,0 +1,9 @@
+name: AlloViz
+channels:
+  - conda-forge
+dependencies:
+  - pymol-open-source
+  - ambertools
+  - pip
+  - pip:
+      - -r ../pip_requirements.txt
