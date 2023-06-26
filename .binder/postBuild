@@ -1,1 +1,8 @@
 pip install .
+
+# Enable jupyter nbextensions
+jupyter contrib nbextension install --user
+jupyter nbextension enable --py widgetsnbextension
+jupyter nbextension enable --py --sys-prefix widgetsnbextension
+jupyter nbextension enable --py --sys-prefix nglview
+nglview enable
