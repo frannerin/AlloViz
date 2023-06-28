@@ -5,7 +5,7 @@ dependencies:
   - pymol-open-source
   - ambertools
   - pip
-  - ipywidgets=7.7.5
-  - jupyterlab=3.6.5
   - pip:
       - -r ../pip_requirements.txt
+      - ipywidgets=7.7.5
+      - jupyterlab=3.6.5
