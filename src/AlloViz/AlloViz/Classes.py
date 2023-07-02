@@ -525,7 +525,6 @@ class Protein:
         else:
             mypool = utils.dummypool()
         utils.pool = mypool
-        print(utils.pool)
             
         if any(["CARDS" in pkg for pkg in pkgs]):
             Wrappers.CARDS_w.CARDS(self, d)
@@ -717,8 +716,7 @@ class Protein:
             mypool = Pool(cores)
         else:
             mypool = utils.dummypool()
-        utils.pool = mypool
-        print(utils.pool)   
+        utils.pool = mypool   
         
         for pkg in pkgs:
             # Analyze for "all" filterings or the ones passed as parameter

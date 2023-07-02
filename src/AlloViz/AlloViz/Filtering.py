@@ -396,7 +396,6 @@ class Filtering:
         else:
             mypool = utils.dummypool()
         utils.pool = mypool
-        print(utils.pool)       
         
         if self._filtdata.size == 0:
             print(f"{self._pkg._name} {self._name} is not a connected network (or subnetwork)")

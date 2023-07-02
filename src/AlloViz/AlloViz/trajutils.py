@@ -216,6 +216,54 @@ def download_GPCRmd_files(GPCRmdid, path):
     return
 
 
+
+def download_SCoV2MD_files(scov2mdid, path):
+    r"""Download the files of a SARSCoV2-MD dynid stored in the database
+
+    The website of the corresponding ID is scanned to
+    retrieve the downloadable files and they are downloaded in parallel in the passed
+    path with the same name that they have in the database.
+
+    Parameters
+    ----------
+    scov2mdid : int
+        Dynid
+    path : str
+        Path, relative or absolute, in which to download the files.
+    """
+    import sys, re
+    import tarfile, fileinput
+    from bs4 import BeautifulSoup
+    import urllib.request as pwget
+    # https://submission.gpcrmd.org/dynadb/files/Covid19Dynamics/465_dyn_241.pdb
+    web = "https://submission.gpcrmd.org"
+
+    # Establish the URL from which the files can be accessed and find the donwload links for the file extensions of interest
+    html = requests.get(f"{web}/covid19/{scov2mdid}/")
+    soup = BeautifulSoup(html.text, features="html.parser").find_all("a")
+    links = [
+        link.get("href")
+        for link in soup
+        if re.search("(xtc|dcd|pdb|psf|prm)", link.get("href"))
+    ]
+
+    # Download the files in parallel and save them in `path` with the same original name that they have in GPCRmd (last part of `link`)
+    mypool = Pool()
+
+    get_name = lambda link: f"{path}/{link.rsplit('/')[-1]}"
+    for link in links:
+        fname = get_name(link)
+        print(f"downloading {fname}")
+        mypool.apply_async(pwget.urlretrieve, args=(f"{web}{link}", fname))
+
+    mypool.close()
+    mypool.join()
+
+    return
+
+
+
+
 def process_input(
     GPCR, pdb, protein_sel, pdbf, compdbf, psf, psff, trajs, trajsf, comtrajsf, **kwargs
 ):
