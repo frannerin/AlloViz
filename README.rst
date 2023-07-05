@@ -75,7 +75,7 @@ Although not recommended, the virtual environment can also be created with pip:
    source AlloViz/env/bin/activate
    pip install -r AlloViz/pip_requirements.txt
 
-
+..
 
    Python <3.10 is recommended (i.e., 3.9.16). ``pytraj`` and the construction of delta-networks won't be available, as `AmberTools <http://ambermd.org/AmberTools.php>`__ and `pymol-open-source <https://github.com/schrodinger/pymol-open-source/>`__ are needed (respectively) for that, and they aren't distributed through PyPi. Other additional dependencies might also need to be installed by hand.
 
