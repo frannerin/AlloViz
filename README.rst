@@ -44,6 +44,8 @@ visualized in an interactive Python Notebook (i.e.,
 `Jupyter <https://jupyter.org/>`__) using
 `nglview <https://github.com/nglviewer/nglview>`__.
 
+AlloViz can also be use through a `GUI <https://alloviz.readthedocs.io/en/latest/notebooks/gui.html>`__.
+
 Install
 -------
 
@@ -55,7 +57,7 @@ Additional flags are recommended for speed:
    git clone --recursive --shallow-submodules -j 9 https://github.com/frannerin/AlloViz
 
 
-It is recommended to create a **virtual environment with** `**Miniconda** <https://docs.conda.io/en/latest/miniconda.html>`__
+It is recommended to create a **virtual environment** with `Miniconda <https://docs.conda.io/en/latest/miniconda.html>`__
 or similars using the ``conda-forge`` channel (a fast dependency solver is recommended for speed:  
 `libamba solver for Miniconda <https://conda.github.io/conda-libmamba-solver/getting-started/>`__
 or the `Mamba <https://mamba.readthedocs.io/en/latest/>`__ version of Conda):
@@ -67,23 +69,27 @@ or the `Mamba <https://mamba.readthedocs.io/en/latest/>`__ version of Conda):
 
 Finally, AlloViz is installed into the environment with ``pip install ./AlloViz``.
 
-Although not recommended, the virtual environment can also be created with pip:
+Although not recommended, the virtual environment can also be created with **pip**:
 
 .. code:: bash
 
    python -m venv AlloViz/env
    source AlloViz/env/bin/activate
    pip install -r AlloViz/pip_requirements.txt
+   pip install ./AlloViz
 
 ..
 
-   Python <3.10 is recommended (i.e., 3.9.16). ``pytraj`` and the construction of delta-networks won't be available, as `AmberTools <http://ambermd.org/AmberTools.php>`__ and `pymol-open-source <https://github.com/schrodinger/pymol-open-source/>`__ are needed (respectively) for that, and they aren't distributed through PyPi. Other additional dependencies might also need to be installed by hand.
+   Python <3.10 is recommended (i.e., 3.9.16). ``pytraj`` and the construction of delta-networks won't be available in a pip environment,
+   as `AmberTools <http://ambermd.org/AmberTools.php>`__ and `pymol-open-source <https://github.com/schrodinger/pymol-open-source/>`__ 
+   are needed (respectively) for that, and they aren't distributed through PyPi. Other additional dependencies might also need to be installed by hand.
 
 
-Tutorial
+Quickstart
 --------
 
-Check the `tutorial <https://alloviz.readthedocs.io/en/latest/tutorial.html>`__.
+Check the `tutorial notebooks <https://alloviz.readthedocs.io/en/latest/notebooks.html>`__ or the
+`quickstart <https://alloviz.readthedocs.io/en/latest/notebooks/quickstart.html>`__.
 
 Cite
 -------

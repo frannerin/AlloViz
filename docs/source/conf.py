@@ -241,6 +241,12 @@ with open('README.rst', 'w') as f:
   		"`options <https://alloviz.readthedocs.io/en/latest/table.html>`__",
   		":ref:`options <table:Network construction methods>`"
   	).replace(
-  		"`tutorial <https://alloviz.readthedocs.io/en/latest/tutorial.html>`__",
-  		":ref:`tutorial <notebooks/quickstart:Quickstart>`"
-  	))
+  		"`tutorial notebooks <https://alloviz.readthedocs.io/en/latest/notebooks.html>`__",
+  		":ref:`tutorial notebooks <notebooks:Notebooks>`"
+  	).replace(
+  		"`quickstart <https://alloviz.readthedocs.io/en/latest/notebooks/quickstart.html>`__",
+  		":ref:`quickstart <notebooks/quickstart:Quickstart>`"
+    ).replace(
+  		"`GUI <https://alloviz.readthedocs.io/en/latest/notebooks/gui.html>`__",
+  		":ref:`GUI <notebooks/gui:GUI>`"
+    ))
