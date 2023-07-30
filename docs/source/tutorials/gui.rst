@@ -32,13 +32,15 @@ They are located in `AlloViz/notebooks/data/117` and they correspond to the GPCR
 We can use a stride of 25 frames for the trajectory to speed up the loading process.
 
 .. image:: gui_pics/newmolecule.png
-    :width: 33 %
+    :width: 100 %
     :alt: VMD Main window with the File menu options displayed and "New molecule" option highlighted.
+
+
 .. image:: gui_pics/loadpdb.png
-    :width: 33 %
+    :width: 49 %
     :alt: VMD Molecule file browser window showing the PDB file to be loaded.
 .. image:: gui_pics/loadtraj.png
-    :width: 33 %
+    :width: 49 %
     :alt: VMD Molecule file browser window showing the trajectory file to be loaded into the previously loaded molecule entity.
 
 |

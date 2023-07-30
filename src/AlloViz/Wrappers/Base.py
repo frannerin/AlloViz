@@ -25,6 +25,7 @@ from lazyasd import LazyObject
 from ..AlloViz.Filtering import Filtering
 from ..AlloViz.Elements import Edges
 from ..AlloViz.utils import get_pool, rgetattr, rhasattr
+from ..AlloViz.info import citations
 from ..AlloViz import utils
 
 
@@ -151,6 +152,11 @@ class Base:
         get_pool().apply_async(wait_calculate,
                                args=(pqs,),
                                callback=add_raw)
+        
+        
+        pkg = [name for name in citations if name in self.__class__.__name__]
+        if len(pkg)==1 and "AlloViz" not in pkg:
+            print(f"Please, make sure to correctly cite the package used to compute the network: {pkg[0]} ({citations[pkg[0]]})")
         
         
     

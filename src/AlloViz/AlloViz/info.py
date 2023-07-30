@@ -228,3 +228,19 @@ dihedrals_atoms = {
     }
 }
 
+
+
+
+
+
+citations = {
+    "AlloViz": "",
+    "CARDS": "https://enspara.readthedocs.io/en/latest/cards.html",
+    "correlationplus": "https://github.com/tekpinar/correlationplus#cite",
+    "dynetan": "https://dynamical-network-analysis.readthedocs.io/en/latest/Citing.html",
+    "GetContacts": "https://github.com/getcontacts/getcontacts#citation",
+    "MDEntropy": "https://github.com/msmbuilder/mdentropy#citing",
+    "MDTASK": "https://md-task.readthedocs.io/en/latest/home.html#citing-md-task",
+    "PyInteraph2": "https://github.com/ELELAB/pyinteraph2",
+    "pytraj": "https://github.com/Amber-MD/pytraj#citation",
+}

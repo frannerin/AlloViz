@@ -44,7 +44,7 @@ visualized in an interactive Python Notebook (i.e.,
 `Jupyter <https://jupyter.org/>`__) using
 `nglview <https://github.com/nglviewer/nglview>`__.
 
-AlloViz can also be use through a `GUI <https://alloviz.readthedocs.io/en/latest/notebooks/gui.html>`__.
+AlloViz can also be use through a `GUI <https://alloviz.readthedocs.io/en/latest/tutorials/gui.html>`__.
 
 Install
 -------
@@ -88,8 +88,8 @@ Although not recommended, the virtual environment can also be created with **pip
 Quickstart
 --------
 
-Check the `tutorial notebooks <https://alloviz.readthedocs.io/en/latest/notebooks.html>`__ or the
-`quickstart <https://alloviz.readthedocs.io/en/latest/notebooks/quickstart.html>`__.
+Check the `tutorial notebooks <https://alloviz.readthedocs.io/en/latest/tutorials.html>`__ or the
+`quickstart <https://alloviz.readthedocs.io/en/latest/tutorials/quickstart.html>`__.
 
 Cite
 -------
