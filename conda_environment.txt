@@ -16,4 +16,8 @@ nglview
 prody
 mdtraj
 python-louvain
-compilers
+
+compilers<1.5.3
+
+cython<0.29.36
+setuptools<63
