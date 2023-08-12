@@ -9,7 +9,7 @@ import numpy as np
 from .Base import lazy_import, Multicore
 
 imports = {
-"_dynetan": ".Packages.dynetan.dynetan.proctraj",
+"_dynetan": ".Packages.dynetan.src.dynetan.proctraj",
 }
 
 for key, val in imports.items():
@@ -36,10 +36,7 @@ class dynetan(Multicore):
         
         protseg = list(obj.getU().segments.segids)
         obj.setSegIDs(protseg)
-        obj.selectSystem(withSolvent=False)
-
-        obj.setCustomResNodes({})
-        obj.setUsrNodeGroups({})
+        obj.selectSystem(withSolvent=True)
 
         obj.setNumWinds(1)
         obj.alignTraj(inMemory=False)
