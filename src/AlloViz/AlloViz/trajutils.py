@@ -158,7 +158,8 @@ def download_GPCRmd_files(GPCRmdid, path):
     from bs4 import BeautifulSoup
     import urllib.request as pwget
 
-    web = "https://submission.gpcrmd.org"
+    # web = "https://submission.gpcrmd.org"
+    web = "https://www.gpcrmd.org"
 
     # Establish the URL from which the files can be accessed and find the donwload links for the file extensions of interest
     html = requests.get(f"{web}/dynadb/dynamics/id/{GPCRmdid}/")
@@ -166,7 +167,7 @@ def download_GPCRmd_files(GPCRmdid, path):
     links = [
         link.get("href")
         for link in soup
-        if re.search("(xtc|dcd|pdb|psf|prm)", link.get("href"))
+        if re.search("(xtc|dcd|pdb|psf|prm)", link.get("href", default=""))
     ]
 
     # Download the files in parallel and save them in `path` with the same original name that they have in GPCRmd (last part of `link`)
