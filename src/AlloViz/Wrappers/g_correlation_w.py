@@ -1,14 +1,13 @@
 """g_correlation wrapper
 
-It calculates the Mutual Information (MI) and Linear MI (LMI) of the residues' CA atoms
-and COMs. Only for local installations.
+It calculates the Mutual Information (MI) and Linear MI (LMI) of the residues' CA atoms. Only for local installations.
 
 """
 
 import os
 import numpy as np
 
-from .Base import Base, Use_COM
+from .Base import Base
     
     
     
@@ -23,7 +22,7 @@ class g_correlation_CA_MI(Base):
         return new
                 
         
-    def _computation(self, xtc):#pdb, traj, xtc, pq):
+    def _computation(self, xtc):
         # Send g_correlation
         pq = self._rawpq(xtc)
         if not os.path.isfile(f"{pq}.dat"):
@@ -59,13 +58,13 @@ EOF
     
     
     
-class g_correlation_COM_MI(Use_COM, g_correlation_CA_MI):
-    """g_correlation's MI of residues' COM
-    """
-    def __new__(cls, protein, d):
-        new = super().__new__(cls, protein, d)
-        new._CLIargs = ""
-        return new
+# class g_correlation_COM_MI(Use_COM, g_correlation_CA_MI):
+#     """g_correlation's MI of residues' COM
+#     """
+#     def __new__(cls, protein, d):
+#         new = super().__new__(cls, protein, d)
+#         new._CLIargs = ""
+#         return new
         
         
         
@@ -77,10 +76,3 @@ class g_correlation_CA_LMI(g_correlation_CA_MI):
         new = super().__new__(cls, protein, d)
         new._CLIargs = "-linear"
         return new
-    
-
-    
-class g_correlation_COM_LMI(Use_COM, g_correlation_CA_LMI):
-    """g_correlation's LMI of residues' COM
-    """
-    pass

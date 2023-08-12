@@ -30,17 +30,6 @@ class MDEntropy_Base(Multicore):
         
         new.method = d["MDEntropy_method"] if "MDEntropy_method" in d else "grassberger"
         
-        # # Opción si las necesidades de memoria incrementan con taskcpus
-        # extra_taskcpus = int((self.taskcpus/4 - 1) * 4) if self.taskcpus>=4 else 0
-        # taskcpus = 1 + extra_taskcpus # Minimum 4*2000 of memory (this taskcpus is like that to use 4 cpus-2000 mem in .sh files)
-        # empties = 3
-        
-        # # Opción si las necesidades altas de memoria sólo son con el inicio del cálculo
-        # extra_taskcpus = int((self.taskcpus/4 - 1) * 4) if self.taskcpus>=4 else 0
-        # taskcpus = 1 + extra_taskcpus # Minimum 4*2000 of memory (this taskcpus is like that to use 4 cpus-2000 mem in .sh files)
-        # empties = 3 - extra_taskcpus if extra_taskcpus<=3 else 0
-
-        # Opción de 1 empty por tasckpu, pasando las extras a empties; 1 taskcpu requiere 3,2G; hay una necesidad mayor de memoria al principio pero i pretend i do not see
         half = int(np.floor(new.taskcpus/2))
         new.taskcpus = half if new.taskcpus > 1 else 1
         new._empties = half
@@ -48,10 +37,9 @@ class MDEntropy_Base(Multicore):
         return new
         
         
+    def _computation(self, xtc):
         
-    def _computation(self, xtc):#pdb, traj, xtc, pq, taskcpus):
-        """"""
-        mytraj = _mdtraj.load(self._trajs[xtc], top=self._pdbf) # hopefully mdtraj is loaded from the Classes module
+        mytraj = _mdtraj.load(self._trajs[xtc], top=self._pdbf)
         mi = self._function(threads=self.taskcpus, normed=True, method=self.method, **self._types) # n_bins=3, method='knn', normed=True
         corr = mi.partial_transform(traj=mytraj, shuffle=0, verbose=True)
         return corr, xtc, self._resl

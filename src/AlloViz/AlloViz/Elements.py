@@ -43,15 +43,8 @@ class Element(pandas.DataFrame):
     with the :class:`~AlloViz.Protein` or :class:`~AlloViz.Delta` object the information
     belongs to, as it is needed for representation.
     """
-    
-    
-    # # temporary properties
-    # _internal_names = pd.DataFrame._internal_names + ["internal_cache"]
-    # _internal_names_set = set(_internal_names)
 
-    # normal properties; retained after manipulating df; should new methods be here?
-    # _metadata = 
-    
+    # Necessary for subclassing DataFrame class according to docs
     _metadata = ["_parent"]
     
     @property
@@ -62,7 +55,6 @@ class Element(pandas.DataFrame):
     def _internal_ctor(cls, *args, **kwargs):
         kwargs['parent'] = None
         return cls(*args, **kwargs)
-    
     
     @property
     def _constructor_sliced(self):
@@ -77,20 +69,6 @@ class Element(pandas.DataFrame):
                           dtype=dtype,
                           copy=copy)
         self._parent = parent
-    
-    
-    
-#     @property
-#     def _constructor(self):
-#         return self.__class__
-
-    
-    
-#     def __init__(self, *args, parent):
-#         super().__init__(*args)
-#         self._parent = parent
-    
-    
     
     
     def __sub__(self, other):
