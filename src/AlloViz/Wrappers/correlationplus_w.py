@@ -6,7 +6,7 @@ CA atoms, and also the Pearson's correlation of the residues' backbone dihedral 
 
 """
 
-from .Base import lazy_import, Base, Use_COM, Combined_Dihs_Avg
+from .Base import lazy_import, Base, Combined_Dihs_Avg
 
 imports = {
 "_corrplus": ".Packages.correlationplus.correlationplus.calculate",
