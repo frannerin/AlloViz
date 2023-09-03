@@ -4,6 +4,8 @@ channels:
 dependencies:
   - pymol-open-source
   - ambertools
+  - jupyterlab<4
+  - ipywidgets<8
   - pip
   - pip:
       - -r ../pip_requirements.txt

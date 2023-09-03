@@ -1,5 +1,4 @@
 mdanalysis>=2.2,<2.3 # 2.3 or above fails with non-complying "formalcharges" last column of PDBs (GPCRmd PDBs)
-ipywidgets<8 # 8 or above messes with nglview
 numpy<1.24  # 1.24 removed numpy.int and numpy.float needed for dynetan and PyInteraph2
 
 multiprocess
@@ -10,7 +9,6 @@ numba
 networkx
 # pymol-open-source # not in pypi
 # ambertools # not in pypi
-jupyterlab
 nglview
 prody
 mdtraj

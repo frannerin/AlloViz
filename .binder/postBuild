@@ -1,2 +1,1 @@
-conda install --force-reinstall -y -c conda-forge "ipywidgets<8" "jupyterlab<4" 
 pip install .
