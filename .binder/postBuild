@@ -1,1 +1,2 @@
+conda install -n AlloViz -c conda-forge "ipywidgets<8" "jupyterlab<4" --force-reinstall -y
 pip install .

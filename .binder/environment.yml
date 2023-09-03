@@ -7,5 +7,3 @@ dependencies:
   - pip
   - pip:
       - -r ../pip_requirements.txt
-  - ipywidgets<8
-  - jupyterlab<4
