@@ -17,7 +17,7 @@ readme = "README.rst"
 #dynamic = ["version"]
 version = "1.0"
 
-dependencies = [ #"vmd-python @ git+https://github.com/frannerin/vmd-python@v3.0.6-macosxarm64",
+dependencies = [ "vmd-python @ git+https://github.com/frannerin/vmd-python@v3.0.6-macosxarm64",
 				 "ipywidgets<8", # 8 or above messes with nglview
 				 "jupyterlab<4" # 4 or above messes with nglview
 			   ]
