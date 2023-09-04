@@ -5,11 +5,11 @@ AlloViz
     :target: https://alloviz.readthedocs.io/en/latest/?badge=latest
     :alt: Documentation Status
 
-.. image:: https://github.com/frannerin/AlloViz/actions/workflows/test_conda_newenv.yml/badge.svg
+.. image:: https://github.com/frannerin/AlloViz/actions/workflows/test_conda_newenv.yml/badge.svg?branch=main
    :target: https://github.com/frannerin/AlloViz/actions/workflows/test_conda_newenv.yml
    :alt: Conda installation
 
-.. image:: https://github.com/frannerin/AlloViz/actions/workflows/test_pip_tcl_ubuntu_newenv.yml/badge.svg
+.. image:: https://github.com/frannerin/AlloViz/actions/workflows/test_pip_tcl_ubuntu_newenv.yml/badge.svg?branch=main
    :target: https://github.com/frannerin/AlloViz/actions/workflows/test_pip_tcl_ubuntu_newenv.yml
    :alt: pip installation
    
