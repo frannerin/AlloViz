@@ -5,9 +5,14 @@ AlloViz
     :target: https://alloviz.readthedocs.io/en/latest/?badge=latest
     :alt: Documentation Status
 
-.. image:: https://github.com/frannerin/AlloViz/actions/workflows/test_conda.yml/badge.svg
-   :target: https://github.com/frannerin/AlloViz/actions/workflows/test_conda.yml
-   :alt: Test Python Package using Conda
+.. image:: https://github.com/frannerin/AlloViz/actions/workflows/test_conda_newenv.yml/badge.svg
+   :target: https://github.com/frannerin/AlloViz/actions/workflows/test_conda_newenv.yml
+   :alt: Conda installation
+
+.. image:: https://github.com/frannerin/AlloViz/actions/workflows/test_pip_tcl_ubuntu_newenv.yml/badge.svg
+   :target: https://github.com/frannerin/AlloViz/actions/workflows/test_pip_tcl_ubuntu_newenv.yml
+   :alt: pip installation
+   
 
 A Python package to interactively compute, analyze and visualize protein
 allosteric communication (residue interaction) networks and

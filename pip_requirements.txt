@@ -1,5 +1,7 @@
 mdanalysis>=2.2,<2.3 # 2.3 or above fails with non-complying "formalcharges" last column of PDBs (GPCRmd PDBs)
 numpy<1.24  # 1.24 removed numpy.int and numpy.float needed for dynetan and PyInteraph2
+ipywidgets<8 # 8 or above messes with nglview
+jupyterlab<4 # 4 or above messes with nglview
 
 multiprocess
 lazyasd
