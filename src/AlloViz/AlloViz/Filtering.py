@@ -13,13 +13,9 @@ import numpy as np
 import networkx
 from multiprocess import Pool
 
-# from importlib import import_module
-
-# from .Visualization import Edges, Nodes
 from . import Analysis
-#from .Elements import Edges, Nodes
-from .utils import rgetattr, rhasattr
 from . import utils
+from .utils import rgetattr, rhasattr
 
 
 def All(pkg, data, **kwargs):
@@ -56,8 +52,6 @@ def GetContacts_edges(pkg, data, GetContacts_threshold, **kwargs):
         raise Exception("GetContacts results are needed first")
     
     # If GetContacts_threshold kwarg is passed, use it to filter the present data without affecting the saved GetContacts' Protein attribute
-    # if "GetContacts_threshold" in kwargs:
-        # gc = gc[gc["weight"] >= kwargs["GetContacts_threshold"]]
     gc = gc[gc["weight"] >= GetContacts_threshold]
         
     # Return the data filtered retaining only the indices that are in GetContacts data
@@ -83,12 +77,6 @@ def No_Sequence_Neighbors(pkg, data, Sequence_Neighbor_distance, **kwargs):
         sequence positions/distance between residues of a pair to retain in Intercontact
         filtering, which defaults to 5.
     """
-    # Define Intercontact_distance if it is in kwargs or with the default value
-    # Intercontact_distance = (
-    #     kwargs["Sequence_Neighbor_distance"]
-    #     if "Sequence_Neighbor_distance" in kwargs
-    #     else 5
-    # )
     # Define a function to retrieve the residue number from the residue nomenclature used (chainID:)RES:resnum
     resnum = lambda res: int(res.rsplit(":")[-1])
     # Return the indices whose residue pair satisfies the Intercontact_distance
@@ -167,14 +155,7 @@ def Spatially_distant(pkg, data, Interresidue_distance, **kwargs):
     df = pandas.DataFrame(sq_dist_arr, columns=resnames, index=resnames)
     df = df.where( np.triu(np.ones(df.shape), k=1).astype(bool) )
     df = pandas.DataFrame({"dist": df.stack()})
-    
-    # # Define Interresidue_distance if it is in kwargs or with the default value
-    # Interresidue_distance = (
-    #     float(kwargs["Interresidue_distance"])
-    #     if "Interresidue_distance" in kwargs
-    #     else 10
-    # )
-    
+        
     indices = df[df["dist"] >= Interresidue_distance].index
     # Return the filtered data
     return data.filter(indices, axis=0)
@@ -275,10 +256,6 @@ class Filtering:
         self._graph_distances = -np.log(abs(self._filtdata) + 10E-10) + 10E-10
         # un-transform standard error columns
         self._graph_distances.loc[:,["std" in c for c in self._graph_distances.columns]] = data.loc[:,["std" in c for c in data.columns]]
-
-        # # For each column in the filtered data that is not a standard error, create an analyzable NetworkX's graph and save it as an attribute
-        # for col in [c for c in self._filtdata if "std" not in c]:
-        #     setattr(self, f"_{col}_G", self._get_G(self._filtdata[col]))
         
         # For each column in the filtered data that is not a standard error, create an analyzable NetworkX's graph and save it
         self.graphs = {}
@@ -287,20 +264,10 @@ class Filtering:
                 # The approach in lit. is to use -log10(|corr|) as edge weights/distances in the network for analyses
                 # e.g., https://www.pnas.org/doi/full/10.1073/pnas.0810961106            
                 self.graphs[col] = self._get_G(self._graph_distances[col])
-                # self.graphs[col] = self._get_G(self._filtdata[col])
             except NoNetworkException as e:
                 print(e)
                 
-
-        # # Send the desired analyses
-        # self.add_metrics(elements, metrics, normalize, **kwargs)
-
-#     def _get_filt_data(self):#, **kwargs):
-#         r"""Return the filtered raw data from the passed pkg
-#
-#         `Whole` filtering means no filtering.
-#         """
-#         return
+                
 
     def _get_G(self, column):
         r"""Return a DataFrame's column as a Graph
@@ -347,7 +314,7 @@ class Filtering:
 
             return network
     
-    def analyze(self, elements="edges", metrics="all", normalize=True, cores=1, nodes_dict=Analysis.nodes_dict, edges_dict=Analysis.edges_dict, **kwargs):
+    def analyze(self, elements="edges", metrics="all", cores=1, nodes_dict=Analysis.nodes_dict, edges_dict=Analysis.edges_dict, **kwargs):
         r"""Analyze the filtered network
         
         Send the analyses of the filtered network for the passed combinations of
@@ -367,9 +334,6 @@ class Filtering:
             `edges_dict` dictionaries. Default is "all" and it sends the computation for
             all the metrics defined in the corresponding dictionary of the selected
             elements in `element`.
-        normalize : bool, default: True
-            Passed to the NetworkX functions that calculate the metrics, to output
-            normalized results or not.
         cores : int, default: 1
             Number of cores to use for parallelization with a `multiprocess` Pool.
             Default value only uses 1 core with a custom :class:`AlloViz.utils.dummypool`
@@ -399,131 +363,13 @@ class Filtering:
         else:
             mypool = utils.dummypool()
         utils.pool = mypool
-        print(utils.pool)       
         
         if self._filtdata.size == 0:
             print(f"{self._pkg._name} {self._name} is not a connected network (or subnetwork)")
         else:
-            Analysis.analyze(self, elements, metrics, normalize, nodes_dict, edges_dict, **kwargs)
+            Analysis.analyze(self, elements, metrics, nodes_dict, edges_dict, **kwargs)
         
-        # if cores > 1:
         # Close the pool
         utils.pool.close()
         utils.pool.join()
         utils.pool = utils.dummypool()
-        
-        
-        
-        
-
-# class Whole(Base):
-#     """Class for analysis with unfiltered (`Whole`) data
-
-#     See this class' :meth:`~AlloViz.AlloViz.Analysis.Analysis._get_filt_data`
-#     """
-
-#     pass
-
-
-# class Incontact(Base):
-#     """Class for analysis with `Incontact` filtered data
-
-#     `Incontact` filtering retains only the raw edges for which `GetContacts` has been
-#     able to calculate a contact frequency value, i.e., residue pairs that are in
-#     physicochemical contact (see this class'
-#     :meth:`~AlloViz.AlloViz.Analysis.Incontact._get_filt_data`).
-
-#     `GetContacts` data is retrieved from the passed `pkg`
-#     :class:`~AlloViz.Protein` object stored in it and thus is needed to have been
-#     calculated previously. It may (or not) have been calculated using the
-#     `GetContacts_threshold` kwarg, filtered afterwards with
-#     :meth:`AlloViz.Wrappers.GetContacts.GetContacts.filter_contacts`, or the
-#     `GetContacts_threshold` kwarg can also be passed to the analysis to filter the
-#     `GetContacts` data in this point.
-
-#     Other Parameters
-#     ----------------
-#     **kwargs
-#         `GetContacts_threshold` kwarg can be passed to specify the minimum contact
-#         frequency (0-1, default 0) threshold, which will be used to filter out
-#         contacts with a frequency (average) lower than it before analysis.
-#     """
-
-#     def __init__(self, *args, **kwargs):
-#         super().__init__(*args, **kwargs)
-
-#     def _get_filt_data(self, **kwargs):
-#         r"""Return the filtered raw data from the passed pkg"""
-#         df = super()._get_filt_data()
-
-#         # Get GetContacts raw data if its calculation is available, else raise an Exception
-#         try:
-#             gc = self._pkg.protein.GetContacts.raw
-#             # If GetContacts_threshold kwarg is passed, use it to filter the present data without affecting the saved GetContacts' Protein attribute
-#             if "GetContacts_threshold" in kwargs:
-#                 gc = self._pkg.protein.GetContacts._filter_raw(
-#                     df, kwargs["GetContacts_threshold"]
-#                 )
-#         except:
-#             raise Exception("GetContacts results are needed first")
-
-#         # Return the data filtered retaining only the indices that are in GetContacts data
-#         return df.filter(gc.index, axis=0)
-
-
-# class Intercontact(Incontact):
-#     """Class for analysis with `Intercontact` filtered data
-
-#     `Intercontact` represents one step further than
-#     :class:`~AlloViz.AlloViz.Analysis.Incontact` filtered data, as it only retains
-#     edges between residue pairs that are at the same time `Incontact` and a certain
-#     number of positions away in the protein sequence (default: 5), so to filter out
-#     "uninteresting" raw edges in the network (see this class'
-#     :meth:`~AlloViz.AlloViz.Analysis.Intercontact._get_filt_data`).
-
-#     Residues that are close in the protein sequence are always going to be detected by
-#     `GetContacts` as if they were in physicochemical contact, because of their intrinsic
-#     short spatial distance. Specially, it is known that a turn of an alpha-helix is
-#     completed almost every 4 residues, and that thee residues i and i+4 in an alpha-helix
-#     interact with a backbone hydrogen bond. Thus, to take out these interactions and also
-#     the contacts due to closeness of residues i and i+5, the default value for
-#     Intercontact filtering is 5 sequence positions.
-
-#     Other Parameters
-#     ----------------
-#     **kwargs
-#         `GetContacts_threshold` kwarg can be passed to specify the minimum contact
-#         frequency (0-1, default 0) threshold, which will be used to filter out
-#         contacts with a frequency (average) lower than it before analysis.
-#         `Intercontact_distance` kwarg can be passed to specify the minimum number of
-#         sequence positions/distance between residues of a pair to retain in Intercontact
-#         filtering, which defaults to 5.
-#     """
-
-#     def __init__(self, *args, **kwargs):
-#         super().__init__(*args, **kwargs)
-
-#     def _get_filt_data(self, **kwargs):
-#         r"""Return the filtered raw data from the passed pkg"""
-#         # Get GetContacts-filtered/Incontact data to further filter it with the Intercontact_distance restriction
-#         df = super()._get_filt_data(**kwargs)
-
-#         def get_intercontacts(indexl, **kwargs):
-#             # Define Intercontact_distance if it is in kwargs or with the default value
-#             Intercontact_distance = (
-#                 kwargs["Intercontact_distance"]
-#                 if "Intercontact_distance" in kwargs
-#                 else 5
-#             )
-#             # Define a function to retrieve the residue number from the residue nomenclature used (chainID:)RES:resnum
-#             resnum = lambda res: int(res.rsplit(":")[-1])
-#             # Return the indices whose residue pair satisfies the Intercontact_distance
-#             # The absolute value of the subtraction between the two residue numbers must be greater than the parameter to indicate that they are at a greater distance in the sequence than it
-#             return [
-#                 idx
-#                 for idx in indexl
-#                 if abs(resnum(idx[0]) - resnum(idx[1])) > Intercontact_distance
-#             ]
-
-#         # Return the data filtered according to Incontact + get_intercontacts function
-#         return df.filter(get_intercontacts(df.index, **kwargs), axis=0)

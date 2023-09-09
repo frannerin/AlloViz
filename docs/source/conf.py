@@ -93,7 +93,7 @@ autosummary_mock_imports = [
 	"pytraj",
 	"cython", "h5py", "python-louvain", "community", "colorama", #dynetan deps
 	"pyprind", "panedr", "natsort", "click", "PyQt5",
-	"enspara.info_theory.libinfo", "enspara.geometry.libdist", "enspara.msm.libmsm", "tables",
+	"enspara.info_theory.libinfo", "enspara.geometry.libdist", "enspara.msm.libmsm", "tables", "psutil"
 ]
 
 # autodoc
@@ -241,6 +241,12 @@ with open('README.rst', 'w') as f:
   		"`options <https://alloviz.readthedocs.io/en/latest/table.html>`__",
   		":ref:`options <table:Network construction methods>`"
   	).replace(
-  		"`tutorial <https://alloviz.readthedocs.io/en/latest/tutorial.html>`__",
-  		":ref:`tutorial <notebooks/quickstart:Quickstart>`"
-  	))
+  		"`tutorial notebooks <https://alloviz.readthedocs.io/en/latest/tutorials.html>`__",
+  		":ref:`tutorial notebooks <tutorials:Tutorials>`"
+  	).replace(
+  		"`quickstart <https://alloviz.readthedocs.io/en/latest/tutorials/quickstart.html>`__",
+  		":ref:`quickstart <tutorials/quickstart:Quickstart>`"
+    ).replace(
+  		"`GUI <https://alloviz.readthedocs.io/en/latest/tutorials/gui.html>`__",
+  		":ref:`GUI <tutorials/gui:GUI>`"
+    ))

@@ -38,7 +38,7 @@ class GetContacts(Multicore):
         ctcs = f"{path}/{xtc}.tsv"
         freqs = f"{path}/{xtc}_freqs.tsv"
         
-        if not os.path.isfile(freqs):# or ow:
+        if not os.path.isfile(freqs):
             _getcontacts_contacts.main(f"--topology {self._pdbf} --trajectory {self._trajs[xtc]} --output {ctcs} --itypes all --cores {self.taskcpus}".split())
             _getcontacts_freqs.main(f"--input_files {ctcs} --output_file {freqs}".split())
         return freqs, xtc

@@ -1,12 +1,12 @@
 """correlationplus wrapper
 
-It calculates the Pearson's correlation and the Linear Mutual Information (MI) of the residues'
-CA atoms and COMs, and also the Pearson's correlation of the residues' backbone dihedral angles 
-(Phi, Psi and Omega) and their average.
+It calculates the Pearson's correlation and the Linear Mutual Information (LMI) of the residues'
+CA atoms, and also the Pearson's correlation of the residues' backbone dihedral angles 
+(Phi, Psi) and their average.
 
 """
 
-from .Base import lazy_import, Base, Use_COM, Combined_Dihs_Avg, Combined_Dihs_Max
+from .Base import lazy_import, Base, Combined_Dihs_Avg
 
 imports = {
 "_corrplus": ".Packages.correlationplus.correlationplus.calculate",
@@ -30,24 +30,24 @@ class correlationplus_CA_Pear(Base):
 class correlationplus_CA_LMI(correlationplus_CA_Pear):
     """correlationplus' LMI of CA atoms
     """    
-    def _computation(self, xtc):#pdb, traj, xtc, pq):
+    def _computation(self, xtc):
         corr = _corrplus.calcMD_LMI(self._pdbf, self._trajs[xtc], saveMatrix = False)
         return corr, xtc
         
         
         
-class correlationplus_COM_Pear(Use_COM, correlationplus_CA_Pear):
-    """correlationplus' Pearson's correlation of residues' COM
-    """
-    pass
+# class correlationplus_COM_Pear(Use_COM, correlationplus_CA_Pear):
+#     """correlationplus' Pearson's correlation of residues' COM
+#     """
+#     pass
         
 
         
         
-class correlationplus_COM_LMI(Use_COM, correlationplus_CA_LMI):
-    """correlationplus' LMI of residues' COM
-    """    
-    pass
+# class correlationplus_COM_LMI(Use_COM, correlationplus_CA_LMI):
+#     """correlationplus' LMI of residues' COM
+#     """    
+#     pass
 
         
         
@@ -60,7 +60,7 @@ class correlationplus_Psi(Base):
         new._dih = "psi"
         return new
     
-    def _computation(self, xtc):#pdb, traj, xtc, pq):
+    def _computation(self, xtc):
         """"""
         corr = _corrplus.calcMDsingleDihedralCC(self._pdbf, self._trajs[xtc], dihedralType = self._dih, saveMatrix = False) # outputs a n_res x n_res matrix nevertheless
         return corr, xtc, self._d["_dihedral_residx"]()
@@ -77,29 +77,19 @@ class correlationplus_Phi(correlationplus_Psi):
 
         
 
-class correlationplus_Omega(correlationplus_Psi):
-    """correlationplus' Pearson's correlation of Omega backbone dihedral
-    """
-    def __new__(cls, protein, d):
-        new = super().__new__(cls, protein, d)
-        new._dih = "omega"
-        return new
+# class correlationplus_Omega(correlationplus_Psi):
+#     """correlationplus' Pearson's correlation of Omega backbone dihedral
+#     """
+#     def __new__(cls, protein, d):
+#         new = super().__new__(cls, protein, d)
+#         new._dih = "omega"
+#         return new
 
         
         
 class correlationplus_Backbone_Dihs(Combined_Dihs_Avg, correlationplus_CA_Pear):
     """correlationplus' combination of the backbone dihedrals' Pearson's correlations by
     averaging
-    """
-    def __new__(cls, protein, d):
-        new = super().__new__(cls, protein, d)
-        new._dihs = ["Phi", "Psi"]#, "Omega"]
-        return new
-    
-    
-class correlationplus_Backbone_Dihs_Max(Combined_Dihs_Max, correlationplus_CA_Pear):
-    """correlationplus' combination of the backbone dihedrals' Pearson's correlations by
-    taking the max value
     """
     def __new__(cls, protein, d):
         new = super().__new__(cls, protein, d)

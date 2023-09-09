@@ -28,7 +28,7 @@ cmpsn_reslist = \
 class PyInteraph2_Base(Base):
     """PyInteraph2 base class
     """    
-    def _computation(self, xtc):#pdb, traj, xtc, pq, CLIargs):
+    def _computation(self, xtc):
         """"""
         _pyinteraph.main(f"-s {self._pdbf} -t {self._trajs[xtc]} {self._CLIargs(xtc)}".split(" "))
         corr = np.loadtxt(f"{self._rawpq(xtc)}{'_all' if 'Energy' not in self._name else ''}.dat")
@@ -65,18 +65,18 @@ class PyInteraph2_Contacts(PyInteraph2_Base):
     
     
     
-class PyInteraph2_Contacts_Corrected(PyInteraph2_Contacts):
-    """PyInteraph2's corrected side-chain contact frequencies
+# class PyInteraph2_Contacts_Corrected(PyInteraph2_Contacts):
+#     """PyInteraph2's corrected side-chain contact frequencies
     
-    Contact frequencies based on the fulfillment of a distance threshold requirement
-    of each residue pair's COMs' distance. A correction based on the radius of gyration
-    of the involved residues is applied to the COMs' distance and thus the distance
-    threshold is lowered to 2.5 angstroms, based on the authors' calculations.
-    """
-    def __new__(cls, protein, d):
-        new = super().__new__(cls, protein, d)
-        new._CLIargs = lambda xtc: f"-m --cmpsn-csv {new._rawpq(xtc)}.csv --cmpsn-graph {new._rawpq(xtc)}.dat --cmpsn-residues {','.join(cmpsn_reslist)} --cmpsn-correction rg --cmpsn-co 2.5"
-        return new
+#     Contact frequencies based on the fulfillment of a distance threshold requirement
+#     of each residue pair's COMs' distance. A correction based on the radius of gyration
+#     of the involved residues is applied to the COMs' distance and thus the distance
+#     threshold is lowered to 2.5 angstroms, based on the authors' calculations.
+#     """
+#     def __new__(cls, protein, d):
+#         new = super().__new__(cls, protein, d)
+#         new._CLIargs = lambda xtc: f"-m --cmpsn-csv {new._rawpq(xtc)}.csv --cmpsn-graph {new._rawpq(xtc)}.dat --cmpsn-residues {','.join(cmpsn_reslist)} --cmpsn-correction rg --cmpsn-co 2.5"
+#         return new
     
     
     
@@ -113,5 +113,5 @@ class PyInteraph2_Energy(PyInteraph2_Base):
     """
     def __new__(cls, protein, d):
         new = super().__new__(cls, protein, d)
-        new._CLIargs = lambda xtc: f"-p --kbp-csv {new._rawpq(xtc)}.csv --kbp-graph {new._rawpq(xtc)}.dat" #{new._rawpq(xtc)}.csv --kbp-graph {new._rawpq(xtc)}.dat
+        new._CLIargs = lambda xtc: f"-p --kbp-csv {new._rawpq(xtc)}.csv --kbp-graph {new._rawpq(xtc)}.dat"
         return new

@@ -202,32 +202,3 @@ def get_pool():
     """
     global pool
     return pool
-
-
-# def capitalize(string):
-#     return string[0].upper() + string[1:]
-
-# def norm(normalize):
-#     return "norm" if normalize else "no_norm"
-
-
-# def get_intercontacts(indexl):
-#     get_resnum = lambda res: int(res.rsplit(":")[-1])
-#     return [idx for idx in indexl if abs(get_resnum(idx[0]) - get_resnum(idx[1]) ) >= 4]
-
-
-# pdict = {}
-
-# def update_pdict(name, p):
-#     global pdict
-#     pdict[name] = p
-#     print("adding to pdict", pdict)
-#     p.start()
-
-# def get_p(name):
-#     global pdict
-#     print("getting from pdict", pdict)
-#     p = pdict[name]
-#     print(p)
-#     p.get()
-#     print(p)

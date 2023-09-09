@@ -7,7 +7,7 @@ dihedral angles and also their combinations.
 
 import numpy as np
 
-from .Base import lazy_import, Multicore, Combined_Dihs_Avg, Combined_Dihs_Max
+from .Base import lazy_import, Multicore, Combined_Dihs_Avg
 
 imports = {
 "_npeet_lnc": ".Packages.NPEET_LNC.lnc",
@@ -57,9 +57,6 @@ class AlloViz_Base(Multicore):
         # Establish the atoms that form the desired dihedral (if they are not the default ones from the selection function and are provided) 
         # and the selection function itself, and then retrieve the selected AtomGroups
         dih_atoms = self._dih_atoms if hasattr(self, "_dih_atoms") else {}
-        # select_dih = lambda res: eval(f"res.{self._dih.lower()}_selection(**dih_atoms)")
-        # selected = [select_dih(res) for res in prot.residues]
-        # selected = eval(f"prot.residues.{self._dih.lower()}_selections(**dih_atoms)")
         selected = []
         for res in prot.residues:
             ag = eval(f"res.{self._dih.lower()}_selection(**dih_atoms)")
@@ -67,7 +64,6 @@ class AlloViz_Base(Multicore):
         
         # Save the residue indices of the protein for which an AtomGroup forming the desired dihedral could be found, and also make a list of the AtomGroups without Nones
         selected_res, selected = zip(*[(i, ag) for i, ag in enumerate(selected) if ag])
-        # selected_res =  d["_dihedral_residx"]() # Used before for backbone dihedrals; from the Protein's _dihedral_residx
         
         # Depending on the trajectory number, establish the start and stop frames to get dihedral angle values time series from the Universe
         offset = 0
@@ -86,7 +82,6 @@ class AlloViz_Base(Multicore):
         
         # Create a numpy array to store results
         corr = np.zeros((len(selected_res), len(selected_res)))
-        print("prot.n_residues:", prot.n_residues, "len(selected_res)", len(selected_res), "dihedrals array shape:", values.shape, "empty corr array shape:", corr.shape)
         
         # Calculate MIs: https://stackoverflow.com/q/72783941
         in_data = []
@@ -139,13 +134,13 @@ class AlloViz_Phi(AlloViz_Base):
 
         
 
-class AlloViz_Omega(AlloViz_Base):
-    """AlloViz network construction method's MI of Omega backbone dihedral
-    """
-    def __new__(cls, protein, d):
-        new = super().__new__(cls, protein, d)
-        new._dih = "omega"
-        return new
+# class AlloViz_Omega(AlloViz_Base):
+#     """AlloViz network construction method's MI of Omega backbone dihedral
+#     """
+#     def __new__(cls, protein, d):
+#         new = super().__new__(cls, protein, d)
+#         new._dih = "omega"
+#         return new
 
         
         
@@ -158,19 +153,7 @@ class AlloViz_Backbone_Dihs(Combined_Dihs_Avg, AlloViz_Base):
     def __new__(cls, protein, d):
         new = super().__new__(cls, protein, d)
         new._dihs = ["Phi", "Psi"]#, "Omega"]
-        return new
-    
-class AlloViz_Backbone_Dihs_Max(Combined_Dihs_Max, AlloViz_Base):
-    """AlloViz network construction method's of the combination of the backbone
-    dihedrals' MIs by taking the max value
-    """
-    def __new__(cls, protein, d):
-        new = super().__new__(cls, protein, d)
-        new._dihs = ["Phi", "Psi"]#, "Omega"]
-        return new
-
-
-    
+        return new   
 
 
 
@@ -239,20 +222,20 @@ class AlloViz_Chi4(AlloViz_Base):
         return new
     
     
-class AlloViz_Chi5(AlloViz_Base):
-    """AlloViz network construction method's MI of Chi5 side-chain dihedral
+# class AlloViz_Chi5(AlloViz_Base):
+#     """AlloViz network construction method's MI of Chi5 side-chain dihedral
     
-    Chi5 side-chain dihedral is only available for ARG residues.
-    """
+#     Chi5 side-chain dihedral is only available for ARG residues.
+#     """
     
-    def __new__(cls, protein, d):
-        new = super().__new__(cls, protein, d)
-        new._dih = "chi1"
-        new._dih_atoms = {"n_name": "CD",
-                          "ca_name": "NE",
-                          "cb_name": "CZ",
-                          "cg_name": "NH1"}
-        return new
+#     def __new__(cls, protein, d):
+#         new = super().__new__(cls, protein, d)
+#         new._dih = "chi1"
+#         new._dih_atoms = {"n_name": "CD",
+#                           "ca_name": "NE",
+#                           "cb_name": "CZ",
+#                           "cg_name": "NH1"}
+#         return new
     
     
     
@@ -268,34 +251,13 @@ class AlloViz_Sidechain_Dihs(Combined_Dihs_Avg, AlloViz_Base):
         return new
     
     
-class AlloViz_Sidechain_Dihs_Max(Combined_Dihs_Max, AlloViz_Base):
-    """AlloViz network construction method's of the combination of the side-chain
-    dihedrals' MIs by taking the max value
-    """
-    def __new__(cls, protein, d):
-        new = super().__new__(cls, protein, d)
-        new.chis = d["chis"] if "chis" in d else 4
-        new._dihs = [f"Chi{i+1}" for i in range(new.chis)]
-        return new
-    
-    
+   
     
     
     
 class AlloViz_Dihs(Combined_Dihs_Avg, AlloViz_Base):
     """AlloViz network construction method's of the combination of all backbone and
     side-chain dihedrals' MIs by averaging
-    """
-    def __new__(cls, protein, d):
-        new = super().__new__(cls, protein, d)
-        new.chis = d["chis"] if "chis" in d else 4
-        new._dihs = ["Phi", "Psi"] + [f"Chi{i+1}" for i in range(new.chis)]#, "Omega"]
-        return new
-    
-    
-class AlloViz_Dihs_Max(Combined_Dihs_Max, AlloViz_Base):
-    """AlloViz network construction method's of the combination of all backbone and
-    side-chain dihedrals' MIs by taking the max value
     """
     def __new__(cls, protein, d):
         new = super().__new__(cls, protein, d)

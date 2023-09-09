@@ -25,7 +25,7 @@ class pytraj_CA(Base):
         return new
     
     
-    def _computation(self, xtc):#pdb, traj, mask, xtc, pq):
+    def _computation(self, xtc):
         """"""
         top = _pytraj.load_topology(self._pdbf)
         traj = _pytraj.load(self._trajs[xtc], top, mask = f'@{self._mask}')
@@ -39,5 +39,5 @@ class pytraj_CB(pytraj_CA):
     """
     def __new__(cls, protein, d):
         new = super().__new__(cls, protein, d)
-        new._selection = "not resname GLY"#f"({d['_protein_sel']}) and not resname GLY"
+        new._selection = "not resname GLY"
         return new
