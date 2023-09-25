@@ -14,13 +14,13 @@ whole = "Whole residue"
 Dihs = "All backbone dihedrals (Phi and psi)"
 
 # Package/Network construction method-level common information
-dynetani = ("Atoms' displacements", "dynetan", "MI")
-pytraji = ("Atoms' displacements", "pytraj", "Pearson's")
-correlationplusi = ("Atoms' displacements", "correlationplus")
+dynetani = ("Atomic displacements", "dynetan", "MI")
+pytraji = ("Atomic displacements", "pytraj", "Pearson's")
+correlationplusi = ("Atomic displacements", "correlationplus")
 correlationplusdihsi = ("Dihedral angles", "correlationplus", "Pearson's")
 AlloVizi = ("Dihedral angles", "AlloViz", "MI")
 MDEntropyi = ("MDEntropy", "MI")
-g_correlationi = ("Atoms' displacements", "g_correlation")
+g_correlationi = ("Atomic displacements", "g_correlation")
 pyinteraphi = ("Contacts", "PyInteraph2", "None")
 CARDSi = ("Dihedral angles", "CARDS")
 
@@ -34,7 +34,7 @@ CARDSi = ("Dihedral angles", "CARDS")
 #: the AlloViz accession name of the wrapper), the correlaton metric they use if
 #: applicable, and the atom/angle whose information it uses.
 wrappers = {
-    "MDTASK": ("Atoms' displacements", "MD-TASK", "Pearson's", alpha),
+    "MDTASK": ("Atomic displacements", "MD-TASK", "Pearson's", alpha),
 
     "pytraj_CA": pytraji + (alpha,),
     "pytraj_CB": pytraji + (beta,),
