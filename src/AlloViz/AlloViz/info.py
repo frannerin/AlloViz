@@ -214,10 +214,10 @@ dihedrals_atoms = {
 
 
 
-
+alloviz_paper = "F. Nerín-Fonz et al., AlloViz: a Python package for the calculation of protein allosteric communication networks. To appear."
 
 citations = {
-    "AlloViz": "",
+    "AlloViz": "https://alloviz.readthedocs.io/en/latest/",
     "CARDS": "https://enspara.readthedocs.io/en/latest/cards.html",
     "correlationplus": "https://github.com/tekpinar/correlationplus#cite",
     "dynetan": "https://dynamical-network-analysis.readthedocs.io/en/latest/Citing.html",
