@@ -145,43 +145,25 @@ class AlloVizWindow(QMainWindow):
 
     def setupHistoryActions(self):
         # Or https://learndataanalysis.org/source-code-how-to-implement-context-menu-to-a-qlistwidget-pyqt5-tutorial/
-        self.actShowParameters = QAction("Show Calculation Parameters...")
-        self.actVizResults = QAction("Visualize Analysis Results...")
-        self.actExportTable = QAction("Export as CSV Table...")
-        self.actBrowseCache = QAction("Browse Cache Directory...")
+        self.actShowParameters = QAction("Show calculation parameters...")
+        self.actVizResults = QAction("Visualize analysis results...")
+        self.actExportTable = QAction("Export as CSV table...")
+        self.actBrowseCache = QAction("Browse cache directory...")
+        self.actMethodCitation = QAction("Show citation for method...")
         self.ui.historyWidget.addActions(
             [
                 self.actShowParameters,
                 self.actVizResults,
                 self.actExportTable,
                 self.actBrowseCache,
+                self.actMethodCitation
             ]
         )
         self.actShowParameters.triggered.connect(self.historyShowParameters)
         self.actVizResults.triggered.connect(self.historyVizResults)
         self.actExportTable.triggered.connect(self.historyExportTable)
         self.actBrowseCache.triggered.connect(self.historyBrowseCacheFolder)
-
-    def historyBrowseCacheFolder(self):
-        if len(sl := self.ui.historyWidget.selectedItems()) != 1:
-            return
-        uidata = sl[0].data(QtCore.Qt.UserRole)
-        url = QUrl.fromLocalFile(uidata["cache_path"])
-        QDesktopServices.openUrl(url)
-
-    def historyExportTable(self):
-        if len(sl := self.ui.historyWidget.selectedItems()) != 1:
-            return
-        uidata = sl[0].data(QtCore.Qt.UserRole)
-        save_name = QFileDialog.getSaveFileName(
-            self, "Export CSV File", "", "CSV files (*.csv);;All Files (*)"
-        )
-        try:
-            uidata["analysis_result"].to_csv(save_name[0])
-        except Exception as e:
-            QMessageBox.critical(
-                self, "Error saving file", "Error saving file:<br>" + str(e)
-            )
+        self.actMethodCitation.triggered.connect(self.historyMethodCitation)
 
     def historyShowParameters(self):
         if len(sl := self.ui.historyWidget.selectedItems()) != 1:
@@ -209,6 +191,50 @@ class AlloVizWindow(QMainWindow):
             return
         uidata = sl[0].data(QtCore.Qt.UserRole)
         self.visualize(uidata)
+
+    def historyExportTable(self):
+        if len(sl := self.ui.historyWidget.selectedItems()) != 1:
+            return
+        uidata = sl[0].data(QtCore.Qt.UserRole)
+        save_name = QFileDialog.getSaveFileName(
+            self, "Export CSV File", "", "CSV files (*.csv);;All Files (*)"
+        )
+        try:
+            uidata["analysis_result"].to_csv(save_name[0])
+        except Exception as e:
+            QMessageBox.critical(
+                self, "Error saving file", "Error saving file:<br>" + str(e)
+            )
+
+    def historyBrowseCacheFolder(self):
+        if len(sl := self.ui.historyWidget.selectedItems()) != 1:
+            return
+        uidata = sl[0].data(QtCore.Qt.UserRole)
+        url = QUrl.fromLocalFile(uidata["cache_path"])
+        QDesktopServices.openUrl(url)
+
+    def historyMethodCitation(self):
+        if len(sl := self.ui.historyWidget.selectedItems()) != 1:
+            return
+        uidata = sl[0].data(QtCore.Qt.UserRole)
+        method = uidata["method"]
+        software = method.split("_",1)[0]
+        citation = AlloViz.AlloViz.info.citations.get(software)
+        alloviz_paper = AlloViz.AlloViz.info.alloviz_paper
+        href = lambda url: f'<a href="{url}">{url}</a>'
+        txt = ""
+        if citation:
+            txt += f"""
+            <p>The calculation used the <i>{software}</i> software presented in the following paper:
+            <p><blockquote>{href(citation)}</blockquote>
+            """
+        if citation != "AlloViz":
+            txt += f"""
+            <p>If you found <i>AlloViz</i> useful, please also cite it as follows:
+            <blockquote>{alloviz_paper}</blockquote>
+            """
+        QMessageBox.information(self, "Citation for Method", txt)
+
 
     def connectSignalsSlots(self):
         self.ui.actionQuit.triggered.connect(self.close)

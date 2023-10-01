@@ -74,6 +74,16 @@ or the `Mamba <https://mamba.readthedocs.io/en/latest/>`__ version of Conda):
 
 Finally, AlloViz is installed into the environment with ``pip install ./AlloViz``.
 
+Note for **MacOS M1/M2 (ARM)** users: porting of conda software to the ARM architecture is hit-and-miss, and
+numerous dependencies are missing. You may want to install x64 packages instead, as follows...
+
+.. code:: bash
+
+   CONDA_SUBDIR=osx-64 conda create -n AlloViz -c conda-forge --solver libmamba --file AlloViz/conda_environment.txt
+
+
+
+
 Although not recommended, the virtual environment can also be created with **pip**:
 
 .. code:: bash

@@ -18,3 +18,4 @@ mdtraj
 python-louvain
 compilers
 cython
+vmd-python
