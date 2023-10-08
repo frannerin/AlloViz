@@ -413,7 +413,6 @@ class Protein:
             Wrappers.CARDS_w.CARDS(self, d)
 
         for pkg in set(pkgs) - set(combined_dihs):
-            print(pkg)
             # Establish the corresponding Wrappers' class
             pkgclass = eval(f"Wrappers.{utils.pkgname(pkg)}")
 
