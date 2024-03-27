@@ -18,10 +18,11 @@ readme = "README.rst"
 version = "1.0"
 
 dependencies = [
-	'numpy<1.24', # 1.24 removed numpy.int and numpy.float needed for dynetan and PyInteraph2
-	'ipywidgets<8', # 8 or above messes with nglview
-	'jupyterlab<4', # 4 or above messes with nglview
-	'mdanalysis', # 2.3 or above fails with non-complying "formalcharges" last column of PDBs (GPCRmd PDBs) # >=2.2,<2.3 multiple specification messes with readthedocs
+	# removed loose version specifications; messes with readthedocs
+	'numpy', # <1.24 # 1.24 removed numpy.int and numpy.float needed for dynetan and PyInteraph2
+	'ipywidgets', # <8 # 8 or above messes with nglview
+	'jupyterlab', # <4 # 4 or above messes with nglview
+	'mdanalysis', # >=2.2,<2.3 # 2.3 or above fails with non-complying "formalcharges" last column of PDBs (GPCRmd PDBs)
 
 	'multiprocess',
 	'lazyasd',
