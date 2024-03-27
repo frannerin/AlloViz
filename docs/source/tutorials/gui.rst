@@ -28,7 +28,7 @@ This is how the GUI looks like:
 |
 
 We can load one of the structures and trajectories that come with AlloViz's tutorial notebooks into VMD as usual.
-They are located in `AlloViz/notebooks/data/117` and they correspond to the GPCR Beta-2 adrenergic receptor in complex with agonist epinephrine (GPCRmd ID `117 <https://submission.gpcrmd.org/view/117/>`__).
+They are located in `AlloViz/notebooks/data/117` and they correspond to the GPCR Beta-2 adrenergic receptor in complex with agonist epinephrine (GPCRmd ID `117 <https://gpcrmd.org/view/117/>`__).
 We can use a stride of 25 frames for the trajectory to speed up the loading process.
 
 .. image:: gui_pics/newmolecule.png
