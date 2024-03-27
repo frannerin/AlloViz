@@ -8,7 +8,7 @@ build:
     python: "3.10"
   jobs:
     pre_install:
-      -  sed -i "s/dependencies = .*//g" pyproject.toml
+      -  sed -i '/dependencies = .*/,+25d' pyproject.toml 
 
 sphinx:
   fail_on_warning: false
