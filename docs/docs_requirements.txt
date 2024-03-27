@@ -14,4 +14,4 @@ nbsphinx
 nbsphinx-link
 
 numpydoc
-pydata-sphinx-theme<0.10
+pydata-sphinx-theme<=0.10
