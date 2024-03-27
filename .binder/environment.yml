@@ -1,8 +1,6 @@
-name: AlloViz
 channels:
   - conda-forge
   - defaults
-  - conda-forge/label/broken
 dependencies:
   - python=3.9.19 # 3.10 or above provokes numba import fail
   - mdanalysis=2.2.0 # 2.3 or above fails with non-complying "formalcharges" last column of PDBs (GPCRmd PDBs)
