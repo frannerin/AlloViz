@@ -22,3 +22,4 @@ dependencies:
   - python-louvain
   - compilers
   - cython
+  - vmd-python
