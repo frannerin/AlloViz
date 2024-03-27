@@ -4,6 +4,7 @@ import socket
 import logging
 import hashlib
 import json
+import pathlib
 from datetime import datetime
 import pandas as pd
 
@@ -15,10 +16,16 @@ from PyQt5.QtGui import QDesktopServices
 # from PyQt5.uic import loadUi
 
 
-#sys.path.append("gui")
-sys.path.append(os.environ["ALLOVIZ_GUI_DIR"])
 
 # pyuic5 alloviz_mainwindow.ui >alloviz_mainwindow_ui.py
+
+# Relative imports do not work outside of packages. Need to set sys.path.
+
+#sys.path.append(os.environ["ALLOVIZ_GUI_DIR"])
+# Use the env if set, otherwise this file's dir
+sys.path.append(os.environ.get("ALLOVIZ_GUI_DIR", 
+                               pathlib.Path(__file__).parent.resolve()))
+
 from alloviz_mainwindow_ui import Ui_MainWindow
 
 import AlloViz
