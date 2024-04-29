@@ -1,15 +1,15 @@
 AlloViz
 =======
 
-.. image:: https://readthedocs.org/projects/alloviz/badge/?version=latest
-    :target: https://alloviz.readthedocs.io/en/latest/?badge=latest
+.. image:: https://readthedocs.org/projects/alloviz/badge/?version=paper
+    :target: https://alloviz.readthedocs.io/en/latest/?badge=paper
     :alt: Documentation Status
 
-.. image:: https://github.com/frannerin/AlloViz/actions/workflows/test_conda_newenv.yml/badge.svg?branch=main
+.. image:: https://github.com/frannerin/AlloViz/actions/workflows/test_conda_newenv.yml/badge.svg?branch=paper
    :target: https://github.com/frannerin/AlloViz/actions/workflows/test_conda_newenv.yml
    :alt: Conda installation
 
-.. image:: https://github.com/frannerin/AlloViz/actions/workflows/test_pip_tcl_ubuntu_newenv.yml/badge.svg?branch=main
+.. image:: https://github.com/frannerin/AlloViz/actions/workflows/test_pip_tcl_ubuntu_newenv.yml/badge.svg?branch=paper
    :target: https://github.com/frannerin/AlloViz/actions/workflows/test_pip_tcl_ubuntu_newenv.yml
    :alt: pip installation
    
@@ -40,7 +40,7 @@ depending on the package selected. Moreover, for example for movement
 correlation, the movement tracked can be that of the whole residue, its
 center of mass, its alpha-C or beta-C; and it can be calculated as
 the Pearson’s correlation coefficient, Mutual Information (MI) or Linear
-MI (LMI). See all the `options <https://alloviz.readthedocs.io/en/latest/table.html>`__.
+MI (LMI). See all the `options <https://alloviz.readthedocs.io/en/paper/table.html>`__.
 
 The resulting network can be analyzed with edge centrality metrics
 algorithms provided by the Python package
@@ -49,7 +49,7 @@ visualized in an interactive Python Notebook (i.e.,
 `Jupyter <https://jupyter.org/>`__) using
 `nglview <https://github.com/nglviewer/nglview>`__.
 
-AlloViz can also be use through a `GUI <https://alloviz.readthedocs.io/en/latest/tutorials/gui.html>`__.
+AlloViz can also be use through a `GUI <https://alloviz.readthedocs.io/en/paper/tutorials/gui.html>`__.
 
 Installation
 -------------------
@@ -63,7 +63,7 @@ Additional flags are recommended for speed:
 
    git clone --recursive --shallow-submodules -j 9 https://github.com/frannerin/AlloViz
 
----------------
+
 
 2. Create the virtual environment
 
@@ -123,15 +123,14 @@ Although not recommended, the virtual environment can also be created with **pip
 
 
 Quickstart
---------
+-------------
 
-Check the `tutorial notebooks <https://alloviz.readthedocs.io/en/latest/tutorials.html>`__ or the
-`quickstart <https://alloviz.readthedocs.io/en/latest/tutorials/quickstart.html>`__.
+Check the `tutorial notebooks <https://alloviz.readthedocs.io/en/paper/tutorials.html>`__ or the
+`quickstart <https://alloviz.readthedocs.io/en/paper/tutorials/quickstart.html>`__.
 
 Cite
 -------
 
-License
----------
-
-
+Nerín-Fonz, F., Caprai, C., Morales-Pastor, A., Lopez-Balastegui, M., Aranda-García, D., Giorgino, T., & Selent, J. (2024). 
+AlloViz: a tool for the calculation and visualisation of protein allosteric communication networks. 
+*Computational and Structural Biotechnology Journal.*
