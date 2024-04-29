@@ -231,7 +231,7 @@ class Base:
     
     
     
-    def filter(self, filterings="all", **kwargs):
+    def filter(self, filterings="All", **kwargs):
         r"""Filter network edges
         
         Filter the networks according to the selected criteria to perform analyses on
@@ -287,11 +287,7 @@ class Base:
         >>> opioidGPCR.dynetan.GetContacts_edges_GPCR_Interhelix
         <AlloViz.AlloViz.Filtering.Filtering at 0x7f892c3c0fa0>
         """
-        # Calculate for all the passed Filterings
-        filterings = utils.make_list(
-            filterings,
-            if_all = utils.filteringsl
-        )
+
         for filt in filterings:
             # Name used to store as attribute will be that of the filtering scheme chosen or the combination's names joined by "_"
             name = filt if isinstance(filt, str) else "_".join(filt)

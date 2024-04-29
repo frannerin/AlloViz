@@ -236,7 +236,7 @@ class Filtering:
         os.makedirs(self._path, exist_ok=True)
         self._datapq = lambda element, metric: f"{self._path}/{element}_{metric}.pq"
 
-        # Get the filtered thata according to the filtering scheme(s)
+        # Get the filtered data according to the filtering scheme(s)
         filterings = (
             filtering
             if isinstance(filtering, list)
