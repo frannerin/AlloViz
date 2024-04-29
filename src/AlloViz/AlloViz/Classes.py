@@ -262,6 +262,7 @@ class Protein:
             else mapper[ix]
         )
 
+        
     def __sub__(self, other):
         """
         The result of subtracting an "other" Protein object from "self" is a new object
@@ -436,7 +437,7 @@ class Protein:
     
     
     
-    def filter(self, pkgs="all", filterings="all", *, GetContacts_threshold=0, Sequence_Neighbor_distance=5, Interresidue_distance=10):
+    def filter(self, pkgs="all", filterings="All", *, GetContacts_threshold=0, Sequence_Neighbor_distance=5, Interresidue_distance=10):
         r"""Filter network edges
         
         Filter the networks according to the selected criteria to perform analyses on
@@ -452,7 +453,7 @@ class Protein:
             weights, which must be already calculated and their data saved as instance
             attribute. In this case, "all" sends the computation for all available
             methodsthat are already calculated and saved as instance attributes.
-        filterings : str or list of strs and/or lists, default: "all"
+        filterings : str or list of strs and/or lists, default: "All"
             Filtering scheme(s) with which to filter the list of network edges before
             analysis. It can be a string, or a list of strings and/or lists. A list of
             lists (also with or without strings) is used to filter with a combination of
@@ -461,8 +462,9 @@ class Protein:
             :func:`~AlloViz.AlloViz.Filtering.All`,
             :func:`~AlloViz.AlloViz.Filtering.GetContacts_edges`,
             :func:`~AlloViz.AlloViz.Filtering.No_Sequence_Neighbors`,
-            :func:`~AlloViz.AlloViz.Filtering.GPCR_Interhelix`. The default "all"
-            performs all the available filtering schemes (no combinations).
+            :func:`~AlloViz.AlloViz.Filtering.GPCR_Interhelix`. The default "All" (capitalized)
+            performs NONE of the available filtering schemes.
+            "all" (lowercase!) performs all the available filtering schemes (no combinations).
         
         Other Parameters
         ----------------
@@ -500,7 +502,20 @@ class Protein:
         # Filter "all" packages (all the available packages that have been previously calculated and are in __dict__)
         # or the ones passed as parameter (check that they are on the list of available packages and retrieve their case-sensitive names, else raise an Exception)
         pkgs = utils.make_list(pkgs, if_all = [key for key in utils.pkgsl if key in self.__dict__], apply = utils.pkgname)
-        
+
+        # Remove "GPCR_Interhelix" from the available filters if the protein is not a GPCR
+        all_available_filterings = utils.filteringsl.copy()
+        if not self.GPCR:
+            print('NOTE: "GPCR_Interhelix" filtering not available as the protein is not marked as a GPCR')
+            all_available_filterings.remove("GPCR_Interhelix") 
+
+        # Calculate for all the passed Filterings
+        filterings = utils.make_list(
+            filterings,
+            if_all =  all_available_filterings 
+        )
+
+
         for pkgn in pkgs:
             pkg = rgetattr(self, pkgn)
             if not pkg:

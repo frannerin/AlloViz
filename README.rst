@@ -14,7 +14,7 @@ AlloViz
    :alt: pip installation
    
 
-A Python package to interactively compute, analyze and visualize protein
+AlloViz is a Python package to interactively compute, analyze and visualize protein
 allosteric communication (residue interaction) networks and
 delta-networks.
 
@@ -38,7 +38,7 @@ network can be constructed based on residue contacts,
 correlation of atom movement or dihedrals, or interaction energies,
 depending on the package selected. Moreover, for example for movement
 correlation, the movement tracked can be that of the whole residue, its
-center of mass, its alpha-C or its beta-C; and it can be calculated as
+center of mass, its alpha-C or beta-C; and it can be calculated as
 the Pearson’s correlation coefficient, Mutual Information (MI) or Linear
 MI (LMI). See all the `options <https://alloviz.readthedocs.io/en/latest/table.html>`__.
 
@@ -51,8 +51,10 @@ visualized in an interactive Python Notebook (i.e.,
 
 AlloViz can also be use through a `GUI <https://alloviz.readthedocs.io/en/latest/tutorials/gui.html>`__.
 
-Install
--------
+Installation
+-------------------
+1. Clone the repository
+
 
 The repository must be cloned along with all the submodules using the ``--recursive`` flag.
 Additional flags are recommended for speed:
@@ -60,6 +62,10 @@ Additional flags are recommended for speed:
 .. code:: bash
 
    git clone --recursive --shallow-submodules -j 9 https://github.com/frannerin/AlloViz
+
+---------------
+
+2. Create the virtual environment
 
 
 It is recommended to create a **virtual environment** with `Miniconda <https://docs.conda.io/en/latest/miniconda.html>`__
@@ -69,18 +75,33 @@ or the `Mamba <https://mamba.readthedocs.io/en/latest/>`__ version of Conda):
 
 .. code:: bash
 
-   conda create -n AlloViz -c conda-forge --solver libmamba --file AlloViz/conda_environment.txt
-   conda activate AlloViz
+   conda create -n alloviz -c conda-forge --solver libmamba --file AlloViz/conda_environment.txt
+   conda activate alloviz
 
-Finally, AlloViz is installed into the environment with ``pip install ./AlloViz``.
+If you wish to create a virtual environment without conda, see below for the alternative procedure.
 
-Note for **MacOS M1/M2 (ARM)** users: porting of conda software to the ARM architecture is hit-and-miss, and
-numerous dependencies are missing. You may want to install x64 packages instead, as follows...
+
+Finally, AlloViz is installed into the environment with: 
 
 .. code:: bash
 
-   CONDA_SUBDIR=osx-64 conda create -n AlloViz -c conda-forge --solver libmamba --file AlloViz/conda_environment.txt
+    pip install ./AlloViz
 
+
+**⚠ Note for MacOS M1/M2 (ARM) users.** 
+Porting of conda software to the ARM architecture is hit-and-miss, and
+numerous dependencies are missing.
+You may want to install x64 packages instead, as follow:
+
+.. code:: bash
+
+   CONDA_SUBDIR=osx-64 conda create -n alloviz -c conda-forge --solver libmamba --file AlloViz/conda_environment.txt
+
+Then activate the environment and install AlloViz using ``pip install ./AlloViz``
+
+
+
+2.1 Create the virtual environment - alternative procedure
 
 
 
@@ -88,12 +109,13 @@ Although not recommended, the virtual environment can also be created with **pip
 
 .. code:: bash
 
-   python -m venv AlloViz/env
-   source AlloViz/env/bin/activate
+   python -m venv alloviz/env
+   source alloviz/env/bin/activate
    pip install -r AlloViz/pip_requirements.txt
    pip install ./AlloViz
 
 ..
+
 
    Python <3.10 is recommended (i.e., 3.9.16). ``pytraj`` and the construction of delta-networks won't be available in a pip environment,
    as `AmberTools <http://ambermd.org/AmberTools.php>`__ and `pymol-open-source <https://github.com/schrodinger/pymol-open-source/>`__ 
