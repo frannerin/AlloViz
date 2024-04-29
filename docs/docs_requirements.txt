@@ -1,4 +1,6 @@
-pandas<=2.2.2
+docutils<=0.20
+
+pandas
 requests
 multiprocess
 MDAnalysis
