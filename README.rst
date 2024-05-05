@@ -128,9 +128,9 @@ Quickstart
 Check the `tutorial notebooks <https://alloviz.readthedocs.io/en/paper/tutorials.html>`__ or the
 `quickstart <https://alloviz.readthedocs.io/en/paper/tutorials/quickstart.html>`__.
 
-Cite
--------
+Citation
+-------------
 
 Nerín-Fonz, F., Caprai, C., Morales-Pastor, A., Lopez-Balastegui, M., Aranda-García, D., Giorgino, T., & Selent, J. (2024). 
 AlloViz: a tool for the calculation and visualisation of protein allosteric communication networks. 
-*Computational and Structural Biotechnology Journal.*
+*Computational and Structural Biotechnology Journal.* https://doi.org/10.1016/j.csbj.2024.04.047
