@@ -3,6 +3,7 @@ mdanalysis>=2.2,<2.3 # 2.3 or above fails with non-complying "formalcharges" las
 numpy<1.24  # 1.24 removed numpy.int and numpy.float needed for dynetan and PyInteraph2
 ipywidgets<8 # 8 or above messes with nglview
 jupyterlab<4 # 4 or above messes with nglview
+mdtraj<1.10 # 1.10 or above deletes mdtraj.utils.six needed for msmbuilder
 
 multiprocess
 lazyasd
@@ -14,7 +15,6 @@ pymol-open-source
 ambertools
 nglview
 prody
-mdtraj
 python-louvain
 compilers
 cython
