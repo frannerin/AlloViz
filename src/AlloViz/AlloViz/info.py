@@ -130,6 +130,7 @@ wrappers = {
     
     # "gRINN": ("Interaction energy", "gRINN", "None", whole),
     # "gRINN_corr": ("Interaction energy", "gRINN", "Pearson's", whole),
+    "Pocketron": (,)
 }
 
 

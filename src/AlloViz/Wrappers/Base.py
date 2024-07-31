@@ -321,6 +321,11 @@ class Base:
     
     
     
+class Pocketron(Base):
+    """Pocketron
+    """
+    
+    
 
 
 class Multicore(Base):

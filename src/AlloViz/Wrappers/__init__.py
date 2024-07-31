@@ -54,6 +54,8 @@ from .MDTASK import MDTASK
 
 from .pytraj_w import pytraj_CA, pytraj_CB
 
+from .Base import Pocketron
+
 
 
 # from .g_correlation_w import g_correlation_CA_MI, g_correlation_COM_MI, g_correlation_CA_LMI, g_correlation_COM_LMI
