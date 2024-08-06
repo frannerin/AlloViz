@@ -11,6 +11,18 @@ pkgsl = list(set(wrappers.keys()) - {"gRINN_corr",})
 Imported from :data:`AlloViz.AlloViz.info.wrappers`"""
 
 
+
+def add_gn(df, dropna=True):    
+    df = df.copy()
+    ix = df.index.to_frame(index=False)
+    cols = ["GN"] if len(ix.columns) == 1 else [f"GN{i}" for i in range(len(ix.columns))]
+    df[cols] = ix.map(df._parent._aln_mapper.get).to_numpy()
+    if dropna: 
+        df = df.replace({c: {"0.00": None} for c in cols}).dropna(how="any", subset=cols)
+    return df
+
+
+
 def pkgname(pkg, fail=True):
     r"""Return the case-sensitive, correct name of an AlloViz network construction method
 

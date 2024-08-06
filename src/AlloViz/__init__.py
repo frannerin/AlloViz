@@ -15,5 +15,6 @@ them in AlloViz objects.
 """
 
 from .AlloViz.Classes import Protein, Delta
+from .AlloViz.utils import add_gn
 
-__all__ = ["Protein", "Delta"]
+__all__ = ["Protein", "Delta", "add_gn"]

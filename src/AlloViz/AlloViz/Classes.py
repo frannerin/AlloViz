@@ -239,6 +239,14 @@ class Protein:
         """:class:`~MDAnalysis.core.universe.Universe`"""
         self.u = mda.Universe(self._pdbf, *list(self._trajs.values()))
         """:class:`~MDAnalysis.core.universe.Universe`"""
+        
+        # If GPCR, create GN mapping
+        self._aln_mapper = {
+            f"{ca.residue.resname}:{ca.residue.resnum}": next((gn if gn[-1] != '0' else gn[:-1] for gn in [f"{ca.tempfactor:.3f}"]))
+            for ca in self.protein.select_atoms("name CA")
+            # if ca.tempfactor > 0
+        }
+        self._aln_mapper.update(dict(map(reversed, self._aln_mapper.items())))
 
         # Bonded cysteines must be identified to remove them from non-covalent contacts calculations (i.e., PyInteraph2_Contacts)
         self._bonded_cys = trajutils.get_bonded_cys(self._pdbf)
@@ -787,7 +795,8 @@ class Delta:
             setattr(state, "_delta", self)
 
         # Perform a PyMOL structural alignment with the passed method
-        self._aln = self._make_struct_aln(pymol_aln)
+        if not all(s.GPCR for s in self._states):
+            self._aln = self._make_struct_aln(pymol_aln)
 
         # Future: used source-target nodes for metrics calculation
         # nodes_subset = self._add_nodes_subset()
