@@ -84,7 +84,7 @@ class Element(pandas.DataFrame):
             .set_index("aln_pos")
         )
         if self._parent.GPCR:
-            selfdf = selfdf.loc[lambda x: (x.index != "0.00") & ("0.00" not in i for i in x.index)]
+            selfdf = selfdf.loc[lambda x: (x.index != "0.00") & ["0.00" not in i for i in x.index]]
 
         # Repeat with the corresponding Element instance of the "other"
         otherreindex = other.index.map(
@@ -97,7 +97,7 @@ class Element(pandas.DataFrame):
             .set_index("aln_pos")
         )
         if other._parent.GPCR:
-            otherdf = otherdf.loc[lambda x: (x.index != "0.00") & ("0.00" not in i for i in x.index)]
+            otherdf = otherdf.loc[lambda x: (x.index != "0.00") & ["0.00" not in i for i in x.index]]
 
         # Select the columns that the two have in common for delta-network calculation and that also averages and not from an individual trajectory (e.g., not _1, _2...)
         cols = [col for col in selfdf.columns if col in otherdf.columns and not any([str(i) in col for i in self._parent._trajs])]
