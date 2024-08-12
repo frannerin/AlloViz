@@ -240,6 +240,9 @@ class Protein:
         self.u = mda.Universe(self._pdbf, *list(self._trajs.values()))
         """:class:`~MDAnalysis.core.universe.Universe`"""
         
+        if GPCR:
+            trajutils.get_GPCRdb_numbering(self.protein.atoms)
+    
         # If GPCR, create GN mapping
         self._aln_mapper = {
             f"{ca.residue.resname}:{ca.residue.resnum}": next((gn if gn[-1] != '0' else gn[:-1] for gn in [f"{ca.tempfactor:.3f}"]))

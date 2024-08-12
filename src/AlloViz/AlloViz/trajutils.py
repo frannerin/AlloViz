@@ -296,9 +296,9 @@ def process_input(
     # Rename all residues in protein_sel to standard names
     standardize_resnames(protein, **kwargs)
 
-    # Retrieve GPCRdb residue generic numbering if it's a GPCR
-    if GPCR:
-        get_GPCRdb_numbering(protein)
+    # # Retrieve GPCRdb residue generic numbering if it's a GPCR
+    # if GPCR:
+    #     get_GPCRdb_numbering(protein)
 
     # If the input files has the same number of atoms and residue names as the processed entities, avoid re-saving pdb and trajectory(ies) files
     if (
