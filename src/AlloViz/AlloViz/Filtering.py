@@ -151,7 +151,7 @@ def Spatially_distant(pkg, data, Interresidue_distance, **kwargs):
     sq_dist_arr[triu] = self_distances
     
     # Transform the matrix into a pandas DataFrame
-    resnames = [f"{aa.resname}:{aa.resid}" for aa in pkg.protein.protein.residues]
+    resnames = [f"{aa.resname}:{aa.resid}" for aa in CAs]
     df = pandas.DataFrame(sq_dist_arr, columns=resnames, index=resnames)
     df = df.where( np.triu(np.ones(df.shape), k=1).astype(bool) )
     df = pandas.DataFrame({"dist": df.stack()})
