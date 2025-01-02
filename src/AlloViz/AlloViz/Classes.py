@@ -454,8 +454,10 @@ class Protein:
         Filter the networks according to the selected criteria to perform analyses on
         (all or) a subset of the edges. It calls
         :meth:`AlloViz.Wrappers.Base.Base.filter` and results are stored in instances
-        of the :class:`AlloViz.AlloViz.Filtering.Filtering` class. The different filtering
-        options are detailed in the :mod:`~AlloViz.AlloViz.Filtering` module.
+        of the :class:`AlloViz.AlloViz.Filtering.Filtering` class. The graphs stored in
+        the 'graphs' attribute contain "graph_weight" and "graph_distance" as edge
+        attributes for analysis. The different filtering options are detailed in the
+        :mod:`~AlloViz.AlloViz.Filtering` module.
 
         Parameters
         ----------
@@ -539,13 +541,15 @@ class Protein:
             
         return result if (len(pkgs) == 1) else None
     
-    def analyze(self, pkgs="all", filterings="all", elements="edges", metrics="all", cores=1, nodes_dict=Analysis.nodes_dict, edges_dict=Analysis.edges_dict, **kwargs):
+    def analyze(self, pkgs="all", filterings="all", elements="edges", metrics="all", cores=1, nodes_dict=Analysis.nodes_dict, edges_dict=Analysis.edges_dict):
         r"""Analyzed filtered network
         
         Analyze the selected (un)filtered networks with the passed elements-metrics. It
         calls :meth:`AlloViz.AlloViz.Analysis.analyze` and results are stored in
         instances of classes from the :mod:`AlloViz.AlloViz.Elements` module, which
-        extend the :class:`pandas.DataFrame` class.
+        extend the :class:`pandas.DataFrame` class. The graphs stored in the filtered
+        object 'graphs' attribute are used for analysis, which contain "graph_weight"
+        and "graph_distance" as edge attributes.
 
         Parameters
         ----------
@@ -575,19 +579,21 @@ class Protein:
         nodes_dict, edges_dict : dict
             Optional kwarg(s) of the dictionary(ies) that maps network metrics custom names
             (e.g., betweenness centrality, "btw") with their corresponding NetworkX
-            function (e.g., "networkx.algorithms.centrality.betweenness_centrality").
+            function and arguments, with the format:
+            ```
+                {
+                    "btw": {
+                        "function": "networkx.algorithms.centrality.betweenness_centrality",
+                        "arguments": {"weight": "graph_distance", "seed": 0}
+                    }
+                }
+            ```
             Functions strings must be written as if they were absolute imports, and must
             return a dictionary of edges or nodes, depending on the element dictionary in
             which they are. The keys of the dictionaries will be used to name the columns
             of the analyzed data that the functions produce. Defaults are
             :data:`~AlloViz.AlloViz.Analysis.nodes_dict` and
             :data:`~AlloViz.AlloViz.Analysis.edges_dict`.
-        **kwargs
-            Other optional keyword arguments that will be passed to the NetworkX analysis
-            function(s) that is(are) used on the method call in case they need extra
-            parameters. All keyward arguments will be passed to all analysis function
-            calls, so if the function doesn't accept the arguments there will be an error.
-            `weight` parameter is already specified by AlloViz.
 
         See Also
         --------
@@ -629,7 +635,7 @@ class Protein:
             
             for filtering in filterings:
                 filtered = rgetattr(self, utils.pkgname(pkg), filtering)
-                filtered.analyze(elements, metrics, cores=1, nodes_dict=nodes_dict, edges_dict=edges_dict, **kwargs)
+                filtered.analyze(elements, metrics, cores=1, nodes_dict=nodes_dict, edges_dict=edges_dict)
                 
         # Close the pool
         utils.pool.close()
