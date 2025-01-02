@@ -65,12 +65,12 @@ nbsphinx_kernel_name = 'python3'
 # }
 
 intersphinx_mapping = {
-"MDAnalysis": ('https://docs.mdanalysis.org/stable/': None),
-"Bio": ('https://biopython.org/docs/latest/api/': None),
-"nglview": ('http://nglviewer.org/nglview/latest/': None),
-"networkx": ('https://networkx.org/documentation/stable/': None),
-"pandas": ('https://pandas.pydata.org/docs/': None),
-"matplotlib": 'https://matplotlib.org/stable/': None,
+"MDAnalysis": ('https://docs.mdanalysis.org/stable/', None),
+"Bio": ('https://biopython.org/docs/latest/api/', None),
+"nglview": ('http://nglviewer.org/nglview/latest/', None),
+"networkx": ('https://networkx.org/documentation/stable/', None),
+"pandas": ('https://pandas.pydata.org/docs/', None),
+"matplotlib": 'https://matplotlib.org/stable/', None,
 }
 
 # Make sure the target is unique
