@@ -55,13 +55,22 @@ autoapi_keep_files = True
 nbsphinx_execute = 'never'
 nbsphinx_kernel_name = 'python3'
 
+# intersphinx_mapping = {
+# 'https://docs.mdanalysis.org/stable/': None,
+# 'https://biopython.org/docs/latest/api/': None,
+# 'http://nglviewer.org/nglview/latest/': None,
+# 'https://networkx.org/documentation/stable/': None,
+# 'https://pandas.pydata.org/docs/': None,
+# 'https://matplotlib.org/stable/': None,
+# }
+
 intersphinx_mapping = {
-'https://docs.mdanalysis.org/stable/': None,
-'https://biopython.org/docs/latest/api/': None,
-'http://nglviewer.org/nglview/latest/': None,
-'https://networkx.org/documentation/stable/': None,
-'https://pandas.pydata.org/docs/': None,
-'https://matplotlib.org/stable/': None,
+"MDAnalysis": ('https://docs.mdanalysis.org/stable/': None),
+"Bio": ('https://biopython.org/docs/latest/api/': None),
+"nglview": ('http://nglviewer.org/nglview/latest/': None),
+"networkx": ('https://networkx.org/documentation/stable/': None),
+"pandas": ('https://pandas.pydata.org/docs/': None),
+"matplotlib": 'https://matplotlib.org/stable/': None,
 }
 
 # Make sure the target is unique
