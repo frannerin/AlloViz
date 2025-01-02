@@ -242,7 +242,7 @@ class Base:
 
         Parameters
         ----------
-        filterings : str or list of strs and/or lists, default: "all"
+        filterings : str or list of strs and/or lists, default: "All"
             Filtering scheme(s) with which to filter the list of network edges before
             analysis. It can be a string, or a list of strings and/or lists: a list of
             lists (also with or without strings) is used to filter with a combination of
@@ -251,8 +251,7 @@ class Base:
             :func:`~AlloViz.AlloViz.Filtering.All`,
             :func:`~AlloViz.AlloViz.Filtering.GetContacts_edges`,
             :func:`~AlloViz.AlloViz.Filtering.No_Sequence_Neighbors`,
-            :func:`~AlloViz.AlloViz.Filtering.GPCR_Interhelix`. The default "all"
-            performs all the available filtering schemes (no combinations).
+            :func:`~AlloViz.AlloViz.Filtering.GPCR_Interhelix`.
         
         Other Parameters
         ----------------
@@ -287,7 +286,12 @@ class Base:
         >>> opioidGPCR.dynetan.GetContacts_edges_GPCR_Interhelix
         <AlloViz.AlloViz.Filtering.Filtering at 0x7f892c3c0fa0>
         """
-
+        filterings = (
+            filterings
+            if isinstance(filterings, list)
+            else [filterings]
+        )
+        
         for filt in filterings:
             # Name used to store as attribute will be that of the filtering scheme chosen or the combination's names joined by "_"
             name = filt if isinstance(filt, str) else "_".join(filt)
