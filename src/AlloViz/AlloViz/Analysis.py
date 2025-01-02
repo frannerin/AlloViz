@@ -25,23 +25,35 @@ from .utils import rgetattr, rhasattr
 
 
 nodes_dict = {
-    "btw": "networkx.algorithms.centrality.betweenness_centrality",
-    "cfb": "networkx.algorithms.centrality.current_flow_betweenness_centrality",
+    "btw": {
+        "function": "networkx.algorithms.centrality.betweenness_centrality",
+        "arguments": {"weight": "graph_distance", "seed": 0}
+    },
+    "cfb":  {
+        "function": "networkx.algorithms.centrality.current_flow_betweenness_centrality",
+        "arguments": {"weight": "graph_weight"}
+    }
 }
 """
 Dictionary that maps nodes network metrics custom names (e.g., betweenness centrality,
 "btw") with their corresponding NetworkX function (e.g., 
-"networkx.algorithms.centrality.betweenness_centrality").
+"networkx.algorithms.centrality.betweenness_centrality") and arguments.
 """
 
 edges_dict = {
-    "btw": "networkx.algorithms.centrality.edge_betweenness_centrality",
-    "cfb": "networkx.algorithms.centrality.edge_current_flow_betweenness_centrality",
+    "btw": {
+        "function": "networkx.algorithms.centrality.edge_betweenness_centrality",
+        "arguments": {"weight": "graph_distance", "seed": 0}
+    },
+    "cfb":  {
+        "function": "networkx.algorithms.centrality.edge_current_flow_betweenness_centrality",
+        "arguments": {"weight": "graph_weight"}
+    }
 }
 """
 Dictionary that maps edges network metrics custom names (e.g., betweenness centrality,
 "btw") with their corresponding NetworkX function (e.g., 
-"networkx.algorithms.centrality.edge_betweenness_centrality").
+"networkx.algorithms.centrality.edge_betweenness_centrality") and arguments.
 """
 
 
@@ -63,14 +75,13 @@ def analyze_graph(args):
         Name of the analyzed column that it will have in the final DataFrame for saving.
     """
     graph, metricf, colname = args
-    nodes = {} # Temporary fix for future use of source-sink network analyses
+    # nodes = {} # Temporary fix for future use of source-sink network analyses
     
     # Try to apply the NetworkX's analysis function to the selected Graph
     try:
         analyzed = metricf(
             graph,
-            weight="weight",
-            **nodes,
+            # **nodes,
         )
     # If it throws an error, return False to print it along with the performed analysis' information and create fake data with all 0s
     except Exception as e:
@@ -88,7 +99,7 @@ def analyze_graph(args):
 
 
 
-def single_analysis(graphs, metricf, metric, elem, pq, **kwargs):
+def single_analysis(graphs, metricd, metric, elem, pq):
     r"""Analyze raw data with a single element-metric
 
     Analyze stored, filtered raw data with the passed combination of
@@ -98,10 +109,11 @@ def single_analysis(graphs, metricf, metric, elem, pq, **kwargs):
     ----------
     graphs : dict of external:ref:`Graph <graph>` objects
         Graphs to analyze.
-    metricf : str
-        NetworkX function to analyze data. It must be written as if it were an
-        absolute import
-        (e.g., "networkx.algorithms.centrality.betweenness_centrality"). 
+    metricd : dict
+        Dictionary with the NetworkX function and argument to analyze data, with the
+        format {"function": "networkx.algorithms.centrality.betweenness_centrality",
+        "arguments": {"weight": "graph_distance", "seed": 0}} where "function" must be
+        the string of the absolute import of the function.
     metric : str
         Network metric to compute, which must be a key in the `nodes_dict` or
         `edges_dict` dictionaries.
@@ -109,18 +121,11 @@ def single_analysis(graphs, metricf, metric, elem, pq, **kwargs):
         Network element for which the analysis is performed.
     pq : str
         Name of the parquet (.pq) file in which to save the analysis results.
-        
-    Other Parameters
-    ----------------
-    **kwargs
-        Other optional keyword arguments that will be passed to the NetworkX analysis
-        function(s) that is(are) used on the method call in case they need extra
-        parameters.
     """
-    # Process the NetworkX's module-function that will be used for analysis and import it into the metricf variable
-    metricf = partial(eval(metricf), **kwargs)
+    # Process the NetworkX's module-function that will be used for analysis and assign it to the metricf variable
+    metricf = partial(eval(metricd["function"]), **metricd["arguments"])
     
-    # Function to gget the columns' new names (e.g., if there is more than 1 trajectory, there will be "weight", "metric_weight", "metric_1", "metric_"...)
+    # Function to get the columns' new names (e.g., if there is more than 1 trajectory, there will be "weight", "metric_weight", "metric_1", "metric_"...)
     get_colname = lambda metric, col: f"{metric}_{col}" if len(graphs) > 1 else metric
     # Analyze all columns in parallel, returning a Series for each (or False if it couldn't be analyzed)
     with Pool(len(graphs)) as p:
@@ -181,7 +186,7 @@ def add_data(pqs, elem, data, filtered):
     
 
 
-def analyze(filtered, elements, metrics, nodes_dict, edges_dict, **kwargs):
+def analyze(filtered, elements, metrics, nodes_dict, edges_dict):
     r"""Analyze the filtered network
 
     Send the analyses of the passed filtered network for the specified combinations of
@@ -204,19 +209,23 @@ def analyze(filtered, elements, metrics, nodes_dict, edges_dict, **kwargs):
     Other Parameters
     ----------------
     nodes_dict, edges_dict : dict
-        Optional kwarg(s) of the dictionary(ies) that maps network metrics custom names
+        Optional kwarg(s) of the dictionary(ies) thatmaps network metrics custom names
         (e.g., betweenness centrality, "btw") with their corresponding NetworkX
-        function (e.g., "networkx.algorithms.centrality.betweenness_centrality").
+        function and arguments, with the format:
+        ```
+            {
+                "btw": {
+                    "function": "networkx.algorithms.centrality.betweenness_centrality",
+                    "arguments": {"weight": "graph_distance", "seed": 0}
+                }
+            }
+        ```
         Functions strings must be written as if they were absolute imports, and must
         return a dictionary of edges or nodes, depending on the element dictionary in
         which they are. The keys of the dictionaries will be used to name the columns
         of the analyzed data that the functions produce. Defaults are
         :data:`~AlloViz.AlloViz.Analysis.nodes_dict` and
         :data:`~AlloViz.AlloViz.Analysis.edges_dict`.
-    **kwargs
-        Other optional keyword arguments that will be passed to the NetworkX analysis
-        function(s) that is(are) used on the method call in case they need extra
-        parameters.
     """
     elements = elements if isinstance(elements, list) else [elements]
 
@@ -224,18 +233,15 @@ def analyze(filtered, elements, metrics, nodes_dict, edges_dict, **kwargs):
         # If the Element's attribute doesn't exist yet, use as initial data the raw edge weights from the filtered data (or an empty DF for nodes)
         if not rhasattr(filtered, elem):
             if elem == "edges":
-                # cols = ["weight" in col for col in filtered._filtdata.columns]
-                data = filtered._graph_distances #.loc[:, cols]
+                data = filtered._filtdata ########################################################## filtered._graph_distances
             elif elem == "nodes":
                 data = pandas.DataFrame()
         # Else, retrieve the Element's attribute DataFrame to add columns to it
         else:
             data = rgetattr(filtered, elem)
             
-        # # Retrieve the element's dictionary and if necessary update it with the one passed in kwargs
-        d = eval(f"{elem}_dict").copy()
-        # if f"{elem}_dict" in kwargs:
-        #     d.update(kwargs[f"{elem}_dict"])
+        # Retrieve the element's dictionary with functions and arguments
+        d = eval(f"{elem}_dict")
         # Create a list of the desired metrics to calculate
         metrics = utils.make_list(metrics, if_all = list(d.keys()))
         # Create a list of the metrics that (i) have been passed, (ii) are also present in the element's dictionary and (iii) aren't already in the Element's attribute
@@ -254,7 +260,7 @@ def analyze(filtered, elements, metrics, nodes_dict, edges_dict, **kwargs):
                 if no_exist(pqs(elem))[pqs(elem).index(filtered._datapq(elem, metric))]
             ):
                 utils.get_pool().apply_async(
-                    partial(single_analysis, **kwargs),
+                    single_analysis,
                     args=(
                         filtered.graphs,
                         d[metric],
