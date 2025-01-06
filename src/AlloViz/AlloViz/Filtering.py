@@ -257,12 +257,12 @@ class Filtering:
         # For each column in the filtered data that is not a standard error, create an analyzable NetworkX's graph and save it
         self.graphs = {}
         for col in [c for c in self._filtdata if "std" not in c]:
-            coldata = abs(self._filtdata[[col]].rename(columns={col:"graph_weight"}))
+            coldata = abs(self._filtdata[[col]].rename(columns={col: "graph_weight"}))
             coldata.loc[:,"graph_distance"] = -np.log(coldata + 10E-10) + 10E-10
             try:
                 # The approach in lit. is to use -log10(|corr|) as edge weights/distances in the network for analyses
                 # e.g., https://www.pnas.org/doi/full/10.1073/pnas.0810961106            
-                self.graphs[col] = self._get_G(coldata)
+                self.graphs[col] = self._get_G(coldata, col)
             except NoNetworkException as e:
                 print(e)
 
@@ -282,7 +282,7 @@ class Filtering:
                 
                 
 
-    def _get_G(self, column):
+    def _get_G(self, column, colname):
         r"""Return a DataFrame's column as a Graph
 
         Transform a column from a :class:`pandas.DataFrame` (passed as a
@@ -292,6 +292,7 @@ class Filtering:
         Parameters
         ----------
         column : :class:`pandas.Series`
+        colname : string
         """
         # Transform the column into a 3-column dataframe with the nodes' name and the value as weight. Drop 0s and NAs
         # btw calculations fail with 0 value weights and cfb prob with negative
@@ -311,7 +312,7 @@ class Filtering:
                     f"EXCEPTION! No connected components in network ({network.number_of_nodes()} nodes):",
                     self._pkg._name,
                     self._name,
-                    column.name,
+                    colname,
                 ))
             )
         else:
@@ -323,7 +324,7 @@ class Filtering:
                     f"WARNING! Unconnected network ({network.number_of_nodes()} nodes):",
                     self._pkg._name,
                     self._name,
-                    column.name,
+                    colname,
                     "\n",
                     f"Largest network component will be used for analysis. Sizes (number of nodes) of all components: {[len(comp) for comp in components]}",
                 )
