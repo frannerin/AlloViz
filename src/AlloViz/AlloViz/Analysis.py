@@ -31,7 +31,7 @@ nodes_dict = {
     },
     "cfb":  {
         "function": "networkx.algorithms.centrality.current_flow_betweenness_centrality",
-        "arguments": {"weight": "graph_weight"}
+        "arguments": {"weight": "graph_distance"} # "graph_weight"
     }
 }
 """
@@ -47,7 +47,7 @@ edges_dict = {
     },
     "cfb":  {
         "function": "networkx.algorithms.centrality.edge_current_flow_betweenness_centrality",
-        "arguments": {"weight": "graph_weight"}
+        "arguments": {"weight": "graph_distance"} # "graph_weight"
     }
 }
 """
@@ -209,7 +209,7 @@ def analyze(filtered, elements, metrics, nodes_dict, edges_dict):
     Other Parameters
     ----------------
     nodes_dict, edges_dict : dict
-        Optional kwarg(s) of the dictionary(ies) thatmaps network metrics custom names
+        Optional kwarg(s) of the dictionary(ies) that maps network metrics custom names
         (e.g., betweenness centrality, "btw") with their corresponding NetworkX
         function and arguments, with the format:
         ```
