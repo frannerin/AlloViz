@@ -31,7 +31,7 @@ nodes_dict = {
     },
     "cfb":  {
         "function": "networkx.algorithms.centrality.current_flow_betweenness_centrality",
-        "arguments": {"weight": "graph_distance"} # "graph_weight"
+        "arguments": {"weight": "graph_weight"}
     }
 }
 """
@@ -47,7 +47,7 @@ edges_dict = {
     },
     "cfb":  {
         "function": "networkx.algorithms.centrality.edge_current_flow_betweenness_centrality",
-        "arguments": {"weight": "graph_distance"} # "graph_weight"
+        "arguments": {"weight": "graph_weight"}
     }
 }
 """
