@@ -98,25 +98,7 @@ def GPCR_Interhelix(pkg, data, **kwargs):
     have generic numbering and are in different transmembrane helices (and/or
     intra-cellular or extracellular loops) according to it.
     """
-    if not pkg.protein.GPCR:
-        raise Exception("GPCR_Interhelix filtering is only available for GPCR systems.")
-    
-#     # Create a dictionary mapping the residue numbers to their corresponding TM or ICL/ECL (or 0)
-#     mapper = dict(zip(
-#         pkg.protein.protein.select_atoms("name CA").resnums,
-#         np.floor(pkg.protein.protein.select_atoms("name CA").tempfactors)
-#     ))
-    
-#     # Define a function to retrieve the residue number from the residue nomenclature used (chainID:)RES:resnum
-#     resnum = lambda res: int(res.rsplit(":")[-1])
-#     def are_interhelix(idx):
-#         # Make a list of the residue pair's TMs
-#         TMs = [mapper[resnum(idx[0])], mapper[resnum(idx[1])]]
-#         # Then, check that (1) none of the retrieved TMs are 0 (residue with no generic numbering) and that (2) they are different TMs/ICLs/ECLs 
-#         return all([
-#                     all(TMs),
-#                     len(set(TMs)) > 1
-#                    ])
+    # GPCRmd special filtering function
     mapper = pkg.protein.GPCR
             
     get_TM = lambda res: mapper[res].split("x")[0] if res in mapper else False

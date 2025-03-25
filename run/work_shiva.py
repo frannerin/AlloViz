@@ -105,7 +105,7 @@ dyn.filter(pkgs="all", filterings=["All", "GetContacts_edges", "GPCR_Interhelix"
 print('# Done.\n')
 
 print('# Analysing networks...\n')
-dyn.analyze(pkgs="all", filterings="all", elements="edges", metrics="all", normalize=True, cores=int(cores)) 
+dyn.analyze(pkgs="all", filterings="all", elements="edges", metrics="all", cores=int(cores)) 
 # dyn.analyze(pkgs="pytraj_CA", filterings="Spatially_distant", elements="edges", metrics="all", normalize=True, cores=int(cores))
 print('# Done.\n\n')
 

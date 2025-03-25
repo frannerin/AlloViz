@@ -334,13 +334,7 @@ class Base:
         
 #         return new
     
-    
-    
-class Pocketron(Base):
-    """Pocketron
-    """
-    
-    
+
 
 
 class Multicore(Base):
@@ -392,7 +386,7 @@ class Multicore(Base):
 
 
         
-class Combined_Dihs_Base(Base):
+class Combined_Dihs(Base):
     """Class for combination of dihedral angle data
     
     This class' child classes are used to combine the information from multiple dihedral
@@ -422,7 +416,7 @@ class Combined_Dihs_Base(Base):
         
         
         
-class Combined_Dihs_Avg(Combined_Dihs_Base):
+class Combined_Dihs_Avg(Combined_Dihs):
     """Class for combination of dihedral angle data by averaging
     
     This class' child classes are used to combine the information from multiple dihedral
