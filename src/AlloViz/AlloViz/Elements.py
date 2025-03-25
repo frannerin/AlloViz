@@ -43,15 +43,8 @@ class Element(pandas.DataFrame):
     with the :class:`~AlloViz.Protein` or :class:`~AlloViz.Delta` object the information
     belongs to, as it is needed for representation.
     """
-    
-    
-    # # temporary properties
-    # _internal_names = pd.DataFrame._internal_names + ["internal_cache"]
-    # _internal_names_set = set(_internal_names)
 
-    # normal properties; retained after manipulating df; should new methods be here?
-    # _metadata = 
-    
+    # Necessary for subclassing DataFrame class according to docs
     _metadata = ["_parent"]
     
     @property
@@ -62,7 +55,6 @@ class Element(pandas.DataFrame):
     def _internal_ctor(cls, *args, **kwargs):
         kwargs['parent'] = None
         return cls(*args, **kwargs)
-    
     
     @property
     def _constructor_sliced(self):
@@ -79,20 +71,6 @@ class Element(pandas.DataFrame):
         self._parent = parent
     
     
-    
-#     @property
-#     def _constructor(self):
-#         return self.__class__
-
-    
-    
-#     def __init__(self, *args, parent):
-#         super().__init__(*args)
-#         self._parent = parent
-    
-    
-    
-    
     def __sub__(self, other):
         # Translate the current dataframe index (residues or residue pairs) to positions of the structural alignment made for Delta calculation
         selfreindex = self.index.map(
@@ -105,6 +83,8 @@ class Element(pandas.DataFrame):
             .assign(aln_pos=selfreindex.to_numpy())
             .set_index("aln_pos")
         )
+        if self._parent.GPCR:
+            selfdf = selfdf.loc[lambda x: (x.index != "0.00") & ["0.00" not in i for i in x.index]]
 
         # Repeat with the corresponding Element instance of the "other"
         otherreindex = other.index.map(
@@ -116,11 +96,13 @@ class Element(pandas.DataFrame):
             .assign(aln_pos=otherreindex.to_numpy())
             .set_index("aln_pos")
         )
+        if other._parent.GPCR:
+            otherdf = otherdf.loc[lambda x: (x.index != "0.00") & ["0.00" not in i for i in x.index]]
 
-        # Select the columns that the two have in common for delta-network calculation
-        cols = [col for col in selfdf.columns if col in otherdf.columns]
-
-        # The columns to be subtracted are the ones that are not standard errors; cells with equivalent "aln_pos" (index) are subtracted and NA are dropped in the end
+        # Select the columns that the two have in common for delta-network calculation and that also averages and not from an individual trajectory (e.g., not _1, _2...)
+        cols = [col for col in selfdf.columns if col in otherdf.columns and not any([str(i) in col for i in self._parent._trajs])]
+        
+        # The columns to be subtracted are the ones that are averages and also not standard errors; cells with equivalent "aln_pos" (index) are subtracted and NA are dropped in the end
         subs = [col for col in cols if "std" not in col]
         sub = pandas.DataFrame.sub(
             selfdf[subs], otherdf[subs], axis=0, level="aln_pos"

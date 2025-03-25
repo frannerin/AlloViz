@@ -32,35 +32,6 @@ for key, val in imports.items():
 class GetContacts(Multicore):
     """GetContacts' contact frequencies
     """
-    
-    def __new__(cls, protein, d):
-        new = super().__new__(cls, protein, d)
-        if "GetContacts_threshold" in d:
-            new.GetContacts_threshold = d["GetContacts_threshold"]
-        return new     
-    
-    def __init__(self, *args):
-        super().__init__(*args)
-        
-        # Filter dataset according to GetContacts_threshold optional kwarg
-        if hasattr(self, "GetContacts_threshold"):
-            # Define the list of .pq files that we expect are going to be saved (or be retrieved) and a function to check which of them already exist
-            pqs = [self._rawpq(xtc) for xtc in self._trajs]
-            no_exist = lambda pqs: [not os.path.isfile(pq) for pq in pqs]
-
-            # Function to wait for the calculations to finish in the background; returns the .pq files to be read and added as attributes when they do
-            def wait_calculate(pqs):
-                while any(no_exist(pqs)):
-                    time.sleep(5)
-                return pqs
-            
-            # Wait asynchronously for analysis to end and then add the filter data
-            filter_raw = lambda _: setattr(self, "raw", self.raw[self.raw["weight"] >= self.GetContacts_threshold])
-            get_pool().apply_async(wait_calculate,
-                                   args=(pqs,),
-                                   callback=filter_raw)
-            
-            
     def _computation(self, xtc):
         """"""
         path = self._path
@@ -69,8 +40,8 @@ class GetContacts(Multicore):
         print(ctcs, os.path.isfile(ctcs))
         freqs = f"{path}/{xtc}_freqs.tsv"
         
-        if not os.path.isfile(freqs):# or ow:
-            #_getcontacts_contacts.main(f"--topology {self._pdbf} --trajectory {self._trajs[xtc]} --output {ctcs} --itypes all --cores {self.taskcpus}".split())
+        if not os.path.isfile(freqs):
+            _getcontacts_contacts.main(f"--topology {self._pdbf} --trajectory {self._trajs[xtc]} --output {ctcs} --itypes all --cores {self.taskcpus}".split())
             _getcontacts_freqs.main(f"--input_files {ctcs} --output_file {freqs}".split())
         return freqs, xtc
         

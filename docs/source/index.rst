@@ -6,5 +6,5 @@
 
    self
    table
-   tutorial
+   tutorials
    API reference <API>

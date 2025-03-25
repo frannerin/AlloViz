@@ -32,7 +32,7 @@ class MDTASK(Multicore):
         return new
     
     
-    def _computation(self, xtc):#pdb, traj, xtc, pq):
+    def _computation(self, xtc):
         """"""
         corr = _mdtask.correlate(_mdtask.parse_traj(traj = self._trajs[xtc], topology = self._pdbf))
         return corr, xtc

@@ -11,6 +11,18 @@ pkgsl = list(set(wrappers.keys()) - {"gRINN_corr",})
 Imported from :data:`AlloViz.AlloViz.info.wrappers`"""
 
 
+
+def add_gn(df, dropna=True):    
+    df = df.copy()
+    ix = df.index.to_frame(index=False)
+    cols = ["GN"] if len(ix.columns) == 1 else [f"GN{i}" for i in range(len(ix.columns))]
+    df[cols] = ix.map(df._parent._aln_mapper.get).to_numpy()
+    if dropna: 
+        df = df.replace({c: {"0.00": None} for c in cols}).dropna(how="any", subset=cols)
+    return df
+
+
+
 def pkgname(pkg, fail=True):
     r"""Return the case-sensitive, correct name of an AlloViz network construction method
 
@@ -202,32 +214,3 @@ def get_pool():
     """
     global pool
     return pool
-
-
-# def capitalize(string):
-#     return string[0].upper() + string[1:]
-
-# def norm(normalize):
-#     return "norm" if normalize else "no_norm"
-
-
-# def get_intercontacts(indexl):
-#     get_resnum = lambda res: int(res.rsplit(":")[-1])
-#     return [idx for idx in indexl if abs(get_resnum(idx[0]) - get_resnum(idx[1]) ) >= 4]
-
-
-# pdict = {}
-
-# def update_pdict(name, p):
-#     global pdict
-#     pdict[name] = p
-#     print("adding to pdict", pdict)
-#     p.start()
-
-# def get_p(name):
-#     global pdict
-#     print("getting from pdict", pdict)
-#     p = pdict[name]
-#     print(p)
-#     p.get()
-#     print(p)

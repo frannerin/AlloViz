@@ -18,7 +18,7 @@ sys.path.insert(0, os.path.abspath('..'))
 # -- Project information -----------------------------------------------------
 
 project = 'AlloViz'
-copyright = '2022, Francho Nerín-Fonz'
+copyright = '2023'
 author = 'Francho Nerín-Fonz'
 
 # The full version, including alpha/beta/rc tags
@@ -55,13 +55,22 @@ autoapi_keep_files = True
 nbsphinx_execute = 'never'
 nbsphinx_kernel_name = 'python3'
 
+# intersphinx_mapping = {
+# 'https://docs.mdanalysis.org/stable/': None,
+# 'https://biopython.org/docs/latest/api/': None,
+# 'http://nglviewer.org/nglview/latest/': None,
+# 'https://networkx.org/documentation/stable/': None,
+# 'https://pandas.pydata.org/docs/': None,
+# 'https://matplotlib.org/stable/': None,
+# }
+
 intersphinx_mapping = {
-'https://docs.mdanalysis.org/stable/': None,
-'https://biopython.org/docs/latest/api/': None,
-'http://nglviewer.org/nglview/latest/': None,
-'https://networkx.org/documentation/stable/': None,
-'https://pandas.pydata.org/docs/': None,
-'https://matplotlib.org/stable/': None,
+"MDAnalysis": ('https://docs.mdanalysis.org/stable/', None),
+"Bio": ('https://biopython.org/docs/latest/api/', None),
+"nglview": ('http://nglviewer.org/nglview/latest/', None),
+"networkx": ('https://networkx.org/documentation/stable/', None),
+"pandas": ('https://pandas.pydata.org/docs/', None),
+"matplotlib": ('https://matplotlib.org/stable/', None),
 }
 
 # Make sure the target is unique
@@ -93,7 +102,7 @@ autosummary_mock_imports = [
 	"pytraj",
 	"cython", "h5py", "python-louvain", "community", "colorama", #dynetan deps
 	"pyprind", "panedr", "natsort", "click", "PyQt5",
-	"enspara.info_theory.libinfo", "enspara.geometry.libdist", "enspara.msm.libmsm", "tables",
+	"enspara.info_theory.libinfo", "enspara.geometry.libdist", "enspara.msm.libmsm", "tables", "psutil"
 ]
 
 # autodoc
@@ -160,7 +169,7 @@ html_theme_options = {
 }
 
 html_sidebars = {
-  "tutorial": [],
+  #"tutorial": [],
   "table": [],
 }
 
@@ -241,6 +250,12 @@ with open('README.rst', 'w') as f:
   		"`options <https://alloviz.readthedocs.io/en/latest/table.html>`__",
   		":ref:`options <table:Network construction methods>`"
   	).replace(
-  		"`tutorial <https://alloviz.readthedocs.io/en/latest/tutorial.html>`__",
-  		":ref:`tutorial <tutorial:Tutorial>`"
-  	))
+  		"`tutorial notebooks <https://alloviz.readthedocs.io/en/latest/tutorials.html>`__",
+  		":ref:`tutorial notebooks <tutorials:Tutorials>`"
+  	).replace(
+  		"`quickstart <https://alloviz.readthedocs.io/en/latest/tutorials/quickstart.html>`__",
+  		":ref:`quickstart <tutorials/quickstart:Quickstart>`"
+    ).replace(
+  		"`GUI <https://alloviz.readthedocs.io/en/latest/tutorials/gui.html>`__",
+  		":ref:`GUI <tutorials/gui:GUI>`"
+    ))

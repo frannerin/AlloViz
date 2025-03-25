@@ -34,7 +34,3 @@
 	shallow = True
 	path = src/Packages/MD-TASK
 	url = https://github.com/RUBi-ZA/MD-TASK
-[submodule "dev/cme_parser"]
-	shallow = True
-	path = dev/cme_parser
-	url = https://github.com/silvanmelchior/cme_parser

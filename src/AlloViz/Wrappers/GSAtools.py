@@ -16,7 +16,7 @@ from .Base import Base
 class GSAtools(Base):
     """GSAtools' MI
     """        
-    def _computation(self, xtc):# pdb, traj, xtc, pq, out):
+    def _computation(self, xtc):
         # Send gsatools
         out = f"{self._path}/{xtc}"
         if not os.path.isfile(f"{out}/lf_nMImat.out"):

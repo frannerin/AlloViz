@@ -16,17 +16,13 @@ namespace of AlloViz itself.
 """
 
 import os, io, re
-
-from multiprocess import Pool
 import MDAnalysis as mda
 import numpy as np
+from multiprocess import Pool
 
-# from .Analysis import Whole, Incontact, Intercontact
-#from .Filtering import Filtering#Whole, Incontact, Intercontact
-# from .Visualization import Edges, Nodes
+
 from . import Analysis
-from . import Elements# import Edges, Nodes
-
+from . import Elements
 
 from .utils import rgetattr, rhasattr
 from . import utils
@@ -129,107 +125,6 @@ class Protein:
     :attr:`AlloViz.Protein._protein_sel` + " and {customselection}"
     """
     
-#     def __new__(
-#         cls,
-#         pdb="",
-#         trajs=[],
-#         GPCR=False,
-#         name=None,
-#         path=None,
-#         protein_sel=None,
-#         **kwargs,
-#     ):
-#         new = super().__new__(cls)
-#         new.GPCR = GPCR
-
-#         # If a GPCRmd ID is passed
-#         if not isinstance(new.GPCR, bool) and isinstance(new.GPCR, int):
-#             new.name = f"{new.GPCR}" if not name else name
-#             new._path = f"{new.GPCR}" if not path else path
-#             os.makedirs(new._path, exist_ok=True)
-
-#             # Download the files from GPCRmd
-#             if not any(
-#                 [
-#                     re.search("(pdb$|psf$|xtc$|dcd$|parameters$)", file)
-#                     for file in os.listdir(new._path)
-#                 ]
-#             ):
-#                 trajutils.download_GPCRmd_files(new.GPCR, new._path)
-#             files = os.listdir(new._path)
-
-#             # Retrieve filenames from the files downloaded into new._path
-#             get_filename = (
-#                 lambda ext: new._path
-#                 + "/"
-#                 + next(file for file in files if re.search(f"{ext}$", file))
-#             )
-#             new.pdb = get_filename("pdb")
-#             new.trajs = list(
-#                 sorted(
-#                     f"{new._path}/{traj}"
-#                     for traj in files
-#                     if re.search("^(?!\.).*\.(xtc|dcd)$", traj)
-#                 )
-#             )
-#             if any(["psf" in file for file in files]):
-#                 new.psf = get_filename("psf")
-#             if any(["parameters" in file for file in files]):
-#                 new._paramf = get_filename("parameters")
-
-#         # If pdb and trajectory files are passed
-#         else:
-#             new.name = pdb.replace(".pdb", "").split("/")[-1] if not name else name
-#             new._path = "." if not path else path
-#             os.makedirs(new._path, exist_ok=True)
-
-#             new.pdb = pdb
-#             new.trajs = trajs if isinstance(trajs, list) else [trajs]
-
-#             # Check if a .psf and a force-field parameters files have been passed for gRINN network calculation
-#             passed_psf_params = "parameters" in kwargs and "psf" in kwargs
-#             if passed_psf_params:
-#                 new.psf = kwargs["psf"]
-#                 new._paramf = kwargs["parameters"]
-
-#             # Check if all the filehandles passed exist, and raise an error if not
-#             files_to_check = (
-#                 new.trajs + [new.pdb]
-#                 if not passed_psf_params
-#                 else new.trajs + [new.pdb, new.psf, new._paramf]
-#             )
-#             files_exist = {file: os.path.isfile(file) for file in files_to_check}
-#             if any([not file_exist for file_exist in files_exist.values()]):
-#                 raise FileNotFoundError(
-#                     f"Some of the files could not be found: {files_exist}"
-#                 )
-
-#         new._protein_sel = Protein._protein_sel if not protein_sel else protein_sel
-
-#         # Set the names of the directories and files that will be creating when processing the input files
-#         new._datadir = f"{new._path}/data"
-#         os.makedirs(new._datadir, exist_ok=True)
-
-#         new._pdbf = f"{new._datadir}/protein.pdb"
-#         new._trajs = dict(
-#             [
-#                 (num + 1, f"{new._datadir}/traj_{num+1}.xtc")
-#                 for num in range(len(new.trajs))
-#             ]
-#         )
-#         new._psff = new._pdbf.replace("pdb", "psf") if hasattr(new, "psf") else None
-
-#         # Names of the directories and files of the future pdb and trajectory(ies) of the residues' Center Of Mass
-#         compath = f"{new._datadir}/COM_trajs"
-#         os.makedirs(compath, exist_ok=True)
-#         new._compdbf = f"{compath}/ca.pdb"
-#         new._comtrajs = {num: f"{compath}/{num}.xtc" for num in new._trajs}
-        
-#         return new
-        
-        
-
-        
     def __init__(
         self,
         pdb="",
@@ -318,23 +213,12 @@ class Protein:
             ]
         )
         self._psff = self._pdbf.replace("pdb", "psf") if hasattr(self, "psf") else None
-
-        # Names of the directories and files of the future pdb and trajectory(ies) of the residues' Center Of Mass
-        compath = f"{self._datadir}/COM_trajs"
-        # os.makedirs(compath, exist_ok=True)
-        self._compdbf = f"{compath}/ca.pdb"
-        self._comtrajs = {num: f"{compath}/{num}.xtc" for num in self._trajs}
-        
-        # Changed to save the returned 3-to-1 AA code dictionary in _standard_resdict
-        # because it's needed to save GetContacts results and possibly later as well
-        self._standard_resdict = trajutils.get_standard_resdict(**{"special_res": kwargs["special_res"] if "special_res" in kwargs else {}})
         
         # If the processed filenames don't exist yet as files, process the input files; if special_res kwarg is used it will be passed
         if any(
             [
                 not os.path.isfile(f)
                 for f in list(self._trajs.values())
-                # + list(self._comtrajs.values())
                 + [self._pdbf]
             ]
         ):
@@ -343,14 +227,11 @@ class Protein:
                 self.pdb,
                 self._protein_sel,
                 self._pdbf,
-                self._compdbf,
                 rgetattr(self, "psf"),
                 self._psff,
                 self.trajs,
                 self._trajs,
-                self._comtrajs,
-                # **kwargs,
-                self._standard_resdict, # Changed to pass the 3-to-1 AA code dictionary here
+                **{"special_res": kwargs["special_res"]} if "special_res" in kwargs else {},
             )
 
         # Set the protein/pdb and trajectory(ies) MDAnalysis' Universes with the processed files
@@ -358,6 +239,17 @@ class Protein:
         """:class:`~MDAnalysis.core.universe.Universe`"""
         self.u = mda.Universe(self._pdbf, *list(self._trajs.values()))
         """:class:`~MDAnalysis.core.universe.Universe`"""
+        
+        if GPCR:
+            trajutils.get_GPCRdb_numbering(self.protein.atoms)
+    
+        # If GPCR, create GN mapping
+        self._aln_mapper = {
+            f"{ca.residue.resname}:{ca.residue.resnum}": next((gn if gn[-1] != '0' else gn[:-1] for gn in [f"{ca.tempfactor:.3f}"]))
+            for ca in self.protein.select_atoms("name CA")
+            # if ca.tempfactor > 0
+        }
+        self._aln_mapper.update(dict(map(reversed, self._aln_mapper.items())))
 
         # Bonded cysteines must be identified to remove them from non-covalent contacts calculations (i.e., PyInteraph2_Contacts)
         self._bonded_cys = trajutils.get_bonded_cys(self._pdbf)
@@ -384,7 +276,7 @@ class Protein:
         with open(f"{self.name}.times", "w") as f:
             f.write("Package,taskcpus,Traj,Frames,Residues,Time,Time_per_frame_residue_cpu\n")
 
-            
+        
     def __sub__(self, other):
         """
         The result of subtracting an "other" Protein object from "self" is a new object
@@ -431,7 +323,6 @@ class Protein:
                         elem,
                         elemclass(dif, parent=self._delta),
                     )
-                    # rgetattr(delta, pkg, filtering, elem)._parent = self._delta
 
         return delta.__dict__
 
@@ -466,10 +357,6 @@ class Protein:
             Optional kwarg pointing to the namd2 executable location; if the `namd`
             command is accessible through the CLI it is automatically retrieved with the
             `distutils` package.
-        GetContacts_threshold : float, optional
-            Optional kwarg to specify the minimum contact frequency (0-1, default 0)
-            threshold for GetContacts results, which will be used to filter out contacts
-            with a frequency (average) lower than it.
         chis : int, optional
             Optional kwarg to specify the number of side-chain chi dihedral angles (up to
             5, default) to combine when sending the calculation of a child of the 
@@ -520,11 +407,11 @@ class Protein:
                 pkg = comb.split("_")[0]
                 if pkg == "CARDS":
                     if "Sidechain" in comb or "Backbone" in comb:
-                        pkg = comb.rsplit("_", 3)[0]
-                    else:
                         pkg = comb.rsplit("_", 2)[0]
-                dihs = bb if "Backbone" in comb else sc if "Sidechain" in comb else bb if "MDEntropy" in comb else bb+sc
-            pkgs += [f"{pkg}_{dih}" for dih in dihs]
+                    else:
+                        pkg = comb.rsplit("_", 1)[0]
+                dihs = bb if "Backbone" in comb else sc if "Sidechain" in comb else bb+sc
+                pkgs += [f"{pkg}_{dih}" for dih in dihs]
 
         # Objects from the classes in the Wrappers module need to be passed a dictionary "d" containing all the attributes of the source Protein object and the passed kwargs
         d = self.__dict__.copy()
@@ -537,7 +424,6 @@ class Protein:
         else:
             mypool = utils.dummypool()
         utils.pool = mypool
-        print(utils.pool)
             
         if any(["CARDS" in pkg for pkg in pkgs]):
             Wrappers.CARDS_w.CARDS(self, d)
@@ -549,8 +435,7 @@ class Protein:
             # Setting the class as a new attribute will initialize all calculations asynchronously (synchronously if a dummypool is used)
             if not hasattr(self, pkgclass.__name__):
                 setattr(self, pkgclass.__name__, pkgclass(self, d))
-
-        # if cores > 1:
+        
         # Close the pool
         utils.pool.close()
         utils.pool.join()
@@ -567,14 +452,16 @@ class Protein:
     
     
     
-    def filter(self, pkgs="all", filterings="all", *, GetContacts_threshold=0, Sequence_Neighbor_distance=5, Interresidue_distance=10):
+    def filter(self, pkgs="all", filterings="All", *, GetContacts_threshold=0, Sequence_Neighbor_distance=5, Interresidue_distance=10):
         r"""Filter network edges
         
         Filter the networks according to the selected criteria to perform analyses on
         (all or) a subset of the edges. It calls
         :meth:`AlloViz.Wrappers.Base.Base.filter` and results are stored in instances
-        of the :class:`AlloViz.AlloViz.Filtering.Filtering` class. The different filtering
-        options are detailed in the :mod:`~AlloViz.AlloViz.Filtering` module.
+        of the :class:`AlloViz.AlloViz.Filtering.Filtering` class. The graphs stored in
+        the 'graphs' attribute contain "graph_weight" and "graph_distance" as edge
+        attributes for analysis. The different filtering options are detailed in the
+        :mod:`~AlloViz.AlloViz.Filtering` module.
 
         Parameters
         ----------
@@ -583,7 +470,7 @@ class Protein:
             weights, which must be already calculated and their data saved as instance
             attribute. In this case, "all" sends the computation for all available
             methodsthat are already calculated and saved as instance attributes.
-        filterings : str or list of strs and/or lists, default: "all"
+        filterings : str or list of strs and/or lists, default: "All"
             Filtering scheme(s) with which to filter the list of network edges before
             analysis. It can be a string, or a list of strings and/or lists. A list of
             lists (also with or without strings) is used to filter with a combination of
@@ -592,8 +479,9 @@ class Protein:
             :func:`~AlloViz.AlloViz.Filtering.All`,
             :func:`~AlloViz.AlloViz.Filtering.GetContacts_edges`,
             :func:`~AlloViz.AlloViz.Filtering.No_Sequence_Neighbors`,
-            :func:`~AlloViz.AlloViz.Filtering.GPCR_Interhelix`. The default "all"
-            performs all the available filtering schemes (no combinations).
+            :func:`~AlloViz.AlloViz.Filtering.GPCR_Interhelix`. The default "All" (capitalized)
+            performs NONE of the available filtering schemes.
+            "all" (lowercase!) performs all the available filtering schemes (no combinations).
         
         Other Parameters
         ----------------
@@ -631,7 +519,20 @@ class Protein:
         # Filter "all" packages (all the available packages that have been previously calculated and are in __dict__)
         # or the ones passed as parameter (check that they are on the list of available packages and retrieve their case-sensitive names, else raise an Exception)
         pkgs = utils.make_list(pkgs, if_all = [key for key in utils.pkgsl if key in self.__dict__], apply = utils.pkgname)
-        
+
+        # Remove "GPCR_Interhelix" from the available filters if the protein is not a GPCR
+        all_available_filterings = utils.filteringsl.copy()
+        if not self.GPCR:
+            print('NOTE: "GPCR_Interhelix" filtering not available as the protein is not marked as a GPCR')
+            all_available_filterings.remove("GPCR_Interhelix") 
+
+        # Calculate for all the passed Filterings
+        filterings = utils.make_list(
+            filterings,
+            if_all =  all_available_filterings 
+        )
+
+
         for pkgn in pkgs:
             pkg = rgetattr(self, pkgn)
             if not pkg:
@@ -644,13 +545,15 @@ class Protein:
             
         return result if (len(pkgs) == 1) else None
     
-    def analyze(self, pkgs="all", filterings="all", elements="edges", metrics="all", normalize=True, cores=1, nodes_dict=Analysis.nodes_dict, edges_dict=Analysis.edges_dict, **kwargs):
+    def analyze(self, pkgs="all", filterings="all", elements="edges", metrics="all", cores=1, nodes_dict=Analysis.nodes_dict, edges_dict=Analysis.edges_dict):
         r"""Analyzed filtered network
         
         Analyze the selected (un)filtered networks with the passed elements-metrics. It
         calls :meth:`AlloViz.AlloViz.Analysis.analyze` and results are stored in
         instances of classes from the :mod:`AlloViz.AlloViz.Elements` module, which
-        extend the :class:`pandas.DataFrame` class.
+        extend the :class:`pandas.DataFrame` class. The graphs stored in the filtered
+        object 'graphs' attribute are used for analysis, which contain "graph_weight"
+        and "graph_distance" as edge attributes.
 
         Parameters
         ----------
@@ -670,9 +573,6 @@ class Protein:
             `edges_dict` dictionaries. Default is "all" and it sends the computation for
             all the metrics defined in the corresponding dictionary of the selected
             elements in `element`.
-        normalize : bool, default: True
-            Passed to the NetworkX functions that calculate the metrics, to output
-            normalized results or not.
         cores : int, default: 1
             Number of cores to use for parallelization with a `multiprocess` Pool.
             Default value only uses 1 core with a custom :class:`AlloViz.utils.dummypool`
@@ -683,19 +583,21 @@ class Protein:
         nodes_dict, edges_dict : dict
             Optional kwarg(s) of the dictionary(ies) that maps network metrics custom names
             (e.g., betweenness centrality, "btw") with their corresponding NetworkX
-            function (e.g., "networkx.algorithms.centrality.betweenness_centrality").
+            function and arguments, with the format:
+            ```
+                {
+                    "btw": {
+                        "function": "networkx.algorithms.centrality.betweenness_centrality",
+                        "arguments": {"weight": "graph_distance", "seed": 0}
+                    }
+                }
+            ```
             Functions strings must be written as if they were absolute imports, and must
             return a dictionary of edges or nodes, depending on the element dictionary in
             which they are. The keys of the dictionaries will be used to name the columns
             of the analyzed data that the functions produce. Defaults are
             :data:`~AlloViz.AlloViz.Analysis.nodes_dict` and
             :data:`~AlloViz.AlloViz.Analysis.edges_dict`.
-        **kwargs
-            Other optional keyword arguments that will be passed to the NetworkX analysis
-            function(s) that is(are) used on the method call in case they need extra
-            parameters. All keyward arguments will be passed to all analysis function
-            calls, so if the function doesn't accept the arguments there will be an error.
-            `weight` and `normalized` parameters are already specified by AlloViz.
 
         See Also
         --------
@@ -721,18 +623,11 @@ class Protein:
         
         # # Depending on the desired cores, use a dummypool (synchronous calculations) or a `multiprocess` Pool
         # # Changing it inside the `utils` module allows to share the same one between modules
-        # if cores > 1:
-        #     mypool = Pool(cores)
-        # else:
-        #     mypool = utils.dummypool()
-        # utils.pool = mypool
-        # print(utils.pool)       
         if cores > 1:
             mypool = Pool(cores)
         else:
             mypool = utils.dummypool()
-        utils.pool = mypool
-        print(utils.pool)   
+        utils.pool = mypool   
         
         for pkg in pkgs:
             # Analyze for "all" filterings or the ones passed as parameter
@@ -744,196 +639,19 @@ class Protein:
             
             for filtering in filterings:
                 filtered = rgetattr(self, utils.pkgname(pkg), filtering)
+                filtered.analyze(elements, metrics, cores=1, nodes_dict=nodes_dict, edges_dict=edges_dict)
                 
-                # if not filtered:
-                #     print(f"{utils.pkgname(pkg)} {filtering} results are needed first")
-                #     continue
-                # elif filtered._filtdata.size == 0:
-                #     print(f"{utils.pkgname(pkg)} {filtering} is not a connected network (or subnetwork)")
-                #     continue
-                # # result = 
-                # Analysis.analyze(filtered, elements, metrics, normalize, **kwargs)
-                filtered.analyze(elements, metrics, normalize, cores=1, nodes_dict=nodes_dict, edges_dict=edges_dict, **kwargs)
-                
-        # # Close the pool
-        # mypool.close()
-        # mypool.join()
-        # mypool = utils.dummypool()
-        # if cores > 1:
         # Close the pool
         utils.pool.close()
         utils.pool.join()
         utils.pool = utils.dummypool()
             
-        #return #result if (len(pkgs) == 1 and len(filterings) == 1) else None
-    
-
-#     def analyze(
-#         self,
-#         pkg="all",
-#         filterby="Whole",
-#         element="edges",
-#         metrics="all",
-#         normalize=True,
-#         cores=1,
-#         **kwargs,
-#     ):
-#         r"""Analyze calculated edge weights with network analyses.
-
-#         Perform analyses of the raw edge weights for the selected packages/network
-#         construction methods, filtering schemes and network elements, calculating the
-#         desired network metrics.
-
-#         Parameters
-#         ----------
-#         pkg : str or list, default: "all"
-#             Package(s)/Network construction method(s) for which to analyze their raw edge
-#             weights, which must be already calculated and their data saved as instance
-#             attribute. In this case, "all" sends the computation for all available
-#             methodsthat are already calculated and saved as instance attributes.
-#         filterby : str or list, {"Whole", "Incontact", "Intercontact"}
-#             Filtering schemes with which to filter the list of network edges before
-#             analysis. "Whole" is the default and means no filtering, and "Incontact" and
-#             "Intercontact" (see Notes) require that raw data from the `getcontacts`
-#             package has been calculated first.
-#         element : str or list, {"edges", "nodes"}
-#             Network elements for which to perform the analysis.
-#         metrics : str or list, default: "all"
-#             Network metrics to compute, which must be keys in the `nodes_dict` or
-#             `edges_dict` dictionaries. Default is "all" and it sends the computation for
-#             all the metrics defined in the corresponding dictionary of the selected
-#             elements in `element`.
-#         normalize : bool, default: True
-#             Passed to the NetworkX functions that calculate the metrics, to output
-#             normalized results or not.
-#         cores : int, default: 1
-#             Number of cores to use for parallelization with a `multiprocess` Pool.
-#             Default value only uses 1 core with a custom :class:`AlloViz.utils.dummypool`
-#             that performs computations synchronously.
-
-#         Other Parameters
-#         ----------------
-#         nodes_dict, edges_dict : dict
-#             Optional kwarg(s) of the dictionary(ies) that maps network metrics custom names
-#             (e.g., betweenness centrality, "btw") with their corresponding NetworkX
-#             function (e.g., "networkx.algorithms.centrality.betweenness_centrality").
-#             Functions strings must be written as if they were absolute imports, and must
-#             return a dictionary of edges or nodes, depending on the element dictionary in
-#             which they are. The keys of the dictionaries will be used to name the columns
-#             of the analyzed data that the functions produce. Defaults are
-#             :data:`~AlloViz.AlloViz.Analysis.nodes_dict` and
-#             :data:`~AlloViz.AlloViz.Analysis.edges_dict`.
-#         **kwargs
-#             `GetContacts_threshold` kwarg can be passed to specify the minimum contact
-#             frequency (0-1, default 0) threshold, which will be used to filter out
-#             contacts with a frequency (average) lower than it before analysis. Make sure
-#             to delete/have deleted all previous analysis attributes and files of any
-#             network construction method. `Intercontact_distance` kwarg can be passed to
-#             specify the minimum number of sequence positions/distance between residues of
-#             a pair to retain in Intercontact filtering, which defaults to 5.
-
-
-#         See Also
-#         --------
-#         AlloViz.Protein.calculate : Class method to calculate the network(s) raw edge
-#                                     weights with different network construction methods.
-#         AlloViz.Protein.view : Class method to visualize the network on the protein
-#                                structure.
-
-#         Notes
-#         -----
-#         Method returns nothing, but analysis results are stored as nested attributes
-#         "inside" each of the packages' attributes of the :class:`~AlloViz.Protein` object,
-#         first using the name of the filtering scheme (e.g., `.Package.filterby`) and
-#         lastly with the analyzed network element name (e.g., `.Package.filterby.element`).
-#         If the `Protein` object was created providing more than one trajectory file, the
-#         analyses are performed both on the replicas' weights and the average, and an
-#         average and standard error of the replicas' analysis results are also calculated.
-
-#         "Incontact" filtering only retains edges of residue pairs in contact -those for
-#         which GetContacts is able to compute contact frequencies-, and "Intercontact"
-#         only keeps edges of pairs that are both in contact and apart in the sequence (more
-#         than 5 positions away in the sequence).
-
-#         Examples
-#         --------
-#         >>> opioidGPCR = AlloViz.Protein(GPCR=169)
-#         >>> opioidGPCR.calculate(["getcontacts", "dynetan"], cores=6, taskcpus=2)
-#         >>> opioidGPCR.analyze("dynetan", filterby="Intercontact", element=["edges", "nodes"], metrics="btw")
-#         >>> print(opioidGPCR.dynetan.Intercontact.edges.df.shape)
-#         (3410, 5)
-#         """
-#         # Calculate for "all" packages (all the available packages that have been previously calculated and are in __dict__)
-#         # or the ones passed as parameter (check that they are on the list of available packages and retrieve their case-sensitive names, else raise an Exception)
-#         pkgs = (
-#             [pkg for pkg in self.__dict__ if pkg in utils.pkgsl]
-#             if pkg == "all"
-#             else [utils.pkgname(p) for p in pkg]
-#             if isinstance(pkg, list)
-#             else [utils.pkgname(pkg)]
-#         )
-#         # Calculate for the passed Filterings
-#         filterbys = (
-#             utils.filterbysl
-#             if filterby == "all"
-#             else filterby
-#             if isinstance(filterby, list)
-#             else [filterby]
-#         )
-#         # And for the passed Elements, and their corresponding network Metrics if they are defined in the dictionaries
-#         elements = element if isinstance(element, list) else [element]
-#         metrics = (
-#             set(list(nodes_dict.keys()) + list(edges_dict.keys()))
-#             if metrics == "all"
-#             else metrics
-#             if isinstance(metrics, list)
-#             else [metrics]
-#         )
-
-#         # Depending on the desired cores, use a dummypool (synchronous calculations) or a `multiprocess` Pool
-#         # Changing it inside the utils module allows to share the same one between modules
-#         if cores > 1:
-#             mypool = Pool(cores)
-#         else:
-#             mypool = utils.dummypool()
-#         utils.pool = mypool
-#         print(utils.pool)
-
-#         # For each package to be analyzed
-#         for pkgn in pkgs:
-#             pkg = rgetattr(self, pkgn)
-#             if not pkg:
-#                 print(f"{pkgn} calculation results are needed first")
-#                 continue
-
-#             # Add (or retrieve) the passed Filterings attributes, and add the passed Elements-Metrics to them
-#             for filterby in filterbys:
-#                 # Establish the corresponding filterby/Analysis' class and check if it is already an attribute or set it otherwise
-#                 anaclass = (
-#                     eval(filterby.capitalize())
-#                     if isinstance(filterby, str)
-#                     else filterby
-#                 )
-#                 get_ana = lambda: rgetattr(pkg, anaclass.__name__)
-#                 if not get_ana():
-#                     setattr(
-#                         pkg,
-#                         anaclass.__name__,
-#                         anaclass(pkg, elements, metrics, normalize, **kwargs),
-#                     )
-#                 else:
-#                     # Add the passed Elements-Metrics
-#                     get_ana().add_metrics(elements, metrics, normalize, **kwargs)
-
-#         # Close the pool
-#         mypool.close()
-#         mypool.join()
-
+            
     def view(
         self,
         pkg,
         metric,
-        filtering="Whole",
+        filtering="All",
         element="edges",
         num: int = 20,
         colors: list = ["orange", "turquoise"],
@@ -953,7 +671,7 @@ class Protein:
             Package/Network construction method for which to show the network.
         metric : str
             Network metric for which to show the network.
-        filtering : str, {"Whole", "Incontact", "Intercontact"}
+        filtering : str
             Filtering scheme for which to show the network.
         element : str or list, {"edges", "nodes"}
             Network element or elements to show on the protein structure representing the
@@ -1000,8 +718,9 @@ class Protein:
 
         # Define a function to retrieve the corresponding Element attribute of the passed elem and check that it exists
         get_element = lambda element: rgetattr(
-            self, pkg, filtering.capitalize(), element.lower()
+            self, pkg, filtering, element
         )
+        
         if isinstance(get_element(elements[0]), bool):
             raise Exception(
                 f"{elements[0]} analysis with {filtering} filtering needs to be sent first."
@@ -1023,6 +742,8 @@ class Protein:
         return nv
 
 
+    
+    
 class Delta:
     r"""AlloViz class for calculating a delta-network.
 
@@ -1087,7 +808,8 @@ class Delta:
             setattr(state, "_delta", self)
 
         # Perform a PyMOL structural alignment with the passed method
-        self._aln = self._make_struct_aln(pymol_aln)
+        if not all(s.GPCR for s in self._states):
+            self._aln = self._make_struct_aln(pymol_aln)
 
         # Future: used source-target nodes for metrics calculation
         # nodes_subset = self._add_nodes_subset()
@@ -1205,7 +927,7 @@ class Delta:
         self,
         pkg,
         metric,
-        filtering="Whole",
+        filtering="All",
         element="edges",
         num=20,
         colors=["orange", "turquoise"],
@@ -1229,7 +951,7 @@ class Delta:
             Package/Network construction method for which to show the delta-network.
         metric : str, default: "all"
             Network metric for which to show the delta-network.
-        filtering : str, {"Whole", "Incontact", "Intercontact"}
+        filtering : str
             Filtering scheme for which to show the delta-network.
         element : str or list, {"edges", "nodes"}
             Delta-network element or elements to show on the protein structure

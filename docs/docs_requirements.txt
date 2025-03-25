@@ -1,10 +1,12 @@
-pandas
+docutils<=0.20
+
+pandas==2.0.3
 requests
 multiprocess
-MDAnalysis
-numpy
+MDAnalysis==2.2.0
+numpy==1.23.5
 lazyasd
-networkx
+networkx==3.1
 ParmEd
 
 ipython
@@ -14,4 +16,4 @@ nbsphinx
 nbsphinx-link
 
 numpydoc
-pydata-sphinx-theme<0.10
+pydata-sphinx-theme<=0.10

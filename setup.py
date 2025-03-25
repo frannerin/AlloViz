@@ -23,7 +23,7 @@ if not on_rtd:
         Extension("libinteract.innerloops",
                   ["src/Packages/pyinteraph2/libinteract/innerloops.pyx",
                    "src/Packages/pyinteraph2/libinteract/clibinteract.c"], \
-                  include_dirs = [numpy.get_include()])
+                  include_dirs = [numpy.get_include(), "src/Packages/pyinteraph2/libinteract"])
 
 
 

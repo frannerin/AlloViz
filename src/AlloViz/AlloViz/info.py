@@ -14,13 +14,13 @@ whole = "Whole residue"
 Dihs = "All backbone dihedrals (Phi and psi)"
 
 # Package/Network construction method-level common information
-dynetani = ("Atoms' displacements", "dynetan", "MI")
-pytraji = ("Atoms' displacements", "pytraj", "Pearson's")
-correlationplusi = ("Atoms' displacements", "correlationplus")
+dynetani = ("Atomic displacements", "dynetan", "MI")
+pytraji = ("Atomic displacements", "pytraj", "Pearson's")
+correlationplusi = ("Atomic displacements", "correlationplus")
 correlationplusdihsi = ("Dihedral angles", "correlationplus", "Pearson's")
 AlloVizi = ("Dihedral angles", "AlloViz", "MI")
 MDEntropyi = ("MDEntropy", "MI")
-g_correlationi = ("Atoms' displacements", "g_correlation")
+g_correlationi = ("Atomic displacements", "g_correlation")
 pyinteraphi = ("Contacts", "PyInteraph2", "None")
 CARDSi = ("Dihedral angles", "CARDS")
 
@@ -34,7 +34,7 @@ CARDSi = ("Dihedral angles", "CARDS")
 #: the AlloViz accession name of the wrapper), the correlaton metric they use if
 #: applicable, and the atom/angle whose information it uses.
 wrappers = {
-    "MDTASK": ("Atoms' displacements", "MD-TASK", "Pearson's", alpha),
+    "MDTASK": ("Atomic displacements", "MD-TASK", "Pearson's", alpha),
 
     "pytraj_CA": pytraji + (alpha,),
     "pytraj_CB": pytraji + (beta,),
@@ -57,13 +57,11 @@ wrappers = {
     #"correlationplus_Omega": correlationplusdihsi + ("Omega",),
 
     "correlationplus_Backbone_Dihs": correlationplusdihsi + (Dihs,),
-    # "correlationplus_Backbone_Dihs_Max": correlationplusdihsi + (Dihs + " (max. value)",),
     
     "AlloViz_Phi": AlloVizi + ("Phi",),
     "AlloViz_Psi": AlloVizi + ("Psi",),
     #"AlloViz_Omega": AlloVizi + ("Omega",),
     "AlloViz_Backbone_Dihs": AlloVizi + (Dihs,),
-    # "AlloViz_Backbone_Dihs_Max": AlloVizi + (Dihs + " (max. value)",),
 
     "AlloViz_Chi1": AlloVizi + ("Chi1",),
     "AlloViz_Chi2": AlloVizi + ("Chi2",),
@@ -71,10 +69,8 @@ wrappers = {
     "AlloViz_Chi4": AlloVizi + ("Chi4",),
     #"AlloViz_Chi5": AlloVizi + ("Chi5",),
     "AlloViz_Sidechain_Dihs": AlloVizi + ("All side-chain dihedrals",),
-    # "AlloViz_Sidechain_Dihs_Max": AlloVizi + ("All side-chain dihedrals (max. value)",),
 
     "AlloViz_Dihs": AlloVizi + ("All dihedrals",),
-    # "AlloViz_Dihs_Max": AlloVizi + ("All dihedrals (max. value)",),
     
     'CARDS_MI_Phi': CARDSi + ('MI', 'Phi'), 
     'CARDS_Disorder_Phi': CARDSi + ('Pure-disorder MI', 'Phi'), 
@@ -89,10 +85,6 @@ wrappers = {
     'CARDS_Disorder_Backbone_Dihs': CARDSi + ('Pure-disorder MI', Dihs),
     'CARDS_Disorder_mediated_Backbone_Dihs': CARDSi + ('Disorder-mediated MI', Dihs), 
     'CARDS_Holistic_Backbone_Dihs': CARDSi + ('Holistic MI', Dihs),
-    # 'CARDS_MI_Backbone_Dihs_Max': CARDSi + ('MI', 'All backbone dihedrals (Phi and psi) (max. value)'), 
-    # 'CARDS_Disorder_Backbone_Dihs_Max': CARDSi + ('Pure-disorder MI', 'All backbone dihedrals (Phi and psi) (max. value)'), 
-    # 'CARDS_Disorder_mediated_Backbone_Dihs_Max': CARDSi + ('Disorder-mediated MI', 'All backbone dihedrals (Phi and psi) (max. value)'), 
-    # 'CARDS_Holistic_Backbone_Dihs_Max': CARDSi + ('Holistic MI', 'All backbone dihedrals (Phi and psi) (max. value)'), 
     
     'CARDS_MI_Chi1': CARDSi + ('MI', 'Chi1'), 
     'CARDS_Disorder_Chi1': CARDSi + ('Pure-disorder MI', 'Chi1'), 
@@ -115,19 +107,11 @@ wrappers = {
     'CARDS_Disorder_Sidechain_Dihs': CARDSi + ('Pure-disorder MI', 'All side-chain dihedrals'), 
     'CARDS_Disorder_mediated_Sidechain_Dihs': CARDSi + ('Disorder-mediated MI', 'All side-chain dihedrals'), 
     'CARDS_Holistic_Sidechain_Dihs': CARDSi + ('Holistic MI', 'All side-chain dihedrals'),
-    # 'CARDS_MI_Sidechain_Dihs_Max': CARDSi + ('MI', 'All side-chain dihedrals (max. value)'), 
-    # 'CARDS_Disorder_Sidechain_Dihs_Max': CARDSi + ('Pure-disorder MI', 'All side-chain dihedrals (max. value)'), 
-    # 'CARDS_Disorder_mediated_Sidechain_Dihs_Max': CARDSi + ('Disorder-mediated MI', 'All side-chain dihedrals (max. value)'), 
-    # 'CARDS_Holistic_Sidechain_Dihs_Max': CARDSi + ('Holistic MI', 'All side-chain dihedrals (max. value)'), 
     
     'CARDS_MI_Dihs': CARDSi + ('MI', 'All dihedrals'), 
     'CARDS_Disorder_Dihs': CARDSi + ('Pure-disorder MI', 'All dihedrals'), 
     'CARDS_Disorder_mediated_Dihs': CARDSi + ('Disorder-mediated MI', 'All dihedrals'), 
-    'CARDS_Holistic_Dihs': CARDSi + ('Holistic MI', 'All dihedrals'), 
-    # 'CARDS_MI_Dihs_Max': CARDSi + ('MI', 'All dihedrals (max. value)'), 
-    # 'CARDS_Disorder_Dihs_Max': CARDSi + ('Pure-disorder MI', 'All dihedrals (max. value)'), 
-    # 'CARDS_Disorder_mediated_Dihs_Max': CARDSi + ('Disorder-mediated MI', 'All dihedrals (max. value)'), 
-    # 'CARDS_Holistic_Dihs_Max': CARDSi + ('Holistic MI', 'All dihedrals (max. value)'),
+    'CARDS_Holistic_Dihs': CARDSi + ('Holistic MI', 'All dihedrals'),
     
     "MDEntropy_Phi": ("Dihedral angles",) + MDEntropyi + ("Phi",),
     "MDEntropy_Psi": ("Dihedral angles",) + MDEntropyi + ("Psi",),
@@ -138,15 +122,15 @@ wrappers = {
     "GetContacts": ("Contacts", "GetContacts", "None", "Contacts occurrence"),
     
     "PyInteraph2_Contacts": pyinteraphi + ("Contacts occurrence",),
+    # PyInteraph2_Contacts_Corrected
     "PyInteraph2_Atomic_Contacts_Occurrence": pyinteraphi + ("Atomic contacts occurrence",),
     "PyInteraph2_Atomic_Contacts_Strength": pyinteraphi + ("Atomic contacts strength",),
-    # "PyInteraph2_Contacts_Corrected": ("Contacts", "PyInteraph2 (with Rg correction)", "None", "Contacts occurrence"),
-    # it would be better to use the Rg corrected version
 
     "PyInteraph2_Energy": ("Interaction energy", "PyInteraph2", "None", whole),
     
     # "gRINN": ("Interaction energy", "gRINN", "None", whole),
     # "gRINN_corr": ("Interaction energy", "gRINN", "Pearson's", whole),
+    "Pocketron": ("Pockets",)
 }
 
 
@@ -228,3 +212,19 @@ dihedrals_atoms = {
     }
 }
 
+
+
+
+alloviz_paper = "F. Nerín-Fonz et al., AlloViz: a Python package for the calculation of protein allosteric communication networks. To appear."
+
+citations = {
+    "AlloViz": "https://alloviz.readthedocs.io/en/latest/",
+    "CARDS": "https://enspara.readthedocs.io/en/latest/cards.html",
+    "correlationplus": "https://github.com/tekpinar/correlationplus#cite",
+    "dynetan": "https://dynamical-network-analysis.readthedocs.io/en/latest/Citing.html",
+    "GetContacts": "https://github.com/getcontacts/getcontacts#citation",
+    "MDEntropy": "https://github.com/msmbuilder/mdentropy#citing",
+    "MDTASK": "https://md-task.readthedocs.io/en/latest/home.html#citing-md-task",
+    "PyInteraph2": "https://github.com/ELELAB/pyinteraph2",
+    "pytraj": "https://github.com/Amber-MD/pytraj#citation",
+}

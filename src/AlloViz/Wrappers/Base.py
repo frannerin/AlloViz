@@ -25,6 +25,7 @@ from lazyasd import LazyObject
 from ..AlloViz.Filtering import Filtering
 from ..AlloViz.Elements import Edges
 from ..AlloViz.utils import get_pool, rgetattr, rhasattr
+from ..AlloViz.info import citations
 from ..AlloViz import utils
 
 
@@ -153,6 +154,11 @@ class Base:
                                callback=add_raw)
         
         
+        pkg = [name for name in citations if name in self.__class__.__name__]
+        if len(pkg)==1 and "AlloViz" not in pkg:
+            print(f"Please, make sure to correctly cite the package used to compute the network: {pkg[0]} ({citations[pkg[0]]})")
+        
+        
     
     def _calculate(self, xtc, *args):
         """Send the calculation for a single trajectory file
@@ -190,7 +196,6 @@ class Base:
                          args=(xtc, *args),
                          callback=self._save_pq)
         
-    # def _computation
     
     
     
@@ -237,7 +242,7 @@ class Base:
     
     
     
-    def filter(self, filterings="all", **kwargs):
+    def filter(self, filterings="All", **kwargs):
         r"""Filter network edges
         
         Filter the networks according to the selected criteria to perform analyses on
@@ -248,7 +253,7 @@ class Base:
 
         Parameters
         ----------
-        filterings : str or list of strs and/or lists, default: "all"
+        filterings : str or list of strs and/or lists, default: "All"
             Filtering scheme(s) with which to filter the list of network edges before
             analysis. It can be a string, or a list of strings and/or lists: a list of
             lists (also with or without strings) is used to filter with a combination of
@@ -257,8 +262,7 @@ class Base:
             :func:`~AlloViz.AlloViz.Filtering.All`,
             :func:`~AlloViz.AlloViz.Filtering.GetContacts_edges`,
             :func:`~AlloViz.AlloViz.Filtering.No_Sequence_Neighbors`,
-            :func:`~AlloViz.AlloViz.Filtering.GPCR_Interhelix`. The default "all"
-            performs all the available filtering schemes (no combinations).
+            :func:`~AlloViz.AlloViz.Filtering.GPCR_Interhelix`.
         
         Other Parameters
         ----------------
@@ -293,11 +297,12 @@ class Base:
         >>> opioidGPCR.dynetan.GetContacts_edges_GPCR_Interhelix
         <AlloViz.AlloViz.Filtering.Filtering at 0x7f892c3c0fa0>
         """
-        # Calculate for all the passed Filterings
-        filterings = utils.make_list(
-            filterings,
-            if_all = utils.filteringsl
+        filterings = (
+            filterings
+            if isinstance(filterings, list)
+            else [filterings]
         )
+        
         for filt in filterings:
             # Name used to store as attribute will be that of the filtering scheme chosen or the combination's names joined by "_"
             name = filt if isinstance(filt, str) else "_".join(filt)
@@ -314,21 +319,26 @@ class Base:
     
     
     
-class Use_COM(Base):
-    """Class for using the COM's structure file and trajectories
+# class Use_COM(Base):
+#     """Class for using the COM's structure file and trajectories
     
-    Classes that inherit this class use the residues' COM structure and trajectory(ies)
-    files for calculations instead of the whole protein's.
+#     Classes that inherit this class use the residues' COM structure and trajectory(ies)
+#     files for calculations instead of the whole protein's.
+#     """
+    
+#     def __new__(cls, protein, d):
+#         new = super().__new__(cls, protein, d)
+        
+#         new._pdbf = new._d["_compdbf"]
+#         new._trajs = new._d["_comtrajs"]
+        
+#         return new
+    
+    
+    
+class Pocketron(Base):
+    """Pocketron
     """
-    
-    def __new__(cls, protein, d):
-        new = super().__new__(cls, protein, d)
-        
-        new._pdbf = new._d["_compdbf"]
-        new._trajs = new._d["_comtrajs"]
-        
-        return new
-    
     
     
 
@@ -394,7 +404,7 @@ class Combined_Dihs_Base(Base):
     
     def _calculate(self, xtc):
         # Child classes' names are: correlationplus_Backbone_Dihs_Avg, AlloViz_Sidechain_Dihs_Max, etc... 
-        pkg = self._name.rsplit("_", 3)[0] if ("Sidechain" in self._name or "Backbone" in self._name) else self._name.rsplit("_", 2)[0]
+        pkg = self._name.rsplit("_", 2)[0] if ("Sidechain" in self._name or "Backbone" in self._name) else self._name.rsplit("_", 1)[0]
         
         # If any of the dihedral calculations don't exist, raise error
         attrs_exist = {f"{pkg}_{Dih}": rhasattr(self, "protein", f"{pkg}_{Dih}") for Dih in self._dihs}
@@ -427,89 +437,22 @@ class Combined_Dihs_Avg(Combined_Dihs_Base):
         avgs = pandas.concat(dfs, axis=1).dropna(how="all").mean(axis=1)
         # Save the averages as the final data
         pandas.DataFrame({f"{xtc}": avgs}).to_parquet(self._rawpq(xtc))
-#         final = dfs.pop(0)
-#         for df in dfs:
-#             final = final + df
-#         df = final / len(Dihl) # average of the absolute number
-
-#         # df = (final - final.min()) / (final.max() - final.min())
-#         # This would be needed for absolute number sum; we are doing averaging (this is done column-wise)
-#         pandas.DataFrame(df).to_parquet(self._rawpq(xtc))
 
         
         
-class Combined_Dihs_Max(Combined_Dihs_Base):
-    """Class for combination of dihedral angle data by taking the maximum value
-    
-    This class' child classes are used to combine the information from multiple dihedral
-    angles by taking for each edge the maximum edge weight of all the dihedral networks
-    that are combined, with its specific
-    :meth:`~AlloViz.Wrappers.Base.Combined_Dihs_Max._save_pq` private method.
-    """
-    
-    def _save_pq(self, pqs, xtc):
-        # Make a list of the trajectories' dihedrals computations results (absolute numbers)
-        dfs = [pandas.read_parquet(pq)[f"{xtc}"].abs() for pq in pqs]
-        # Concatenate them, drop edges for which none of the columns have a value (sanity check) and retrieve the rowwise max values
-        maxs = pandas.concat(dfs, axis=1).dropna(how="all").max(axis=1)
-        # Save the max values as the final data
-        pandas.DataFrame({f"{xtc}": maxs}).to_parquet(self._rawpq(xtc))
-            
-        
-        
-# class Combined_Dihs(Base):
-#     """Class for combination of dihedral angle data
+# class Combined_Dihs_Max(Combined_Dihs):
+#     """Class for combination of dihedral angle data by taking the maximum value
     
 #     This class' child classes are used to combine the information from multiple dihedral
-#     angles (by averaging) by overriding the
-#     :meth:`~AlloViz.Wrappers.Base.Combined_Dihs._calculate` private method. It checks
-#     that the calculations of the desired dihedral angles for the current trajectory
-#     number (`xtc`) are available or launches them otherwise, waits for the data files to
-#     be available and reads, processes and saves the data.
+#     angles by taking for each edge the maximum edge weight of all the dihedral networks
+#     that are combined, with its specific
+#     :meth:`~AlloViz.Wrappers.Base.Combined_Dihs_Max._save_pq` private method.
 #     """
     
-#     def _calculate(self, xtc):
-#         """Override the function to combine multiple dihedrals data
-        
-#         """
-#         # Child classes' names are: AlloViz_Dihs and correlationplus_Dihs
-#         pkg = self._name.replace("Dihs", "")
-#         # Available combinable dihedrals are the backbone's
-#         Dihl = ["Phi", "Psi", "Omega"]
-        
-#         # Function to get the name of the files that we aim to retrieve
-#         get_rawpq = lambda Dih: rgetattr(self, "protein", f"{pkg}{Dih}", "_rawpq")(xtc)
-#         # Function to check if the calculations for a dihedral have been sent (the attribute exists in the Protein)
-#         no_exist = lambda Dihl: [not rhasattr(self, "protein", f"{pkg}{Dih}") for Dih in Dihl]
-        
-#         # If any of the dihedral calculations don't exist, send them
-#         if any(no_exist(Dihl)):
-#             for Dih in (Dih for Dih in Dihl if no_exist(Dihl)[Dihl.index(Dih)]):
-#                 pkgclass = eval(f"self._{Dih}")
-#                 setattr(self.protein, pkgclass.__name__, pkgclass(self.protein, self._d))
-
-#         # Function to wait for the calculations to finish in the background
-#         def wait_calculate(Dihl):
-#             not_finished = lambda Dihl: [not os.path.isfile(get_rawpq(Dih)) for Dih in Dihl]
-#             while any(not_finished(Dihl)):
-#                 time.sleep(5)
-#             return Dihl
-        
-#         # Function to read the data files and calculate the average of the absolute number (summing and then dividing by the number of dihedrals)
-#         def save_pq(Dihl):
-#             dfs = [pandas.read_parquet(get_rawpq(Dih))[f"{xtc}"].abs() for Dih in Dihl]
-            
-#             final = dfs.pop(0)
-#             for df in dfs:
-#                 final = final + df
-#             df = final / len(Dihl) # average of the absolute number
-
-#             # df = (final - final.min()) / (final.max() - final.min())
-#             # This would be needed for absolute number sum; we are doing averaging (this is done column-wise)
-#             pandas.DataFrame(df).to_parquet(self._rawpq(xtc))
-#             return
-            
-#         # Wait asynchronously for calculations to end and then add the data
-#         get_pool().apply_async(wait_calculate,
-#                          args=(Dihl,),
-#                          callback=save_pq)
+#     def _save_pq(self, pqs, xtc):
+#         # Make a list of the trajectories' dihedrals computations results (absolute numbers)
+#         dfs = [pandas.read_parquet(pq)[f"{xtc}"].abs() for pq in pqs]
+#         # Concatenate them, drop edges for which none of the columns have a value (sanity check) and retrieve the rowwise max values
+#         maxs = pandas.concat(dfs, axis=1).dropna(how="all").max(axis=1)
+#         # Save the max values as the final data
+#         pandas.DataFrame({f"{xtc}": maxs}).to_parquet(self._rawpq(xtc))

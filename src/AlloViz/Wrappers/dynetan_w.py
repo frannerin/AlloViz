@@ -1,15 +1,15 @@
 """dynetan wrapper
 
-It calculates the Mutual Information of the residues' movement and of their COMs.
+It calculates the Mutual Information of the residues' movement.
 
 """
 
 import numpy as np
 
-from .Base import lazy_import, Multicore, Use_COM
+from .Base import lazy_import, Multicore
 
 imports = {
-"_dynetan": ".Packages.dynetan.dynetan.proctraj",
+"_dynetan": ".Packages.dynetan.src.dynetan.proctraj",
 }
 
 for key, val in imports.items():
@@ -34,17 +34,9 @@ class dynetan(Multicore):
         obj = _dynetan.DNAproc(notebookMode=False)
         obj.workU = _dynetan.mda.Universe(self._pdbf, self._trajs[xtc], **step)
         
-        # prot = obj.getU().select_atoms(self._d["_protein_sel"])
-        # from Bio.SeqUtils import seq1, seq3
-        # for res in prot.residues:
-        #     res.resname = seq3(seq1(res.resname, custom_map = self._d["_res_dict"])).upper()
-        
         protseg = list(obj.getU().segments.segids)
         obj.setSegIDs(protseg)
-        obj.selectSystem(withSolvent=False)#, userSelStr=self._d["_protein_sel"])
-
-        obj.setCustomResNodes({})
-        obj.setUsrNodeGroups({})
+        obj.selectSystem(withSolvent=True)
 
         obj.setNumWinds(1)
         obj.alignTraj(inMemory=False)
@@ -57,7 +49,7 @@ class dynetan(Multicore):
 
 
 
-class dynetan_COM(Use_COM, dynetan):
-    """dyentan's MI of the residues' COM
-    """    
-    pass
+# class dynetan_COM(Use_COM, dynetan):
+#     """dyentan's MI of the residues' COM
+#     """    
+#     pass

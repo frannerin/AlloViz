@@ -7,10 +7,10 @@ of the disorder), and also their combinations.
 
 """
 
-import pandas, os
+import pandas, os, time
 import numpy as np
 
-from .Base import lazy_import, Base, Multicore, Combined_Dihs_Avg, Combined_Dihs_Max
+from .Base import lazy_import, Base, Multicore, Combined_Dihs_Avg
 
 imports = {
 "_enspara": "enspara.apps.collect_cards",
@@ -36,18 +36,24 @@ class CARDS(Multicore):
         
         return new
     
+    
+    def __init__(self, *args):
+        super().__init__(*args)
+        
+        # Wait for the calculations to finish before finishing class instance creation; calcs are needed to proceed with other CARDS Wrappers
+        pqs = [self._rawpq(xtc) for xtc in self._trajs]
+        no_exist = lambda pqs: [not os.path.isfile(pq) for pq in pqs]
+        while any(no_exist(pqs)):
+            time.sleep(5)
+    
+    
     def _computation(self, xtc):
         """"""
         class args: pass
         args.trajectories = [[self._trajs[xtc]]]
         args.topology = [self._pdbf]
         
-        result = _cards.cards(_enspara.load_trajs(args), 15, self.taskcpus)
-        
-#         import dill
-        
-#         with open(f"dyn36/data/CARDS/raw/result_{xtc}.pkl", "rb") as f:
-#             result = dill.load(f)
+        result = _cards.cards(_enspara.load_trajs(args), self.buffer, self.taskcpus)
         
         return result, xtc
         
@@ -125,7 +131,6 @@ class CARDS_{name}_{dih.capitalize()}(Base):
         
         
 for name in ("MI",  "Disorder", "Disorder_mediated", "Holistic"):
-    # for approach in ["", "_Max"]:
     exec(f'''
 class CARDS_{name}_Backbone_Dihs(Combined_Dihs_Avg):
     """CARDS network construction method's of the combination of the backbone
@@ -140,7 +145,6 @@ class CARDS_{name}_Backbone_Dihs(Combined_Dihs_Avg):
         
         
 for name in ("MI",  "Disorder", "Disorder_mediated", "Holistic"):
-    # for approach in ["", "_Max"]:
     exec(f'''
 class CARDS_{name}_Sidechain_Dihs(Combined_Dihs_Avg):
     """CARDS network construction method's of the combination of the side-chain
@@ -156,7 +160,6 @@ class CARDS_{name}_Sidechain_Dihs(Combined_Dihs_Avg):
         
         
 for name in ("MI",  "Disorder", "Disorder_mediated", "Holistic"):
-    # for approach in ["", "_Max"]:
     exec(f'''
 class CARDS_{name}_Dihs(Combined_Dihs_Avg):
     """CARDS network construction method's of the combination of all backbone and
