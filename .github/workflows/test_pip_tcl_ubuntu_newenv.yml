@@ -109,7 +109,7 @@ jobs:
     - name: Install dependencies
       run: |
         sudo apt-get update
-        sudo apt-get install libnetcdf-dev
+        sudo apt-get install libnetcdf-dev libsqlite3-dev
         python -m pip install -U --upgrade-strategy eager pip
         pip install -U --upgrade-strategy eager setuptools "numpy==1.23.5" wheel
         pip install -r pip_requirements.txt
