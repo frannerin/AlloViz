@@ -9,7 +9,10 @@ DIRECTORY=$(cd `dirname $0` && pwd)
 # which is only provided by the brew version of sqlite3 (not the system's).
 # Errors is ImportError: dlopen(/.../lib/python3.10/lib-dynload/_sqlite3.cpython-310-darwin.so, 0x0002): Symbol not found: (_sqlite3_enable_load_extension)
 if [[ $(uname) == "Darwin" ]]; then
-    export DYLD_LIBRARY_PATH="/opt/homebrew/opt/sqlite3/lib" 
+    export DYLD_LIBRARY_PATH="/opt/homebrew/opt/sqlite3/lib"
 fi
 
-python $DIRECTORY/alloviz_gui.py
+# Use unbuffered stdio for reliable pipe communication.
+export PYTHONUNBUFFERED=1
+
+python -u $DIRECTORY/alloviz_gui.py

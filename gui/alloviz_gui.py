@@ -45,6 +45,7 @@ logging.basicConfig(
 
 _HOST = "localhost"
 _PORT = 9990
+_COMM_MODE = os.environ.get("ALLOVIZ_COMM", "socket")  # "pipe" or "socket"
 _total_progressbar_steps = 10
 
 
@@ -314,19 +315,35 @@ class AlloVizWindow(QMainWindow):
 
     def sendVMDCommand(self, cmd):
         logging.info("sendVMDCommand sending: " + cmd)
-        try:
-            with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
-                s.connect((_HOST, _PORT))
-                s.sendall(str.encode(cmd + "\n"))
-                data = s.recv(4096)
-        except Exception as e:
-            logging.warning(
-                f"Could not connect to VMD ({self.HOST}:{self.PORT}): {e}.\nMake sure the client component is running."
-            )
-            raise e
-        ret = data.decode().strip()
-        logging.info("sendVMDCommand got " + ret)
-        return ret
+        if _COMM_MODE == "pipe":
+            try:
+                # Write request to parent (Tcl) over stdout and read reply from stdin
+                print(cmd, file=sys.stdout, flush=True)
+                data = sys.stdin.readline()
+                if data == "":
+                    raise Exception("EOF on pipe while waiting for response")
+            except Exception as e:
+                logging.warning(
+                    f"Could not communicate with VMD via pipe: {e}.\nMake sure the Tcl component is running."
+                )
+                raise e
+            ret = data.strip()
+            logging.info("sendVMDCommand got " + ret)
+            return ret
+        else:
+            try:
+                with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
+                    s.connect((_HOST, _PORT))
+                    s.sendall(str.encode(cmd + "\n"))
+                    data = s.recv(4096)
+            except Exception as e:
+                logging.warning(
+                    f"Could not connect to VMD ({self.HOST}:{self.PORT}): {e}.\nMake sure the client component is running."
+                )
+                raise e
+            ret = data.decode().strip()
+            logging.info("sendVMDCommand got " + ret)
+            return ret
 
     def visualize(self, uidata):
         el = uidata["elements"]

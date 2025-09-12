@@ -13,25 +13,38 @@ package require json
 namespace eval alloviz {
     variable already_registered 0
     variable current_viz none
+    variable gui_chan
 
-    proc accept {channel clientaddr clientport} {
-        set cmd [ gets $channel ]
-        # puts "alloviz::accept <-- $cmd"
-        set out [ eval  $cmd]
-        # puts "alloviz::accept --> $out"
-        puts $channel $out
-        close $channel
-    }
-
-    proc start port {
-        puts "Starting server on port $port"
-        socket -server ::alloviz::accept $port
+    # Anonymous pipe handling: Python GUI writes requests to stdout; we read them
+    # here and write replies back to its stdin over the same channel.
+    proc on_gui_read {} {
+        variable gui_chan
+        if {[eof $gui_chan]} {
+            puts "AlloViz GUI pipe closed"
+            fileevent $gui_chan readable {}
+            catch { close $gui_chan }
+            return
+        }
+        if {[gets $gui_chan cmd] < 0} {
+            return
+        }
+        # puts "alloviz::pipe <-- $cmd"
+        set out [ eval $cmd ]
+        # puts "alloviz::pipe --> $out"
+        puts $gui_chan $out
+        flush $gui_chan
     }
     
     proc alloviz_gui_start {} {
         global alloviz_gui_dir
+        variable gui_chan
+        # Indicate to Python that pipe transport should be used.
+        set ::env(ALLOVIZ_COMM) pipe
         puts "Starting AlloViz GUI Python component $alloviz_gui_dir/run_standalone.sh"
-        exec $alloviz_gui_dir/run_standalone.sh &
+        # Open bidirectional pipeline to the GUI process
+        set gui_chan [open "|$alloviz_gui_dir/run_standalone.sh" r+]
+        fconfigure $gui_chan -buffering line -translation lf -blocking 0
+        fileevent $gui_chan readable ::alloviz::on_gui_read
     }
 
     proc alloviz_tk {} {
@@ -180,5 +193,4 @@ namespace eval alloviz {
 }
 
 ::alloviz::register_menu
-::alloviz::start 9990
 
