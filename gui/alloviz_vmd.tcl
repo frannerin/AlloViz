@@ -22,7 +22,13 @@ namespace eval alloviz {
         if {[eof $gui_chan]} {
             puts "AlloViz GUI pipe closed"
             fileevent $gui_chan readable {}
-            catch { close $gui_chan }
+            set rc [catch { close $gui_chan } msg]
+            if {$rc} {
+                puts stderr "Error closing AlloViz GUI pipe: $msg"
+                if {[info exists ::errorInfo]} {
+                    puts stderr $::errorInfo
+                }
+            }
             return
         }
         if {[gets $gui_chan cmd] < 0} {
@@ -193,4 +199,3 @@ namespace eval alloviz {
 }
 
 ::alloviz::register_menu
-
