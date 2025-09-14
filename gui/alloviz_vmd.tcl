@@ -19,26 +19,32 @@ namespace eval alloviz {
     # here and write replies back to its stdin over the same channel.
     proc on_gui_read {} {
         variable gui_chan
-        if {[eof $gui_chan]} {
-            puts "AlloViz GUI pipe closed"
-            fileevent $gui_chan readable {}
-            set rc [catch { close $gui_chan } msg]
-            if {$rc} {
-                puts stderr "Error closing AlloViz GUI pipe: $msg"
-                if {[info exists ::errorInfo]} {
-                    puts stderr $::errorInfo
-                }
-            }
-            return
+         # The channel is readable; try to read it. https://wiki.tcl-lang.org/page/fileevent
+        set status [catch { gets $gui_chan line } result]
+        if { $status != 0 } {
+            # Error on the channel
+            puts "error reading $f: $result"
+            set ::DONE 2
+        } elseif { $result >= 0 } {
+            # Successfully read the channel
+            puts "alloviz::pipe <-- $line"
+            set out [ eval $line ]
+            puts "alloviz::pipe --> $out"
+            puts $gui_chan $out
+            flush $gui_chan
+        } elseif { [eof $f] } {
+            # End of file on the channel
+            puts "end of file"
+            set ::DONE 1
+        } elseif { [fblocked $f] } {
+            # Read blocked.  Just return
+        } else {
+            # Something else
+            puts "can't happen"
+            set ::DONE 3
         }
-        if {[gets $gui_chan cmd] < 0} {
-            return
-        }
-        # puts "alloviz::pipe <-- $cmd"
-        set out [ eval $cmd ]
-        # puts "alloviz::pipe --> $out"
-        puts $gui_chan $out
-        flush $gui_chan
+        
+
     }
     
     proc alloviz_gui_start {} {
