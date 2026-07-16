@@ -5,6 +5,7 @@ pandas==2.0.3
 requests
 multiprocess
 MDAnalysis==2.2.0
+biopython<1.86  # MDAnalysis 2.2.0's align.py imports Bio.Align.Applications, removed in Biopython 1.86
 numpy==1.23.5
 lazyasd
 networkx==3.1
