@@ -1,3 +1,4 @@
+setuptools<82  # keep pkg_resources available for MDAnalysis==2.2.0 (removed in newer setuptools)
 docutils<=0.20
 
 pandas==2.0.3
