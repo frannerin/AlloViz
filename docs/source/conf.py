@@ -258,4 +258,7 @@ with open('README.rst', 'w') as f:
     ).replace(
   		"`GUI <https://alloviz.readthedocs.io/en/latest/tutorials/gui.html>`__",
   		":ref:`GUI <tutorials/gui:GUI>`"
+    ).replace(
+  		"`Shinylive app <https://alloviz.readthedocs.io/en/latest/arrestin.html>`__",
+  		":ref:`Shinylive app <arrestin:Arrestin data>`"
     ))

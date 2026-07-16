@@ -8,7 +8,11 @@ build:
     python: "3.10"
   jobs:
     pre_install:
-      -  sed -i "/dependencies = .*/,+25d" pyproject.toml 
+      -  sed -i "/dependencies = .*/,+25d" pyproject.toml
+    post_build:
+      - mkdir -p $READTHEDOCS_OUTPUT/html/arrestin-app
+      - curl -fL -o arrestin.tar.gz https://github.com/frannerin/AlloViz/releases/download/arrestin-data-viz/arrestin-shinylive.tar.gz
+      - tar xzf arrestin.tar.gz -C $READTHEDOCS_OUTPUT/html/arrestin-app
 
 sphinx:
   fail_on_warning: false

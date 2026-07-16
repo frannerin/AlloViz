@@ -1,3 +1,39 @@
 .wy-table-responsive table td, .wy-table-responsive table th {
     white-space: inherit;
 }
+
+/* --- Embedded Shinylive app: full-bleed under the navbar on the app page only ---
+   Scoped with :has(.arrestin-app-frame) so no other page is affected. */
+.arrestin-app-frame {
+    width: 100%;
+    height: calc(100vh - 3.75rem);   /* fill the viewport below the top navbar */
+    border: 0;
+    display: block;
+}
+/* span edge-to-edge: drop the container cap, row gutters and column paddings */
+.bd-container:has(.arrestin-app-frame) {
+    max-width: 100%;
+    padding: 0;
+}
+.bd-container:has(.arrestin-app-frame) .bd-container__inner {
+    --bs-gutter-x: 0;
+    margin: 0;
+}
+/* remove the (empty) left sidebar column and the right "On this page" column */
+.bd-container:has(.arrestin-app-frame) .sidebar-primary,
+.bd-container:has(.arrestin-app-frame) .bd-sidebar-secondary {
+    display: none;
+}
+/* content takes the whole row, no padding, flush under the navbar */
+.bd-container:has(.arrestin-app-frame) .bd-content {
+    flex: 0 0 100%;
+    max-width: 100%;
+    padding: 0;
+}
+.bd-article:has(.arrestin-app-frame) {
+    padding: 0;
+}
+/* hide the page H1 so the app sits flush under the navbar (title stays in nav/toc) */
+.bd-article:has(.arrestin-app-frame) > section > h1 {
+    display: none;
+}

@@ -51,6 +51,23 @@ visualized in an interactive Python Notebook (i.e.,
 
 AlloViz can also be use through a `GUI <https://alloviz.readthedocs.io/en/paper/tutorials/gui.html>`__.
 
+
+Quickstart
+-------------
+
+Check the `tutorial notebooks <https://alloviz.readthedocs.io/en/paper/tutorials.html>`__ 
+which can be run online through Binder: `Quickstart <https://mybinder.org/v2/gh/frannerin/AlloViz/main?labpath=notebooks%2Fquickstart.ipynb>`__ (depending on availability of shared resources).
+
+
+Citation
+-------------
+
+Nerín-Fonz, F., Caprai, C., Morales-Pastor, A., Lopez-Balastegui, M., Aranda-García, D., Giorgino, T., & Selent, J. (2024). 
+AlloViz: a tool for the calculation and visualisation of protein allosteric communication networks. 
+*Computational and Structural Biotechnology Journal.* https://doi.org/10.1016/j.csbj.2024.04.047
+
+**Data availability:** the β-arrestin 1 allosteric networks and analyses used in the paper are available in the documentation website: `Shinylive app <https://alloviz.readthedocs.io/en/latest/arrestin.html>`__.
+
 Installation
 -------------------
 1. Clone the repository
@@ -120,17 +137,3 @@ Although not recommended, the virtual environment can also be created with **pip
    Python <3.10 is recommended (i.e., 3.9.16). ``pytraj`` and the construction of delta-networks won't be available in a pip environment,
    as `AmberTools <http://ambermd.org/AmberTools.php>`__ and `pymol-open-source <https://github.com/schrodinger/pymol-open-source/>`__ 
    are needed (respectively) for that, and they aren't distributed through PyPi. Other additional dependencies might also need to be installed by hand.
-
-
-Quickstart
--------------
-
-Check the `tutorial notebooks <https://alloviz.readthedocs.io/en/paper/tutorials.html>`__ or the
-`quickstart <https://alloviz.readthedocs.io/en/paper/tutorials/quickstart.html>`__.
-
-Citation
--------------
-
-Nerín-Fonz, F., Caprai, C., Morales-Pastor, A., Lopez-Balastegui, M., Aranda-García, D., Giorgino, T., & Selent, J. (2024). 
-AlloViz: a tool for the calculation and visualisation of protein allosteric communication networks. 
-*Computational and Structural Biotechnology Journal.* https://doi.org/10.1016/j.csbj.2024.04.047
