@@ -19,7 +19,10 @@
     --bs-gutter-x: 0;
     margin: 0;
 }
-/* remove the (empty) left sidebar column and the right "On this page" column */
+/* remove the left sidebar column (both the populated `bd-sidebar-primary` and
+   the empty `sidebar-primary` variants the theme emits) and the right
+   "On this page" column */
+.bd-container:has(.arrestin-app-frame) .bd-sidebar-primary,
 .bd-container:has(.arrestin-app-frame) .sidebar-primary,
 .bd-container:has(.arrestin-app-frame) .bd-sidebar-secondary {
     display: none;
